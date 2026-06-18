@@ -10,7 +10,7 @@
 //!    sample yields `R` region centroids (the routing layer; saved as
 //!    `idx/slot_00.sparse/centroids.spn`).
 //! 2. **Stream-assign** — every cx is generated in chunks (never all at once),
-//!    assigned to its nearest centroid, and bucketed by region.
+//!    assigned to its nearest centroid, and spooled to compact region `.ids`.
 //! 3. **Per-region DiskANN graphs** — each region (<= region_cap rows, fits RAM) is
 //!    regenerated and built into its own `idx/region_NNNNN.ann/graph.cda` via the
 //!    existing (correct, query-distance) DiskANN builder.
@@ -22,6 +22,7 @@
 //! Row generation is per-index deterministic (`gen_row`) so build and search never
 //! hold more than one region's vectors at a time.
 
+mod assignment;
 mod balance;
 mod search;
 
@@ -30,14 +31,18 @@ use std::path::Path;
 use calyx_core::{CxId, Result, SlotId};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
-use rayon::prelude::*;
+use rayon::{ThreadPoolBuilder, prelude::*};
 use serde::{Deserialize, Serialize};
 
 use crate::index::{
     DiskAnnBuildParams, DiskAnnSearch, DiskAnnSearchParams, SpannCentroidIndex, build_centroids,
 };
-use balance::balance_regions;
-pub use search::PartitionedSearch;
+use assignment::{
+    AssignmentRouting, AssignmentSink, read_ids, stream_assign_to_ids,
+    stream_assign_to_ids_with_routing,
+};
+use balance::balance_region_files;
+pub use search::{PartitionedSearch, PartitionedSearchReadback};
 
 const MANIFEST_FILE: &str = "partitioned-manifest.json";
 const CENTROID_DIR: &str = "idx/slot_00.sparse";
@@ -95,6 +100,8 @@ pub struct PartitionedManifest {
     pub seed: u64,
     pub m_max: usize,
     pub ef_construction: usize,
+    #[serde(default)]
+    pub region_build_parallelism: usize,
     pub centroids_rel: String,
     pub root_graph_rel: String,
     pub regions: Vec<RegionMeta>,
@@ -113,6 +120,7 @@ pub struct PartitionBuildParams {
     pub chunk: usize,
     pub m_max: usize,
     pub ef_construction: usize,
+    pub region_build_parallelism: usize,
 }
 
 impl PartitionBuildParams {
@@ -126,8 +134,27 @@ impl PartitionBuildParams {
             chunk: 100_000,
             m_max: 32,
             ef_construction: 96,
+            region_build_parallelism: Self::default_region_build_parallelism(n_regions),
         }
     }
+
+    pub fn default_region_build_parallelism(n_regions: usize) -> usize {
+        std::thread::available_parallelism()
+            .map(|threads| threads.get())
+            .unwrap_or(1)
+            .min(n_regions.max(1))
+            .max(1)
+    }
+}
+
+fn effective_region_build_parallelism(requested: usize, region_count: usize) -> Result<usize> {
+    if requested == 0 {
+        return Err(crate::error::sextant_error(
+            crate::error::CALYX_INDEX_INVALID_PARAMS,
+            "region_build_parallelism must be > 0",
+        ));
+    }
+    Ok(requested.min(region_count.max(1)).max(1))
 }
 
 fn graph_rel(region: u32) -> String {
@@ -135,37 +162,6 @@ fn graph_rel(region: u32) -> String {
 }
 fn ids_rel(region: u32) -> String {
     format!("idx/region_{region:05}.ids")
-}
-
-/// Stream every cx through `centroids`, bucketing each by the SAME nearest-centroid
-/// routing a query uses at search time (`assign_hnsw`, i.e. `nearest_centroids`
-/// top-1). Using the identical routing path for assignment and search keeps a point's
-/// region equal to the region its own query probes (#711). Memory-bounded: vectors
-/// are pulled from the source in `chunk`-sized batches, never all at once.
-fn stream_assign(
-    centroids: &SpannCentroidIndex,
-    source: &dyn VectorSource,
-    chunk: usize,
-) -> Vec<Vec<u64>> {
-    let r = centroids.centroid_count();
-    let n = source.len();
-    let chunk = chunk.max(1) as u64;
-    let mut buckets: Vec<Vec<u64>> = vec![Vec::new(); r];
-    let mut start = 0u64;
-    while start < n {
-        let end = (start + chunk).min(n);
-        let assigned: Vec<(u64, u32)> = (start..end)
-            .into_par_iter()
-            .map(|idx| (idx, centroids.assign_hnsw(&source.row(idx))))
-            .collect();
-        for (idx, region) in assigned {
-            if let Some(bucket) = buckets.get_mut(region as usize) {
-                bucket.push(idx);
-            }
-        }
-        start = end;
-    }
-    buckets
 }
 
 /// Source of the vectors a partitioned vault is built from. The real, production
@@ -266,6 +262,12 @@ pub fn build_partitioned_vault_from_source(
             "partitioned vault requires nonzero source len, dim, n_regions",
         ));
     }
+    if p.region_build_parallelism == 0 {
+        return Err(crate::error::sextant_error(
+            crate::error::CALYX_INDEX_INVALID_PARAMS,
+            "region_build_parallelism must be > 0",
+        ));
+    }
     std::fs::create_dir_all(root.join(CENTROID_DIR))
         .map_err(|e| crate::error::sextant_error(crate::error::CALYX_INDEX_IO, e.to_string()))?;
 
@@ -282,7 +284,9 @@ pub fn build_partitioned_vault_from_source(
     let centroids = build_centroids(&sample_rows, p.n_regions, p.seed);
     let r = centroids.centroid_count();
 
-    // 2. Stream-assign every cx to its nearest centroid -> per-region buckets.
+    // 2. Stream-assign every cx to its nearest centroid -> provisional region
+    //    files. The ids on disk are the source of truth for balancing; the build
+    //    never retains all region buckets in heap.
     //    Pick the assignment method by centroid count: an exact flat scan is
     //    O(R) per point but cache-friendly/branch-free and wins for moderate R;
     //    once R grows the scan's O(N*R) becomes quadratic in N AND, at dim 512,
@@ -291,27 +295,19 @@ pub fn build_partitioned_vault_from_source(
     //    R~2500 at dim 512; keep flat only for trivially small centroid sets.
     const HNSW_ASSIGN_MIN_CENTROIDS: usize = 256;
     let use_hnsw_assign = r > HNSW_ASSIGN_MIN_CENTROIDS;
-    let mut buckets: Vec<Vec<u64>> = vec![Vec::new(); r];
-    let mut start = 0u64;
-    while start < n_cx {
-        let end = (start + p.chunk as u64).min(n_cx);
-        let assigned: Vec<(u64, u32)> = (start..end)
-            .into_par_iter()
-            .map(|idx| {
-                let row = source.row(idx);
-                let region = if use_hnsw_assign {
-                    centroids.assign_hnsw(&row)
-                } else {
-                    centroids.assign(&row)
-                };
-                (idx, region)
-            })
-            .collect();
-        for (idx, region) in assigned {
-            buckets[region as usize].push(idx);
-        }
-        start = end;
-    }
+    let provisional_routing = if use_hnsw_assign {
+        AssignmentRouting::Hnsw
+    } else {
+        AssignmentRouting::Exact
+    };
+    let provisional = stream_assign_to_ids_with_routing(
+        root,
+        AssignmentSink::Provisional,
+        &centroids,
+        source,
+        p.chunk,
+        provisional_routing,
+    )?;
 
     // 2b. Balance region sizes (#713). Nearest-centroid assignment is right-skewed,
     //     and a few oversized regions dominate both the (super-linear) build tail
@@ -321,29 +317,27 @@ pub fn build_partitioned_vault_from_source(
     //     splitter enforces this hard bound, keeping final max/mean near 1-2x.
     let mean_region = (n_cx as usize).div_ceil(r.max(1));
     let cap = mean_region.max(MIN_REGION_CAP);
-    let (final_centroids, _provisional) = balance_regions(&centroids, buckets, p.seed, dim, cap);
+    let final_centroids =
+        balance_region_files(root, &centroids, &provisional, source, p.seed, cap)?;
     let centroids =
         SpannCentroidIndex::from_parts(dim as u32, final_centroids, Vec::new(), Vec::new())?;
     centroids.save(root.join(CENTROID_DIR))?;
 
-    // 2c. Re-bucket every cx against the FINAL centroids through the EXACT routing a
-    //     query uses (`assign_hnsw` == `nearest_centroids` top-1). Load-bearing for
-    //     recall (#711): step 2 bucketed against the INITIAL centroids (and, for
-    //     moderate R, by exact L2), but queries route via the FINAL centroid HNSW.
-    //     Those disagree, so a point's region was not the region its own query routes
-    //     to — proven on REAL msmarco: probing ALL regions recalls 0.999, but probing
-    //     the routed few recalls 0.38 (the right region was never probed). Re-bucketing
-    //     through the same routing path makes assignment and routing consistent, so the
-    //     routed regions actually contain a query's neighbours. Memory-bounded stream.
-    let buckets = stream_assign(&centroids, source, p.chunk);
+    // 2c. Re-assign every cx against the FINAL centroids through the EXACT routing a
+    //     query uses (`assign_hnsw` == `nearest_centroids` top-1), and spool that
+    //     compact region->cx mapping directly to per-region `.ids` files. These files
+    //     are the build source of truth: graph construction reads them back instead of
+    //     holding final buckets in heap, and interrupted builds leave restartable
+    //     assignment files behind (#709/#711).
+    let region_ids =
+        stream_assign_to_ids(root, AssignmentSink::Final, &centroids, source, p.chunk)?;
+    let region_build_parallelism =
+        effective_region_build_parallelism(p.region_build_parallelism, region_ids.len())?;
 
     // 3. Build one DiskANN graph per region (each fits RAM). Regions are built
-    //    in PARALLEL across cores (#706): each region is small and serial row-gen
-    //    + a small-graph Vamana build under-utilizes the machine, so the regions
-    //    themselves are the unit of parallelism. Peak memory is bounded by
-    //    `rayon` thread count x region size (NOT N), preserving the memory-bound
-    //    guarantee. Each region writes to a distinct graph/ids path, so the
-    //    concurrent builds never contend.
+    //    in a LOCAL, capped rayon pool (#706). The cap bounds the number of
+    //    region row buffers that can exist at once and also contains nested
+    //    DiskANN parallelism inside the same worker budget.
     let build_params = DiskAnnBuildParams {
         dim,
         m_max: p.m_max,
@@ -356,46 +350,54 @@ pub fn build_partitioned_vault_from_source(
         rescore_k: 64,
         rescore_from_raw: false,
     };
-    let nonempty: Vec<(u32, &Vec<u64>)> = buckets
-        .iter()
-        .enumerate()
-        .filter(|(_, members)| !members.is_empty())
-        .map(|(region, members)| (region as u32, members))
-        .collect();
-    let mut regions: Vec<RegionMeta> = nonempty
-        .par_iter()
-        .map(|(region, members)| -> Result<RegionMeta> {
-            let region = *region;
-            // Serial row-gen here: the outer par_iter already saturates cores, so
-            // nesting another parallel gen would only add scheduler overhead.
-            let rows: Vec<(CxId, Vec<f32>)> = members
-                .iter()
-                .map(|&idx| (cx(idx), source.row(idx)))
-                .collect();
-            let graph_path = root.join(graph_rel(region));
-            // NOTE: `build_diskann_graph` parallelizes internally. Running this
-            // outer loop with `par_iter` nests rayon pools; for skewed region sizes
-            // that is actually the safe choice — a few oversized regions still get
-            // full-core builds. A single-thread-per-region scheme stalls badly until
-            // region sizes are balanced (see #713: split oversized regions), which
-            // is the prerequisite for higher build throughput.
-            DiskAnnSearch::build(
-                SlotId::new(0),
-                &graph_path,
-                &rows,
-                build_params,
-                None,
-                search_params,
-            )?;
-            write_ids(&root.join(ids_rel(region)), members)?;
-            Ok(RegionMeta {
-                id: region,
-                count: members.len(),
-                graph_rel: graph_rel(region),
-                ids_rel: ids_rel(region),
+    let pool = ThreadPoolBuilder::new()
+        .num_threads(region_build_parallelism)
+        .thread_name(|idx| format!("calyx-region-build-{idx}"))
+        .build()
+        .map_err(|e| {
+            crate::error::sextant_error(
+                crate::error::CALYX_INDEX_INVALID_PARAMS,
+                format!("build region rayon pool: {e}"),
+            )
+        })?;
+    let mut regions: Vec<RegionMeta> = pool.install(|| {
+        region_ids
+            .par_iter()
+            .map(|meta| -> Result<RegionMeta> {
+                let region = meta.id;
+                let members = read_ids(&root.join(&meta.ids_rel))?;
+                if members.len() != meta.count {
+                    return Err(crate::error::sextant_error(
+                        crate::error::CALYX_INDEX_CORRUPT,
+                        format!(
+                            "region {region} ids count {} != assignment count {}",
+                            members.len(),
+                            meta.count
+                        ),
+                    ));
+                }
+                let rows: Vec<(CxId, Vec<f32>)> = members
+                    .iter()
+                    .map(|&idx| (cx(idx), source.row(idx)))
+                    .collect();
+                let graph_path = root.join(graph_rel(region));
+                DiskAnnSearch::build_without_default_raw_sidecar(
+                    SlotId::new(0),
+                    &graph_path,
+                    &rows,
+                    build_params,
+                    None,
+                    search_params,
+                )?;
+                Ok(RegionMeta {
+                    id: region,
+                    count: members.len(),
+                    graph_rel: graph_rel(region),
+                    ids_rel: meta.ids_rel.clone(),
+                })
             })
-        })
-        .collect::<Result<Vec<RegionMeta>>>()?;
+            .collect::<Result<Vec<RegionMeta>>>()
+    })?;
     // `par_iter().collect()` preserves input order, but make the on-disk manifest
     // order explicit and deterministic regardless of scheduling.
     regions.sort_by_key(|m| m.id);
@@ -408,7 +410,7 @@ pub fn build_partitioned_vault_from_source(
         .enumerate()
         .map(|(i, c)| (cx(i as u64), c.clone()))
         .collect();
-    DiskAnnSearch::build(
+    DiskAnnSearch::build_without_default_raw_sidecar(
         SlotId::new(0),
         root.join(ROOT_GRAPH),
         &centroid_rows,
@@ -425,6 +427,7 @@ pub fn build_partitioned_vault_from_source(
         seed: p.seed,
         m_max: p.m_max,
         ef_construction: p.ef_construction,
+        region_build_parallelism,
         centroids_rel: format!("{CENTROID_DIR}/centroids.spn"),
         root_graph_rel: ROOT_GRAPH.to_string(),
         regions,
@@ -434,24 +437,6 @@ pub fn build_partitioned_vault_from_source(
     std::fs::write(root.join(MANIFEST_FILE), bytes)
         .map_err(|e| crate::error::sextant_error(crate::error::CALYX_INDEX_IO, e.to_string()))?;
     Ok(manifest)
-}
-
-fn write_ids(path: &Path, ids: &[u64]) -> Result<()> {
-    let mut bytes = Vec::with_capacity(ids.len() * 8);
-    for id in ids {
-        bytes.extend_from_slice(&id.to_le_bytes());
-    }
-    std::fs::write(path, bytes)
-        .map_err(|e| crate::error::sextant_error(crate::error::CALYX_INDEX_IO, e.to_string()))
-}
-
-fn read_ids(path: &Path) -> Result<Vec<u64>> {
-    let bytes = std::fs::read(path)
-        .map_err(|e| crate::error::sextant_error(crate::error::CALYX_INDEX_IO, e.to_string()))?;
-    Ok(bytes
-        .chunks_exact(8)
-        .map(|c| u64::from_le_bytes(c.try_into().expect("8 bytes")))
-        .collect())
 }
 
 #[cfg(test)]

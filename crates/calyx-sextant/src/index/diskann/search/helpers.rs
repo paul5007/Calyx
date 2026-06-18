@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
 
@@ -9,7 +9,13 @@ use crate::error::{
     CALYX_INDEX_DIM_MISMATCH, CALYX_INDEX_INVALID_PARAMS, CALYX_INDEX_IO, sextant_error,
 };
 use crate::index::diskann::graph::{DiskAnnGraphReader, open_diskann_graph};
-use crate::util::cosine;
+use crate::index::distance::{cosine_distance, unit_l2_cosine_distance};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum DiskAnnDistanceMode {
+    RawCosine,
+    UnitL2,
+}
 
 #[derive(Clone, Copy, Debug)]
 pub(super) struct Candidate {
@@ -56,31 +62,16 @@ impl DiskAnnSearchParams {
     }
 }
 
-pub(super) fn distance(a: &[f32], b: &[f32]) -> f32 {
-    (1.0 - cosine(a, b)).max(0.0)
+pub(super) fn distance(a: &[f32], b: &[f32], mode: DiskAnnDistanceMode) -> f32 {
+    match mode {
+        DiskAnnDistanceMode::RawCosine => cosine_distance(a, b),
+        DiskAnnDistanceMode::UnitL2 => unit_l2_cosine_distance(a, b),
+    }
 }
 
 pub(super) fn sorted(mut hits: Vec<(u32, f32)>) -> Vec<(u32, f32)> {
     hits.sort_by(|a, b| a.1.total_cmp(&b.1).then_with(|| a.0.cmp(&b.0)));
     hits
-}
-
-pub(super) fn stop_search(
-    candidates: &[Candidate],
-    scores: &BTreeMap<u32, f32>,
-    expanded: &BTreeSet<u32>,
-    want: usize,
-) -> bool {
-    if scores.len() < want {
-        return false;
-    }
-    let worst = sorted(scores.iter().map(|(&id, &d)| (id, d)).collect())[want - 1].1;
-    candidates
-        .iter()
-        .filter(|candidate| !expanded.contains(&candidate.id))
-        .map(|candidate| candidate.distance)
-        .min_by(f32::total_cmp)
-        .is_none_or(|best| best >= worst)
 }
 
 pub(super) fn dense_rows(rows: &[(CxId, Vec<f32>)], dim: usize) -> Result<Vec<(u32, Vec<f32>)>> {

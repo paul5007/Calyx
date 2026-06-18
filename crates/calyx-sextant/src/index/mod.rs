@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub mod autotune;
 pub mod bm25;
 pub mod diskann;
+pub mod distance;
 pub mod dual;
 pub mod funnel;
 pub mod hnsw;
@@ -27,10 +28,11 @@ pub use autotune::{
 pub use diskann::{
     ConcatCrossTermDiskAnn, ConcatCrossTermHit, ConcatCrossTermKey, Direction, DirectionalBoost,
     DiskAnnBuildParams, DiskAnnGraphReader, DiskAnnGraphWriter, DiskAnnHeader, DiskAnnNodeRef,
-    DiskAnnSearch, DiskAnnSearchParams, DualDiskAnnSearch, TokenDiskAnnMaxSim, build_diskann_graph,
-    build_dual, build_dual_with_search, dual_graph_path, node_block_size, open_diskann_graph,
-    open_dual,
+    DiskAnnPqBuildParams, DiskAnnPqIndex, DiskAnnSearch, DiskAnnSearchParams, DualDiskAnnSearch,
+    TokenDiskAnnMaxSim, build_diskann_graph, build_dual, build_dual_with_search, dual_graph_path,
+    node_block_size, open_diskann_graph, open_dual,
 };
+pub use distance::{cosine_distance, dot, kernel_backend, l2_normalize, l2_sq};
 pub use dual::{DualIndex, DualSide};
 pub use funnel::{
     FUNNEL_MIN_VAULT_SIZE, FinalCxSearch, FunnelHit, FunnelParams, FunnelPath, KernelFirstSearch,
@@ -41,9 +43,9 @@ pub use hnsw::HnswIndex;
 pub use inverted::InvertedIndex;
 pub use multi::MaxSimIndex;
 pub use partitioned::{
-    FbinSource, PartitionBuildParams, PartitionedManifest, PartitionedSearch, RegionMeta,
-    SyntheticSource, VectorSource, build_partitioned_vault, build_partitioned_vault_from_source,
-    gen_row,
+    FbinSource, PartitionBuildParams, PartitionedManifest, PartitionedSearch,
+    PartitionedSearchReadback, RegionMeta, SyntheticSource, VectorSource, build_partitioned_vault,
+    build_partitioned_vault_from_source, gen_row,
 };
 pub use quant_config::{QuantConfig, QuantKind, QuantizedVector};
 pub use spann::{

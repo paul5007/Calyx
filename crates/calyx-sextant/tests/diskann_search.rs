@@ -4,7 +4,10 @@ use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 use calyx_core::{CxId, SlotId, SlotVector};
-use calyx_sextant::index::{DiskAnnBuildParams, DiskAnnSearch, DiskAnnSearchParams, SextantIndex};
+use calyx_sextant::index::{
+    DiskAnnBuildParams, DiskAnnPqBuildParams, DiskAnnSearch, DiskAnnSearchParams, SextantIndex,
+    open_diskann_graph,
+};
 use proptest::prelude::*;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
@@ -152,6 +155,131 @@ fn raw_rescore_reads_sidecar_and_matches_exact_distances() {
 }
 
 #[test]
+fn build_writes_unit_l2_marker_normalized_graph_and_raw_sidecar() {
+    let dir = scratch("unit-l2-marker");
+    let path = dir.join("idx/slot_00.ann/graph.cda");
+    let rows = vec![
+        (cx(0), vec![3.0_f32, 4.0, 0.0, 0.0]),
+        (cx(1), vec![0.0_f32, 5.0, 0.0, 0.0]),
+        (cx(2), vec![0.0_f32, 0.0, 12.0, 16.0]),
+    ];
+    let index = DiskAnnSearch::build(
+        SlotId::new(0),
+        &path,
+        &rows,
+        DiskAnnBuildParams {
+            dim: 4,
+            m_max: 2,
+            ef_construction: 8,
+            alpha: 1.2,
+        },
+        None,
+        search_params(3, 8, false),
+    )
+    .expect("build");
+
+    let marker = std::fs::read_to_string(path.with_extension("metric")).expect("read marker");
+    assert_eq!(marker.trim(), "unit_l2");
+
+    let reader = open_diskann_graph(&path).expect("open graph");
+    let node = reader.read_node(0).expect("read node 0");
+    assert_eq!(node.vector, &[0.6_f32, 0.8, 0.0, 0.0]);
+
+    let raw_bytes = std::fs::read(path.with_extension("raw").join("0")).expect("read raw");
+    let raw: Vec<f32> = raw_bytes
+        .chunks_exact(4)
+        .map(|chunk| f32::from_le_bytes(chunk.try_into().expect("4B")))
+        .collect();
+    assert_eq!(raw, rows[0].1);
+
+    assert_eq!(
+        index.vector(rows[0].0),
+        Some(SlotVector::Dense {
+            dim: 4,
+            data: rows[0].1.clone(),
+        })
+    );
+}
+
+#[test]
+fn build_with_pq_writes_sidecar_searches_and_reranks_from_raw() {
+    let dir = scratch("pq-sidecar");
+    let path = dir.join("idx/slot_00.ann/graph.cda");
+    let rows = vectors(256, 16, 707);
+    let params = search_params(32, 128, true);
+    let index = DiskAnnSearch::build_with_pq(
+        SlotId::new(0),
+        &path,
+        &rows,
+        build_params(16),
+        None,
+        params,
+        DiskAnnPqBuildParams {
+            subvectors: 4,
+            centroids: 32,
+            iterations: 4,
+        },
+    )
+    .expect("build pq diskann");
+
+    assert!(path.with_extension("pq").is_file());
+    assert_eq!(index.pq_summary(), Some((256, 4, 32)));
+    assert!(
+        index
+            .pq_ram_bytes()
+            .is_some_and(|bytes| bytes < 256 * 16 * 4)
+    );
+
+    let hits = index
+        .search_ids(&rows[7].1, 10, &params)
+        .expect("pq search");
+
+    assert_eq!(hits.len(), 10);
+    assert_eq!(hits[0].0, 7);
+    assert!(hits.windows(2).all(|pair| pair[0].1 <= pair[1].1));
+    for (id, distance) in hits {
+        let exact = 1.0 - cosine(&rows[7].1, &rows[id as usize].1);
+        assert!(
+            (distance - exact.max(0.0)).abs() <= 1.0e-5,
+            "node {id}: {distance} != {exact}"
+        );
+    }
+}
+
+#[test]
+fn corrupt_pq_sidecar_fails_closed_on_open() {
+    let dir = scratch("pq-corrupt");
+    let path = dir.join("idx/slot_00.ann/graph.cda");
+    let rows = vectors(64, 16, 708);
+    let _ = DiskAnnSearch::build_with_pq(
+        SlotId::new(0),
+        &path,
+        &rows,
+        build_params(16),
+        None,
+        search_params(16, 64, true),
+        DiskAnnPqBuildParams {
+            subvectors: 4,
+            centroids: 16,
+            iterations: 2,
+        },
+    )
+    .expect("build pq diskann");
+    std::fs::write(path.with_extension("pq"), b"bad-pq").expect("corrupt pq");
+
+    let err = DiskAnnSearch::open(
+        SlotId::new(0),
+        &path,
+        rows.iter().map(|(cx_id, _)| *cx_id).collect(),
+        None,
+        search_params(16, 64, true),
+    )
+    .expect_err("corrupt pq must fail");
+
+    assert_eq!(err.code, "CALYX_INDEX_CORRUPT");
+}
+
+#[test]
 fn k_above_node_count_returns_all_nodes() {
     let rows = vectors(8, 8, 3);
     let index = build_index("kgt", &rows);
@@ -240,6 +368,34 @@ fn sextant_index_adapter_returns_cxid_hits_and_vectors() {
     );
     assert_eq!(index.stats().kind, "DiskANN");
     assert!(index.vector(rows[3].0).is_some());
+}
+
+#[test]
+fn flat_search_scratch_reuse_does_not_leak_previous_graph_hits() {
+    let large_rows = vectors(96, 16, 705);
+    let small_rows = vectors(12, 16, 706);
+    let large = build_index("scratch-large", &large_rows);
+    let small = build_index("scratch-small", &small_rows);
+    let params = search_params(8, 32, false);
+
+    let first_large = large
+        .search_ids(&large_rows[5].1, 8, &params)
+        .expect("large search");
+    let small_hits = small
+        .search_ids(&small_rows[2].1, 8, &params)
+        .expect("small search after large");
+    let second_large = large
+        .search_ids(&large_rows[5].1, 8, &params)
+        .expect("large search after small");
+
+    assert_eq!(first_large, second_large);
+    assert!(
+        small_hits
+            .iter()
+            .all(|(id, _)| *id < small_rows.len() as u32)
+    );
+    let distinct: BTreeSet<_> = small_hits.iter().map(|(id, _)| *id).collect();
+    assert_eq!(distinct.len(), small_hits.len());
 }
 
 proptest! {

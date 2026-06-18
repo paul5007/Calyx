@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use calyx_core::CxId;
-use calyx_sextant::index::{DiskAnnBuildParams, DiskAnnSearchParams};
+use calyx_sextant::index::{DiskAnnBuildParams, DiskAnnPqBuildParams, DiskAnnSearchParams};
 use serde::Serialize;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -12,6 +12,7 @@ pub(super) enum Mode {
     DimMismatch,
     Truncated,
     MissingRaw,
+    CorruptPq,
 }
 
 #[derive(Clone, Debug)]
@@ -25,12 +26,15 @@ pub(super) struct Request {
     pub(super) beamwidth: usize,
     pub(super) ef_search: usize,
     pub(super) rescore_k: usize,
+    pub(super) recall_floor: Option<f64>,
+    pub(super) pq: Option<DiskAnnPqBuildParams>,
 }
 
 #[derive(Clone)]
 pub(super) struct Paths {
     pub(super) graph_path: PathBuf,
     pub(super) raw_dir: PathBuf,
+    pub(super) pq_path: PathBuf,
     pub(super) metrics_dir: PathBuf,
 }
 
@@ -39,6 +43,7 @@ impl Paths {
         Self {
             graph_path: root.join("idx/slot_00.ann/graph.cda"),
             raw_dir: root.join("cf/slot_00.raw"),
+            pq_path: root.join("idx/slot_00.ann/graph.pq"),
             metrics_dir: root.join("metrics"),
         }
     }
@@ -63,6 +68,7 @@ impl Request {
             "dim-mismatch" => Mode::DimMismatch,
             "truncated" => Mode::Truncated,
             "missing-raw" => Mode::MissingRaw,
+            "corrupt-pq" => Mode::CorruptPq,
             other => return Err(format!("unknown diskann validation mode: {other}")),
         };
         let nodes = number(args, "--nodes", 1000)?;
@@ -79,6 +85,8 @@ impl Request {
             beamwidth: number(args, "--beamwidth", 32)?,
             ef_search: number(args, "--ef-search", 128)?.max(k),
             rescore_k: number(args, "--rescore-k", 64)?.max(k),
+            recall_floor: recall_floor(args)?,
+            pq: pq_params(args)?,
         })
     }
 }
@@ -217,21 +225,95 @@ fn required_path(args: &[String], flag: &str) -> Result<PathBuf, String> {
 }
 
 fn number(args: &[String], flag: &str, default: usize) -> Result<usize, String> {
+    optional_number(args, flag)?.map_or(Ok(default), Ok)
+}
+
+fn optional_number(args: &[String], flag: &str) -> Result<Option<usize>, String> {
     value(args, flag)
         .map(str::parse)
         .transpose()
         .map_err(|error| format!("{flag}: {error}"))?
-        .map_or(Ok(default), |n| {
+        .map_or(Ok(None), |n| {
             if n == 0 {
                 Err(format!("{flag} must be positive"))
             } else {
-                Ok(n)
+                Ok(Some(n))
             }
         })
+}
+
+fn recall_floor(args: &[String]) -> Result<Option<f64>, String> {
+    let Some(raw) = value(args, "--recall-floor") else {
+        return Ok(None);
+    };
+    let floor: f64 = raw
+        .parse()
+        .map_err(|error| format!("--recall-floor: {error}"))?;
+    if !floor.is_finite() || !(0.0..=1.0).contains(&floor) {
+        return Err("--recall-floor must be finite in [0, 1]".to_string());
+    }
+    Ok(Some(floor))
+}
+
+fn pq_params(args: &[String]) -> Result<Option<DiskAnnPqBuildParams>, String> {
+    let Some(subvectors) = optional_number(args, "--pq-subvectors")? else {
+        return Ok(None);
+    };
+    Ok(Some(DiskAnnPqBuildParams {
+        subvectors,
+        centroids: optional_number(args, "--pq-centroids")?.unwrap_or(256),
+        iterations: optional_number(args, "--pq-iterations")?.unwrap_or(8),
+    }))
 }
 
 fn value<'a>(args: &'a [String], flag: &str) -> Option<&'a str> {
     args.windows(2)
         .find(|window| window[0] == flag)
         .map(|window| window[1].as_str())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn strings(args: &[&str]) -> Vec<String> {
+        args.iter().map(|arg| (*arg).to_string()).collect()
+    }
+
+    #[test]
+    fn parses_recall_floor() {
+        let args = strings(&["--root", "vault", "--recall-floor", "0.85"]);
+        let request = Request::parse(&args).expect("parse");
+        assert_eq!(request.recall_floor, Some(0.85));
+    }
+
+    #[test]
+    fn rejects_invalid_recall_floor() {
+        let args = strings(&["--root", "vault", "--recall-floor", "1.1"]);
+        let error = Request::parse(&args).expect_err("recall floor > 1");
+        assert!(error.contains("--recall-floor must be finite in [0, 1]"));
+    }
+
+    #[test]
+    fn parses_pq_params() {
+        let args = strings(&[
+            "--root",
+            "vault",
+            "--pq-subvectors",
+            "4",
+            "--pq-centroids",
+            "16",
+            "--pq-iterations",
+            "3",
+        ]);
+        let request = Request::parse(&args).expect("parse");
+        assert_eq!(
+            request.pq,
+            Some(DiskAnnPqBuildParams {
+                subvectors: 4,
+                centroids: 16,
+                iterations: 3
+            })
+        );
+    }
 }
