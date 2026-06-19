@@ -1,23 +1,21 @@
-//! Stream real corpus rows through frozen lenses directly into per-slot FBIN.
+//! Convert real GDELT v2 event exports into timestamped assay rows.
 
 mod args;
-mod rows;
+mod convert;
+mod report;
+
 #[cfg(test)]
 mod tests;
-mod write;
 
 use calyx_core::CalyxError;
 
 use crate::error::{CliError, CliResult};
 use crate::output::print_json;
 
-pub(crate) const MIN_A35_LENSES: usize = 4;
-pub(crate) const DEFAULT_MIN_BITS: f32 = 0.05;
-
 pub(crate) fn run(raw: &[String]) -> CliResult {
     let args = args::Args::parse(raw)?;
-    let evidence = write::run(&args)?;
-    print_json(&evidence)
+    let report = convert::run(&args)?;
+    print_json(&report)
 }
 
 pub(crate) fn local_error(
@@ -30,8 +28,4 @@ pub(crate) fn local_error(
         message: message.into(),
         remediation,
     })
-}
-
-pub(crate) fn io_error(error: std::io::Error) -> CliError {
-    CliError::io(error.to_string())
 }
