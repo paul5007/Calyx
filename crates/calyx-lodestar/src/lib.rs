@@ -5,6 +5,7 @@
 pub mod aster_bridge;
 pub mod blind_spot_sweep;
 pub mod chain_walks;
+pub mod corpus_weave_report;
 pub mod dfvs;
 pub mod discovery_chain;
 pub mod domain_bridges;
@@ -49,6 +50,10 @@ pub use chain_walks::{
     AbcHypothesis, CHAIN_WALK_SCHEMA_VERSION, ChainWalkParams, ChainWalkReport, ChainWalkResult,
     ChainWalkSeed, ChainWalkSeedKind, run_grounded_chain_walks,
 };
+pub use corpus_weave_report::{
+    CORPUS_WEAVE_REPORT_SCHEMA_VERSION, CorpusWeaveReport, CorpusWeaveReportParams,
+    corpus_weave_report,
+};
 pub use dfvs::{
     DfvsMethod, DfvsResult, bounded_genus_approx, dfvs_approx, genus_estimate, is_tournament,
     tournament_2approx,
@@ -79,7 +84,7 @@ pub use hypothesis_evaluation::{
 pub use incremental::{IncrementalKernelEval, IncrementalResult, NodeAddEdge};
 pub use kernel::{
     GroundednessReport, Kernel, KernelParams, RecallReport, build_kernel_pipeline,
-    build_kernel_pipeline_with_frequency,
+    build_kernel_pipeline_with_frequency, refine_kernel_with_recall_support,
 };
 pub use kernel_answer::{AnswerHop, AnswerPath, kernel_answer, kernel_answer_with_ledger};
 pub use kernel_graph::{
@@ -134,8 +139,9 @@ pub use ranked_hypotheses::{
 };
 pub use recall_test::{
     AnnIndex, CALYX_KERNEL_RECALL_BELOW_GATE, CorpusReader, InMemoryAnnIndex, InMemoryCorpus,
-    RecallQuery, RecallTestParams, RecallTestReport, enforce_recall_gate, kernel_recall_gate,
-    kernel_recall_gate_with_clock, kernel_recall_test, kernel_recall_test_with_clock,
+    RecallQuery, RecallSupportReport, RecallTestParams, RecallTestReport, enforce_recall_gate,
+    full_topk_support_set, kernel_recall_gate, kernel_recall_gate_with_clock, kernel_recall_test,
+    kernel_recall_test_with_clock,
 };
 pub use refusal_expansion::{
     REFUSAL_EXPANSION_SCHEMA_VERSION, RefusalExpansionAction, RefusalExpansionActionKind,
