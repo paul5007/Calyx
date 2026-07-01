@@ -24,14 +24,16 @@ pub use crate::engine_trace::SearchTraceEvent;
 use crate::engine_trace::SearchTracer;
 use crate::error::CliResult;
 use crate::persisted::PersistedSearchIndexes;
-use crate::provenance::{attach_verified_provenance, hit_docs_at};
+use crate::provenance::attach_verified_provenance;
 
+mod hydration;
 mod support;
+use hydration::hydrate_hit_docs_with_bounded_readbacks;
 #[cfg(test)]
 use support::cosine;
 use support::{
-    SearchReadSnapshot, apply_in_region_guard, index_freshness_tag, is_stale_derived,
-    renumber_and_truncate, vault_base_count_at,
+    SearchReadSnapshot, apply_in_region_guard, is_stale_derived, renumber_and_truncate,
+    vault_base_count_at,
 };
 
 /// In-region guard cosine threshold (mirrors the CLI default).
@@ -412,17 +414,6 @@ fn search_outcome_with_measured_slots(
         renumber_and_truncate(&mut hits, k);
         trace.emit("fusion.truncate.done", None, Some(hits.len()));
     }
-    trace.emit("snapshot.pin.start", None, None);
-    let read = SearchReadSnapshot::pin(vault);
-    trace.emit("snapshot.pin.done", None, Some(read.seq() as usize));
-    trace.emit("indexes.freshness.start", None, None);
-    let freshness_tag = index_freshness_tag(&indexes, read.seq(), freshness)?;
-    trace.emit_detail(
-        "indexes.freshness.done",
-        None,
-        None,
-        Some(freshness_tag.policy.clone()),
-    );
     let hydrate_hit_slots = guard == GuardChoice::InRegion;
     trace.emit_detail(
         "hit_docs.hydrate.start",
@@ -430,7 +421,14 @@ fn search_outcome_with_measured_slots(
         Some(hits.len()),
         Some(format!("hydrate_slots={hydrate_hit_slots}")),
     );
-    let hit_docs = hit_docs_at(vault, &hits, read.snapshot(), hydrate_hit_slots)?;
+    let (hit_docs, freshness_tag) = hydrate_hit_docs_with_bounded_readbacks(
+        vault,
+        &indexes,
+        &hits,
+        freshness,
+        hydrate_hit_slots,
+        trace,
+    )?;
     trace.emit("hit_docs.hydrate.done", None, Some(hit_docs.len()));
     trace.emit("provenance.attach.start", None, Some(hits.len()));
     attach_verified_provenance(&mut hits, &hit_docs, vault_dir, freshness_tag)?;
