@@ -96,3 +96,9 @@ Verify missing/empty-field behavior across all Soccer Lab projectors:
 ```bash
 ./tools/data/verify_projector_missing_fields.py
 ```
+
+Verify malformed-line and malformed-frame behavior across Soccer Lab projectors:
+
+```bash
+./tools/data/verify_projector_malformed_input.py
+```

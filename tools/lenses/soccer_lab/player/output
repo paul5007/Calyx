@@ -20,10 +20,11 @@ FACETS: dict[str, list[tuple[str, Callable[[dict[str, str]], float]]]] = {}
 
 
 class ProjectorError(RuntimeError):
-    def __init__(self, reason: str, detail: dict[str, object] | None = None):
+    def __init__(self, reason: str, detail: dict[str, object] | None = None, raw: bytes = b""):
         super().__init__(reason)
         self.reason = reason
         self.detail = detail or {}
+        self.raw = raw
 
 
 def facet_name() -> str:
@@ -112,7 +113,10 @@ def stable_hash(fields: dict[str, str], key: str, default: float = 0.0) -> float
 
 
 def parse_line(raw: bytes) -> dict[str, str]:
-    text = raw.decode("utf-8")
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ProjectorError("invalid_utf8", {"error": str(exc)}) from exc
     fields: dict[str, str] = {}
     if text.strip() == "":
         return fields
@@ -129,15 +133,15 @@ def parse_line(raw: bytes) -> dict[str, str]:
 def frame_read() -> dict[str, object]:
     header = sys.stdin.buffer.read(4)
     if len(header) != 4:
-        raise ProjectorError("missing_frame_header", {"bytes_read": len(header)})
+        raise ProjectorError("missing_frame_header", {"bytes_read": len(header)}, raw=header)
     size = struct.unpack(">I", header)[0]
     body = sys.stdin.buffer.read(size)
     if len(body) != size:
-        raise ProjectorError("truncated_frame", {"expected": size, "observed": len(body)})
+        raise ProjectorError("truncated_frame", {"expected": size, "observed": len(body)}, raw=header + body)
     try:
         payload = json.loads(body)
     except json.JSONDecodeError as exc:
-        raise ProjectorError("invalid_json_frame", {"error": str(exc)}) from exc
+        raise ProjectorError("invalid_json_frame", {"error": str(exc)}, raw=body) from exc
     if not isinstance(payload, dict):
         raise ProjectorError("frame_not_object")
     return payload
@@ -182,7 +186,7 @@ def run() -> int:
         frame_write({"vectors": vectors})
         return 0
     except ProjectorError as exc:
-        err(exc.reason, facet, **exc.detail)
+        err(exc.reason, facet, exc.raw, **exc.detail)
         return 2
 
 
