@@ -1,0 +1,281 @@
+#!/usr/bin/env python3
+"""Soccer Lab team/match facet projector.
+
+This file is copied verbatim to one executable per facet. The facet name is the
+executable basename, so Calyx can register each endpoint with no arguments.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import struct
+import sys
+from datetime import date, datetime
+from pathlib import Path
+from typing import Callable
+
+
+FACETS: dict[str, list[tuple[str, Callable[[dict[str, str]], float]]]] = {}
+
+
+class ProjectorError(RuntimeError):
+    def __init__(self, reason: str, detail: dict[str, object] | None = None):
+        super().__init__(reason)
+        self.reason = reason
+        self.detail = detail or {}
+
+
+def facet_name() -> str:
+    name = Path(sys.argv[0]).name
+    if name.endswith(".py"):
+        name = name[:-3]
+    return name
+
+
+def input_hash(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def err(reason: str, facet: str, raw: bytes = b"", **detail: object) -> None:
+    payload = {
+        "facet": facet,
+        "input_hash": input_hash(raw) if raw else "",
+        "reason": reason,
+        **detail,
+    }
+    print(json.dumps(payload, sort_keys=True), file=sys.stderr)
+
+
+def clamp01(value: float) -> float:
+    if not math.isfinite(value):
+        raise ProjectorError("non_finite_value", {"value": value})
+    if value < 0.0:
+        return 0.0
+    if value > 1.0:
+        return 1.0
+    return float(value)
+
+
+def raw_value(fields: dict[str, str], key: str, default: str = "0") -> str:
+    value = fields.get(key, "")
+    if value == "" or value.upper() == "NA":
+        return default
+    return value
+
+
+def number(fields: dict[str, str], key: str, default: float = 0.0) -> float:
+    value = fields.get(key, "")
+    if value == "" or value.upper() == "NA":
+        return default
+    try:
+        parsed = float(value)
+    except ValueError as exc:
+        raise ProjectorError("invalid_number", {"field": key, "value": value}) from exc
+    if not math.isfinite(parsed):
+        raise ProjectorError("non_finite_number", {"field": key, "value": value})
+    return parsed
+
+
+def boolean(fields: dict[str, str], key: str, default: float = 0.0) -> float:
+    value = raw_value(fields, key, str(int(default))).strip().lower()
+    if value in {"1", "true", "yes", "y"}:
+        return 1.0
+    if value in {"0", "false", "no", "n"}:
+        return 0.0
+    raise ProjectorError("invalid_boolean", {"field": key, "value": value})
+
+
+def ratio(fields: dict[str, str], key: str, denom: float, default: float = 0.0) -> float:
+    return clamp01(number(fields, key, default) / denom)
+
+
+def rate(fields: dict[str, str], key: str, default: float = 0.0) -> float:
+    return clamp01(number(fields, key, default))
+
+
+def mapped(fields: dict[str, str], key: str, lo: float, hi: float, default: float = 0.0) -> float:
+    value = number(fields, key, default)
+    return clamp01((value - lo) / (hi - lo))
+
+
+def reverse_rank(fields: dict[str, str], key: str, worst: float, best: float, default: float = 32.0) -> float:
+    value = number(fields, key, default)
+    return clamp01((worst - value) / (worst - best))
+
+
+def stable_hash(fields: dict[str, str], key: str, default: float = 0.0) -> float:
+    value = fields.get(key, "")
+    if value == "" or value.upper() == "NA":
+        return default
+    digest = hashlib.sha256(value.encode("utf-8")).digest()
+    bucket = int.from_bytes(digest[:8], "big") % 1024
+    return bucket / 1023.0
+
+
+def days_norm(fields: dict[str, str]) -> float:
+    if "match_day_of_tournament" in fields:
+        return ratio(fields, "match_day_of_tournament", 45.0)
+    start_raw = fields.get("tournament_start_date", "")
+    match_raw = fields.get("match_date", "")
+    if not start_raw or not match_raw:
+        return 0.0
+    try:
+        start = date.fromisoformat(start_raw)
+        match = date.fromisoformat(match_raw)
+    except ValueError as exc:
+        raise ProjectorError("invalid_date", {"field": "match_date", "value": match_raw}) from exc
+    return clamp01((match - start).days / 45.0)
+
+
+def kickoff_norm(fields: dict[str, str]) -> float:
+    if "kickoff_hour" in fields:
+        return ratio(fields, "kickoff_hour", 23.0, 11.5)
+    raw = fields.get("match_time", "")
+    if raw == "" or raw.upper() == "NA":
+        return 0.5
+    try:
+        parsed = datetime.strptime(raw[:5], "%H:%M")
+    except ValueError as exc:
+        raise ProjectorError("invalid_time", {"field": "match_time", "value": raw}) from exc
+    return clamp01(parsed.hour / 23.0)
+
+
+def parse_line(raw: bytes) -> dict[str, str]:
+    text = raw.decode("utf-8")
+    fields: dict[str, str] = {}
+    if text.strip() == "":
+        return fields
+    for token in text.strip().split():
+        if "=" not in token:
+            raise ProjectorError("malformed_token", {"token": token})
+        key, value = token.split("=", 1)
+        if key == "":
+            raise ProjectorError("empty_field_name", {"token": token})
+        fields[key] = value
+    return fields
+
+
+def frame_read() -> dict[str, object]:
+    header = sys.stdin.buffer.read(4)
+    if len(header) != 4:
+        raise ProjectorError("missing_frame_header", {"bytes_read": len(header)})
+    size = struct.unpack(">I", header)[0]
+    body = sys.stdin.buffer.read(size)
+    if len(body) != size:
+        raise ProjectorError("truncated_frame", {"expected": size, "observed": len(body)})
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError as exc:
+        raise ProjectorError("invalid_json_frame", {"error": str(exc)}) from exc
+    if not isinstance(payload, dict):
+        raise ProjectorError("frame_not_object")
+    return payload
+
+
+def frame_write(payload: dict[str, object]) -> None:
+    encoded = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    sys.stdout.buffer.write(struct.pack(">I", len(encoded)))
+    sys.stdout.buffer.write(encoded)
+    sys.stdout.buffer.flush()
+
+
+def project(facet: str, raw: bytes) -> list[float]:
+    fields = parse_line(raw)
+    vector = [func(fields) for _, func in FACETS[facet]]
+    for value in vector:
+        if not math.isfinite(value):
+            raise ProjectorError("non_finite_output", {"value": value})
+    return vector
+
+
+def run() -> int:
+    facet = facet_name()
+    if facet not in FACETS:
+        err("unknown_facet_executable", facet)
+        return 2
+    try:
+        payload = frame_read()
+        inputs = payload.get("inputs")
+        if not isinstance(inputs, list):
+            raise ProjectorError("missing_inputs_array")
+        vectors = []
+        for item in inputs:
+            if not isinstance(item, list) or not all(isinstance(n, int) and 0 <= n <= 255 for n in item):
+                raise ProjectorError("input_not_byte_array")
+            raw = bytes(item)
+            try:
+                vectors.append(project(facet, raw))
+            except ProjectorError as exc:
+                err(exc.reason, facet, raw, **exc.detail)
+                return 2
+        frame_write({"vectors": vectors})
+        return 0
+    except ProjectorError as exc:
+        err(exc.reason, facet, **exc.detail)
+        return 2
+
+
+FACETS["attack"] = [
+    ("trailing_goals_for_per_match", lambda f: ratio(f, "trailing_goals_for_per_match", 6.0)),
+    ("trailing_goal_scoring_rate", lambda f: rate(f, "trailing_goal_scoring_rate")),
+    ("trailing_multi_goal_rate", lambda f: rate(f, "trailing_multi_goal_rate")),
+    ("trailing_penalties_for_per_match", lambda f: ratio(f, "trailing_penalties_for_per_match", 5.0)),
+    ("home_attack_context", lambda f: boolean(f, "home_team")),
+    ("away_attack_context", lambda f: boolean(f, "away_team")),
+]
+
+FACETS["defense"] = [
+    ("trailing_goals_against_per_match", lambda f: ratio(f, "trailing_goals_against_per_match", 6.0)),
+    ("trailing_clean_sheet_rate", lambda f: rate(f, "trailing_clean_sheet_rate")),
+    ("trailing_multi_concede_rate", lambda f: rate(f, "trailing_multi_concede_rate")),
+    ("trailing_penalties_against_per_match", lambda f: ratio(f, "trailing_penalties_against_per_match", 5.0)),
+    ("trailing_goal_differential_norm", lambda f: mapped(f, "trailing_goal_differential", -6.0, 6.0)),
+]
+
+FACETS["tempo"] = [
+    ("trailing_extra_time_rate", lambda f: rate(f, "trailing_extra_time_rate")),
+    ("trailing_penalty_shootout_rate", lambda f: rate(f, "trailing_penalty_shootout_rate")),
+    ("days_since_previous_match_norm", lambda f: ratio(f, "days_since_previous_match", 14.0)),
+    ("knockout_context", lambda f: boolean(f, "knockout_stage")),
+]
+
+FACETS["discipline"] = [
+    ("trailing_yellow_cards_per_match", lambda f: ratio(f, "trailing_yellow_cards_per_match", 15.0)),
+    ("trailing_red_cards_per_match", lambda f: ratio(f, "trailing_red_cards_per_match", 5.0)),
+    ("trailing_second_yellow_rate", lambda f: rate(f, "trailing_second_yellow_rate")),
+    ("trailing_sending_off_rate", lambda f: rate(f, "trailing_sending_off_rate")),
+]
+
+FACETS["pedigree"] = [
+    ("confederation_hash_norm", lambda f: stable_hash(f, "confederation_code")),
+    ("region_hash_norm", lambda f: stable_hash(f, "region_name")),
+    ("mens_team_flag", lambda f: boolean(f, "mens_team")),
+    ("womens_team_flag", lambda f: boolean(f, "womens_team")),
+    ("prior_world_cup_matches_norm", lambda f: ratio(f, "prior_world_cup_matches", 30.0)),
+    ("prior_best_finish_norm", lambda f: reverse_rank(f, "prior_best_finish", 32.0, 1.0)),
+]
+
+FACETS["form"] = [
+    ("trailing_win_rate", lambda f: rate(f, "trailing_win_rate")),
+    ("trailing_draw_rate", lambda f: rate(f, "trailing_draw_rate")),
+    ("trailing_loss_rate", lambda f: rate(f, "trailing_loss_rate")),
+    ("trailing_points_per_match_norm", lambda f: ratio(f, "trailing_points_per_match", 3.0)),
+    ("trailing_form_goal_diff_norm", lambda f: mapped(f, "trailing_form_goal_diff", -6.0, 6.0)),
+]
+
+FACETS["context"] = [
+    ("stage_hash_norm", lambda f: stable_hash(f, "stage_name")),
+    ("group_hash_norm", lambda f: stable_hash(f, "group_name")),
+    ("group_stage_flag", lambda f: boolean(f, "group_stage")),
+    ("knockout_stage_flag", lambda f: boolean(f, "knockout_stage")),
+    ("match_day_of_tournament_norm", days_norm),
+    ("kickoff_hour_norm", kickoff_norm),
+    ("host_country_flag", lambda f: boolean(f, "host_country")),
+    ("stadium_capacity_norm", lambda f: ratio(f, "stadium_capacity", 120000.0)),
+]
+
+
+if __name__ == "__main__":
+    raise SystemExit(run())

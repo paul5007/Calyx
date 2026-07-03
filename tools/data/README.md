@@ -72,3 +72,12 @@ Validate the frozen facet spec:
 
 The frozen spec is `docs/data/soccer_lab_facet_spec.json`; the narrative doc is
 `docs/SOCCER_LAB_FACET_SPEC.md`.
+
+Verify the team/match facet projector executables:
+
+```bash
+./tools/data/verify_team_match_projectors.py
+```
+
+The endpoint executables live in `tools/lenses/soccer_lab/team_match/`:
+`attack`, `defense`, `tempo`, `discipline`, `pedigree`, `form`, and `context`.
