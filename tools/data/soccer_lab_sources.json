@@ -26,14 +26,134 @@
   ],
   "http_files": [
     {
+      "id": "fjelstul_award_winners",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/award_winners.csv",
+      "path": "fjelstul/data-csv/award_winners.csv"
+    },
+    {
+      "id": "fjelstul_awards",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/awards.csv",
+      "path": "fjelstul/data-csv/awards.csv"
+    },
+    {
+      "id": "fjelstul_bookings",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/bookings.csv",
+      "path": "fjelstul/data-csv/bookings.csv"
+    },
+    {
+      "id": "fjelstul_confederations",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/confederations.csv",
+      "path": "fjelstul/data-csv/confederations.csv"
+    },
+    {
+      "id": "fjelstul_goals",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/goals.csv",
+      "path": "fjelstul/data-csv/goals.csv"
+    },
+    {
+      "id": "fjelstul_group_standings",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/group_standings.csv",
+      "path": "fjelstul/data-csv/group_standings.csv"
+    },
+    {
+      "id": "fjelstul_groups",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/groups.csv",
+      "path": "fjelstul/data-csv/groups.csv"
+    },
+    {
+      "id": "fjelstul_host_countries",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/host_countries.csv",
+      "path": "fjelstul/data-csv/host_countries.csv"
+    },
+    {
+      "id": "fjelstul_manager_appearances",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/manager_appearances.csv",
+      "path": "fjelstul/data-csv/manager_appearances.csv"
+    },
+    {
+      "id": "fjelstul_manager_appointments",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/manager_appointments.csv",
+      "path": "fjelstul/data-csv/manager_appointments.csv"
+    },
+    {
+      "id": "fjelstul_managers",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/managers.csv",
+      "path": "fjelstul/data-csv/managers.csv"
+    },
+    {
       "id": "fjelstul_matches",
       "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/matches.csv",
       "path": "fjelstul/data-csv/matches.csv"
     },
     {
+      "id": "fjelstul_penalty_kicks",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/penalty_kicks.csv",
+      "path": "fjelstul/data-csv/penalty_kicks.csv"
+    },
+    {
+      "id": "fjelstul_player_appearances",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/player_appearances.csv",
+      "path": "fjelstul/data-csv/player_appearances.csv"
+    },
+    {
+      "id": "fjelstul_players",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/players.csv",
+      "path": "fjelstul/data-csv/players.csv"
+    },
+    {
+      "id": "fjelstul_qualified_teams",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/qualified_teams.csv",
+      "path": "fjelstul/data-csv/qualified_teams.csv"
+    },
+    {
+      "id": "fjelstul_referee_appearances",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/referee_appearances.csv",
+      "path": "fjelstul/data-csv/referee_appearances.csv"
+    },
+    {
+      "id": "fjelstul_referee_appointments",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/referee_appointments.csv",
+      "path": "fjelstul/data-csv/referee_appointments.csv"
+    },
+    {
+      "id": "fjelstul_referees",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/referees.csv",
+      "path": "fjelstul/data-csv/referees.csv"
+    },
+    {
+      "id": "fjelstul_squads",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/squads.csv",
+      "path": "fjelstul/data-csv/squads.csv"
+    },
+    {
+      "id": "fjelstul_stadiums",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/stadiums.csv",
+      "path": "fjelstul/data-csv/stadiums.csv"
+    },
+    {
+      "id": "fjelstul_substitutions",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/substitutions.csv",
+      "path": "fjelstul/data-csv/substitutions.csv"
+    },
+    {
+      "id": "fjelstul_team_appearances",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/team_appearances.csv",
+      "path": "fjelstul/data-csv/team_appearances.csv"
+    },
+    {
       "id": "fjelstul_teams",
       "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/teams.csv",
       "path": "fjelstul/data-csv/teams.csv"
+    },
+    {
+      "id": "fjelstul_tournament_stages",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/tournament_stages.csv",
+      "path": "fjelstul/data-csv/tournament_stages.csv"
+    },
+    {
+      "id": "fjelstul_tournament_standings",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/tournament_standings.csv",
+      "path": "fjelstul/data-csv/tournament_standings.csv"
     },
     {
       "id": "fjelstul_tournaments",

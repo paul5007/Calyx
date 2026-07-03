@@ -24,3 +24,21 @@ Examples:
 ./tools/data/acquire_soccer_lab_sources.py --only http_files
 ./tools/data/acquire_soccer_lab_sources.py --only kaggle --only thestatsapi
 ```
+
+Generate deterministic Calyx batch JSONL rows:
+
+```bash
+./tools/data/generate_soccer_lab_rows.py
+./tools/data/generate_soccer_lab_rows.py --only players --only matches --only teams-history --only fjelstul
+```
+
+Outputs are written to `scratchpad/wc2026/rows/`:
+
+- `players.jsonl`
+- `matches.jsonl`
+- `teams-history.jsonl`
+- `fjelstul.jsonl`
+- `fixtures.jsonl`
+
+Match and team-history rows keep ex-post results out of `text`; outcomes are
+stored only as grounded anchors.
