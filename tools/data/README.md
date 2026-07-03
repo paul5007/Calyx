@@ -114,3 +114,9 @@ Verify wrong-length external-cmd vector rejection:
 ```bash
 ./tools/data/verify_projector_dim_mismatch.py
 ```
+
+Verify Soccer Lab team/match A7 signal and decorrelation thresholds:
+
+```bash
+./tools/data/verify_soccer_lab_a7_audit.py
+```

@@ -99,7 +99,7 @@
             "matches.extra_time",
             "matches.penalty_shootout",
             "team_appearances.match_date",
-            "team_appearances.knockout_stage"
+            "team_appearances.replay"
           ],
           "features": [
             {
@@ -115,8 +115,8 @@
               "normalization": "days since prior team match divided by 14.0, clipped [0,1]"
             },
             {
-              "name": "knockout_context",
-              "normalization": "knockout_stage boolean to 0.0/1.0"
+              "name": "trailing_replay_rate",
+              "normalization": "rolling share of prior matches marked as replays"
             }
           ]
         },
@@ -202,8 +202,8 @@
             "team_appearances.win",
             "team_appearances.draw",
             "team_appearances.lose",
-            "team_appearances.goal_differential",
-            "team_appearances.goals_for"
+            "team_appearances.result",
+            "team_appearances.match_id"
           ],
           "features": [
             {
@@ -219,12 +219,12 @@
               "normalization": "rolling last-5 share with lose == 1"
             },
             {
-              "name": "trailing_points_per_match_norm",
-              "normalization": "rolling last-5 mean points (3/1/0) divided by 3.0"
+              "name": "trailing_unbeaten_rate",
+              "normalization": "rolling share of prior matches with win or draw"
             },
             {
-              "name": "trailing_form_goal_diff_norm",
-              "normalization": "rolling last-5 goal_differential mapped from [-6,6] to [0,1]"
+              "name": "prior_form_sample_size_norm",
+              "normalization": "prior team World Cup match count divided by 30.0, clipped [0,1]"
             }
           ]
         },

@@ -244,7 +244,7 @@ FACETS["tempo"] = [
     ("trailing_extra_time_rate", lambda f: rate(f, "trailing_extra_time_rate")),
     ("trailing_penalty_shootout_rate", lambda f: rate(f, "trailing_penalty_shootout_rate")),
     ("days_since_previous_match_norm", lambda f: ratio(f, "days_since_previous_match", 14.0)),
-    ("knockout_context", lambda f: boolean(f, "knockout_stage")),
+    ("trailing_replay_rate", lambda f: rate(f, "trailing_replay_rate")),
 ]
 
 FACETS["discipline"] = [
@@ -267,8 +267,8 @@ FACETS["form"] = [
     ("trailing_win_rate", lambda f: rate(f, "trailing_win_rate")),
     ("trailing_draw_rate", lambda f: rate(f, "trailing_draw_rate")),
     ("trailing_loss_rate", lambda f: rate(f, "trailing_loss_rate")),
-    ("trailing_points_per_match_norm", lambda f: ratio(f, "trailing_points_per_match", 3.0)),
-    ("trailing_form_goal_diff_norm", lambda f: mapped(f, "trailing_form_goal_diff", -6.0, 6.0)),
+    ("trailing_unbeaten_rate", lambda f: rate(f, "trailing_unbeaten_rate")),
+    ("prior_form_sample_size_norm", lambda f: ratio(f, "prior_world_cup_matches", 30.0)),
 ]
 
 FACETS["context"] = [

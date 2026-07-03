@@ -13,6 +13,7 @@ import shutil
 import sys
 import time
 from collections import Counter
+from datetime import date
 from pathlib import Path
 from typing import Any, Callable
 
@@ -107,6 +108,21 @@ def int_token(row: dict[str, str], key: str, default: str = "0") -> str:
     return value if value not in {"", "NA"} else default
 
 
+def num(row: dict[str, str], key: str, default: float = 0.0) -> float:
+    value = row.get(key, "").strip()
+    if value in {"", "NA", "not available", "not applicable"}:
+        return default
+    return float(value)
+
+
+def rate(values: list[float], default: float = 0.0) -> float:
+    return sum(values) / len(values) if values else default
+
+
+def match_sort_key(row: dict[str, str]) -> tuple[str, int]:
+    return row.get("match_date", ""), int(row.get("key_id", "0") or 0)
+
+
 def stat_line(pairs: list[tuple[str, Any]]) -> str:
     return " ".join(f"{key}={token(value)}" for key, value in pairs)
 
@@ -140,6 +156,113 @@ def team_result_anchor(row: dict[str, str]) -> dict[str, Any]:
     if result not in {"win", "lose", "draw"}:
         raise RowGenError("teams_history", "unknown_team_result", {"match_id": row.get("match_id"), "team_id": row.get("team_id"), "result": result})
     return {"kind": "label:team_match_result", "value": result, "source": FJELSTUL_SOURCE, "confidence": 1.0}
+
+
+def booking_counts(raw_root: Path) -> dict[tuple[str, str], dict[str, float]]:
+    path = raw_root / "fjelstul" / "data-csv" / "bookings.csv"
+    rows = read_csv_required(path, {"match_id", "team_id", "yellow_card", "red_card", "second_yellow_card", "sending_off"})
+    counts: dict[tuple[str, str], dict[str, float]] = {}
+    for row in rows:
+        key = (row["match_id"], row["team_id"])
+        entry = counts.setdefault(key, {"yellow": 0.0, "red": 0.0, "second_yellow": 0.0, "sending_off": 0.0})
+        entry["yellow"] += num(row, "yellow_card")
+        entry["red"] += num(row, "red_card")
+        entry["second_yellow"] += num(row, "second_yellow_card")
+        entry["sending_off"] += num(row, "sending_off")
+    return counts
+
+
+def team_profiles(raw_root: Path) -> dict[str, dict[str, str]]:
+    path = raw_root / "fjelstul" / "data-csv" / "teams.csv"
+    rows = read_csv_required(path, {"team_id", "confederation_code", "region_name", "mens_team", "womens_team"})
+    return {row["team_id"]: row for row in rows}
+
+
+def tournament_context(raw_root: Path) -> dict[str, dict[str, str]]:
+    path = raw_root / "fjelstul" / "data-csv" / "tournaments.csv"
+    rows = read_csv_required(path, {"tournament_id", "start_date", "host_country"})
+    return {row["tournament_id"]: row for row in rows}
+
+
+def stadium_capacity(raw_root: Path) -> dict[str, str]:
+    path = raw_root / "fjelstul" / "data-csv" / "stadiums.csv"
+    rows = read_csv_required(path, {"stadium_id", "stadium_capacity"})
+    return {row["stadium_id"]: row["stadium_capacity"] for row in rows}
+
+
+def tournament_positions(raw_root: Path) -> dict[tuple[str, str], float]:
+    path = raw_root / "fjelstul" / "data-csv" / "tournament_standings.csv"
+    rows = read_csv_required(path, {"tournament_id", "team_id", "position"})
+    return {(row["tournament_id"], row["team_id"]): num(row, "position", 32.0) for row in rows}
+
+
+def team_prior_stats(
+    prior: list[dict[str, Any]],
+    row: dict[str, str],
+    profiles: dict[str, dict[str, str]],
+    tournaments: dict[str, dict[str, str]],
+    capacities: dict[str, str],
+) -> list[tuple[str, Any]]:
+    goals_for = [entry["goals_for"] for entry in prior]
+    goals_against = [entry["goals_against"] for entry in prior]
+    differentials = [entry["goal_differential"] for entry in prior]
+    penalties_for = [entry["penalties_for"] for entry in prior]
+    penalties_against = [entry["penalties_against"] for entry in prior]
+    wins = [entry["win"] for entry in prior]
+    draws = [entry["draw"] for entry in prior]
+    losses = [entry["lose"] for entry in prior]
+    extra_times = [entry["extra_time"] for entry in prior]
+    shootouts = [entry["penalty_shootout"] for entry in prior]
+    replays = [entry["replay"] for entry in prior]
+    yellows = [entry["yellow"] for entry in prior]
+    reds = [entry["red"] for entry in prior]
+    second_yellows = [entry["second_yellow"] for entry in prior]
+    sending_offs = [entry["sending_off"] for entry in prior]
+    profile = profiles.get(row["team_id"], {})
+    tournament = tournaments.get(row["tournament_id"], {})
+    prior_positions = [entry["position"] for entry in prior if entry.get("position")]
+    prior_best_finish = min(prior_positions) if prior_positions else 32.0
+    previous_date = prior[-1]["date"] if prior else None
+    match_date = date.fromisoformat(row["match_date"])
+    days_since_previous_match = (match_date - previous_date).days if previous_date else 0
+    start_raw = tournament.get("start_date", row["match_date"])
+    tournament_start = date.fromisoformat(start_raw)
+    host_country = 1 if token(row.get("country_name", "")) == token(tournament.get("host_country", "")) else 0
+    return [
+        ("trailing_goals_for_per_match", rate(goals_for)),
+        ("trailing_goal_scoring_rate", rate([1.0 if value > 0 else 0.0 for value in goals_for])),
+        ("trailing_multi_goal_rate", rate([1.0 if value >= 2 else 0.0 for value in goals_for])),
+        ("trailing_penalties_for_per_match", rate(penalties_for)),
+        ("trailing_goals_against_per_match", rate(goals_against)),
+        ("trailing_clean_sheet_rate", rate([1.0 if value == 0 else 0.0 for value in goals_against])),
+        ("trailing_multi_concede_rate", rate([1.0 if value >= 2 else 0.0 for value in goals_against])),
+        ("trailing_penalties_against_per_match", rate(penalties_against)),
+        ("trailing_goal_differential", rate(differentials)),
+        ("trailing_extra_time_rate", rate(extra_times)),
+        ("trailing_penalty_shootout_rate", rate(shootouts)),
+        ("trailing_replay_rate", rate(replays)),
+        ("days_since_previous_match", days_since_previous_match),
+        ("trailing_yellow_cards_per_match", rate(yellows)),
+        ("trailing_red_cards_per_match", rate(reds)),
+        ("trailing_second_yellow_rate", rate([1.0 if value > 0 else 0.0 for value in second_yellows])),
+        ("trailing_sending_off_rate", rate([1.0 if value > 0 else 0.0 for value in sending_offs])),
+        ("confederation_code", profile.get("confederation_code", "")),
+        ("region_name", profile.get("region_name", "")),
+        ("mens_team", bool01(profile.get("mens_team", "0"))),
+        ("womens_team", bool01(profile.get("womens_team", "0"))),
+        ("prior_world_cup_matches", len(prior)),
+        ("prior_best_finish", prior_best_finish),
+        ("trailing_win_rate", rate(wins)),
+        ("trailing_draw_rate", rate(draws)),
+        ("trailing_loss_rate", rate(losses)),
+        ("trailing_points_per_match", rate([3.0 * win + draw for win, draw in zip(wins, draws)])),
+        ("trailing_form_goal_diff", rate(differentials[-5:])),
+        ("trailing_unbeaten_rate", rate([1.0 if win or draw else 0.0 for win, draw in zip(wins, draws)])),
+        ("match_day_of_tournament", (match_date - tournament_start).days),
+        ("kickoff_hour", row.get("match_time", "00:00")[:2]),
+        ("host_country", host_country),
+        ("stadium_capacity", capacities.get(row.get("stadium_id", ""), "0")),
+    ]
 
 
 def player_rows(raw_root: Path) -> list[dict[str, Any]]:
@@ -205,10 +328,17 @@ def match_rows(raw_root: Path) -> list[dict[str, Any]]:
 
 def teams_history_rows(raw_root: Path) -> list[dict[str, Any]]:
     path = raw_root / "fjelstul" / "data-csv" / "team_appearances.csv"
-    rows = read_csv_required(path, {"key_id", "tournament_id", "match_id", "stage_name", "group_stage", "knockout_stage", "match_date", "team_id", "opponent_id", "home_team", "away_team", "result"})
+    rows = read_csv_required(path, {"key_id", "tournament_id", "match_id", "stage_name", "group_name", "group_stage", "knockout_stage", "match_date", "match_time", "stadium_id", "country_name", "team_id", "opponent_id", "home_team", "away_team", "goals_for", "goals_against", "goal_differential", "extra_time", "penalty_shootout", "penalties_for", "penalties_against", "win", "lose", "draw", "result"})
     source_key = sha256_file(path)
+    bookings = booking_counts(raw_root)
+    profiles = team_profiles(raw_root)
+    tournaments = tournament_context(raw_root)
+    capacities = stadium_capacity(raw_root)
+    positions = tournament_positions(raw_root)
+    history: dict[str, list[dict[str, Any]]] = {}
     out = []
-    for row in sorted(rows, key=lambda r: r["key_id"]):
+    for row in sorted(rows, key=match_sort_key):
+        prior = history.setdefault(row["team_id"], [])
         out.append(
             {
                 "text": stat_line(
@@ -216,8 +346,8 @@ def teams_history_rows(raw_root: Path) -> list[dict[str, Any]]:
                         ("entity", "team_match_history"),
                         ("tournament_id", row["tournament_id"]),
                         ("match_id", row["match_id"]),
-                        ("stage", row["stage_name"]),
-                        ("group", row.get("group_name", "")),
+                        ("stage_name", row["stage_name"]),
+                        ("group_name", row.get("group_name", "")),
                         ("group_stage", bool01(row["group_stage"])),
                         ("knockout_stage", bool01(row["knockout_stage"])),
                         ("date", row["match_date"]),
@@ -225,11 +355,34 @@ def teams_history_rows(raw_root: Path) -> list[dict[str, Any]]:
                         ("opponent_id", row["opponent_id"]),
                         ("home_team", bool01(row["home_team"])),
                         ("away_team", bool01(row["away_team"])),
+                        *team_prior_stats(prior, row, profiles, tournaments, capacities),
                     ]
                 ),
                 "metadata": metadata("team_match_history", "fjelstul.team_appearances", source_key, row)
                 | {"match_id": row["match_id"], "team_id": row["team_id"], "tournament_id": row["tournament_id"]},
                 "anchors": [team_result_anchor(row)],
+            }
+        )
+        cards = bookings.get((row["match_id"], row["team_id"]), {})
+        prior.append(
+            {
+                "date": date.fromisoformat(row["match_date"]),
+                "goals_for": num(row, "goals_for"),
+                "goals_against": num(row, "goals_against"),
+                "goal_differential": num(row, "goal_differential"),
+                "penalties_for": num(row, "penalties_for"),
+                "penalties_against": num(row, "penalties_against"),
+                "extra_time": num(row, "extra_time"),
+                "penalty_shootout": num(row, "penalty_shootout"),
+                "replay": num(row, "replay"),
+                "win": num(row, "win"),
+                "lose": num(row, "lose"),
+                "draw": num(row, "draw"),
+                "yellow": cards.get("yellow", 0.0),
+                "red": cards.get("red", 0.0),
+                "second_yellow": cards.get("second_yellow", 0.0),
+                "sending_off": cards.get("sending_off", 0.0),
+                "position": positions.get((row["tournament_id"], row["team_id"])),
             }
         )
     return out

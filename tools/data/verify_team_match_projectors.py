@@ -22,13 +22,13 @@ KNOWN_INPUT = (
     "trailing_clean_sheet_rate=0.2 trailing_multi_concede_rate=0.3 "
     "trailing_penalties_against_per_match=0.5 trailing_goal_differential=2 "
     "trailing_extra_time_rate=0.1 trailing_penalty_shootout_rate=0.2 "
-    "days_since_previous_match=7 knockout_stage=1 "
+    "trailing_replay_rate=0.5 days_since_previous_match=7 knockout_stage=1 "
     "trailing_yellow_cards_per_match=5 trailing_red_cards_per_match=1 "
     "trailing_second_yellow_rate=0.25 trailing_sending_off_rate=0.1 "
     "confederation_code=UEFA region_name=Europe mens_team=1 womens_team=0 "
     "prior_world_cup_matches=20 prior_best_finish=4 "
     "trailing_win_rate=0.6 trailing_draw_rate=0.2 trailing_loss_rate=0.2 "
-    "trailing_points_per_match=2.0 trailing_form_goal_diff=3 "
+    "trailing_points_per_match=2.0 trailing_unbeaten_rate=0.8 "
     "stage_name=group_stage group_name=Group_A group_stage=1 "
     "match_day_of_tournament=10 kickoff_hour=18 host_country=0 "
     "stadium_capacity=60000"
@@ -37,10 +37,10 @@ KNOWN_INPUT = (
 EXPECTED = {
     "attack": [0.5, 0.8, 0.4, 0.2, 1.0, 0.0],
     "defense": [0.25, 0.2, 0.3, 0.1, 0.6666666667],
-    "tempo": [0.1, 0.2, 0.5, 1.0],
+    "tempo": [0.1, 0.2, 0.5, 0.5],
     "discipline": [0.3333333333, 0.2, 0.25, 0.1],
     "pedigree": None,
-    "form": [0.6, 0.2, 0.2, 0.6666666667, 0.75],
+    "form": [0.6, 0.2, 0.2, 0.8, 20.0 / 30.0],
     "context": None,
 }
 
