@@ -108,3 +108,9 @@ Verify non-finite numeric inputs and external-cmd non-finite vector rejection:
 ```bash
 ./tools/data/verify_projector_numerical_invariant.py
 ```
+
+Verify wrong-length external-cmd vector rejection:
+
+```bash
+./tools/data/verify_projector_dim_mismatch.py
+```
