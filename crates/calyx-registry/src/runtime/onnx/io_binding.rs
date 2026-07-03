@@ -21,14 +21,37 @@
 //!   under this mode is a structured error, not a fallback.
 //! - `CALYX_ONNX_DISABLE_CPU_EP_FALLBACK=1` — additionally set the ORT
 //!   session config that refuses node-level CPU placement at build time.
+//!
+//! Device-arena controls (#1143 — BFC arena growth across dynamic shapes):
+//! - `CALYX_ONNX_GPU_MEM_LIMIT_MIB` — hard cap (MiB) on the CUDA BFC arena;
+//!   exhaustion becomes a structured error at a defined budget instead of
+//!   eating the device from co-tenants.
+//! - `CALYX_ONNX_ARENA_SHRINK` — `off` | `new-shape` (default) | `always`:
+//!   when to request `memory.enable_memory_arena_shrinkage` for the run.
+//! - `CALYX_ONNX_MAX_DISTINCT_SHAPES` — fail-loud cap (default 64) on the
+//!   distinct (batch, seq) shapes a GPU session may run; batch/seq bucketing
+//!   keeps real workloads far below it, so reaching it means a caller
+//!   regressed into unbounded shape diversity.
+//! - `CALYX_ONNX_CPU_FALLBACK_AUDIT` — `off` | `warn` | `fail` (#1142): parse
+//!   the ORT profiling trace after the first run and surface / refuse a
+//!   GPU-policy session that runs too many compute nodes on CPU (int8 graphs
+//!   have no CUDA kernels). See `cpu_fallback_audit`.
 
 use std::collections::BTreeSet;
 
 use calyx_core::{CalyxError, Result};
 use ort::memory::{AllocationDevice, AllocatorType, MemoryInfo, MemoryType};
-use ort::session::{Session, SessionInputValue, SessionOutputs};
+use ort::session::{RunOptions, Session, SessionInputValue, SessionOutputs};
 use ort::value::Tensor;
 
+use super::arena::{
+    ARENA_SHRINKAGE_RUN_KEY, ArenaShrinkPolicy, MAX_DISTINCT_SHAPES_ENV, configured_arena_shrink,
+    configured_gpu_mem_limit, configured_max_distinct_shapes,
+};
+use super::cpu_fallback_audit::{
+    AuditMode, audit_from_trace, configured_audit_mode, configured_max_cpu_fraction,
+    profiling_file_path,
+};
 use super::{OnnxProviderPolicy, config_invalid};
 
 pub(super) const CUDA_DEVICE_ENV: &str = "CALYX_ONNX_CUDA_DEVICE";
@@ -38,11 +61,18 @@ pub(super) const DISABLE_CPU_EP_FALLBACK_ENV: &str = "CALYX_ONNX_DISABLE_CPU_EP_
 
 /// Per-runtime run plan: which device, whether I/O binding is active, and the
 /// static-shape contract state.
+#[derive(Debug)]
 pub(super) struct OnnxRunPlan {
     label: String,
     io_binding: bool,
+    gpu_policy: bool,
     device_id: i32,
     require_static: bool,
+    arena_shrink: ArenaShrinkPolicy,
+    max_distinct_shapes: usize,
+    audit_mode: AuditMode,
+    max_cpu_fraction: f64,
+    audited: bool,
     bound_shape: Option<(usize, usize)>,
     seen_shapes: BTreeSet<(usize, usize)>,
 }
@@ -85,7 +115,7 @@ pub(super) fn build_session(
         .map_err(|err| config_invalid(format!("ONNX intra-thread config failed: {err}")))?
         .with_execution_providers(super::fastembed_runtime::execution_providers_on_device(
             policy, device_id,
-        ))
+        )?)
         .map_err(|err| {
             config_invalid(format!(
                 "ONNX provider config failed for {label} (policy={} device_id={device_id}): {err}",
@@ -99,6 +129,16 @@ pub(super) fn build_session(
                 config_invalid(format!(
                     "ONNX disable_cpu_ep_fallback config failed for {label}: {err}"
                 ))
+            })?;
+    }
+    // #1142: enable ORT profiling so the first run can be audited for per-node
+    // CPU fallback. Off by default, so the hot path pays nothing unless the
+    // operator opts in via CALYX_ONNX_CPU_FALLBACK_AUDIT.
+    if configured_audit_mode()?.enabled() {
+        builder = builder
+            .with_profiling(profiling_file_path(label))
+            .map_err(|err| {
+                config_invalid(format!("ONNX profiling enable failed for {label}: {err}"))
             })?;
     }
     builder.commit_from_file(model_file).map_err(|err| {
@@ -134,6 +174,11 @@ impl OnnxRunPlan {
         let gpu_policy = matches!(policy, OnnxProviderPolicy::CudaFailLoud);
         let io_binding = gpu_policy && !binding_env_off;
         let require_static = env_flag(REQUIRE_STATIC_BINDING_ENV);
+        let arena_shrink = configured_arena_shrink()?;
+        let max_distinct_shapes = configured_max_distinct_shapes()?;
+        let mem_limit = configured_gpu_mem_limit()?;
+        let audit_mode = configured_audit_mode()?;
+        let max_cpu_fraction = configured_max_cpu_fraction()?;
         let (allocator, cpu_fallback) = if gpu_policy {
             (
                 if io_binding {
@@ -147,18 +192,73 @@ impl OnnxRunPlan {
             ("host", "cpu_explicit_policy")
         };
         eprintln!(
-            "CALYX_ONNX_RUNTIME phase=session_ready label={label} provider={} device_id={device_id} io_binding={io_binding} io_binding_env_off={binding_env_off} allocator={allocator} cpu_fallback={cpu_fallback} require_static_binding={require_static} disable_cpu_ep_fallback={}",
+            "CALYX_ONNX_RUNTIME phase=session_ready label={label} provider={} device_id={device_id} io_binding={io_binding} io_binding_env_off={binding_env_off} allocator={allocator} cpu_fallback={cpu_fallback} require_static_binding={require_static} disable_cpu_ep_fallback={} arena_extend=same_as_requested gpu_mem_limit_mib={} arena_shrink={} max_distinct_shapes={max_distinct_shapes} cpu_fallback_audit={} max_cpu_node_fraction={max_cpu_fraction:.4}",
             policy.as_str(),
-            cpu_ep_fallback_disabled()
+            cpu_ep_fallback_disabled(),
+            mem_limit
+                .map(|bytes| (bytes / (1024 * 1024)).to_string())
+                .unwrap_or_else(|| "none".to_string()),
+            arena_shrink.as_str(),
+            audit_mode.as_str()
         );
         Ok(Self {
             label,
             io_binding,
+            gpu_policy,
             device_id,
             require_static,
+            arena_shrink,
+            max_distinct_shapes,
+            audit_mode,
+            max_cpu_fraction,
+            audited: false,
             bound_shape: None,
             seen_shapes: BTreeSet::new(),
         })
+    }
+
+    /// GPU sessions pad token batches to stable power-of-two buckets so the
+    /// distinct-shape set the CUDA arena retains allocations for stays
+    /// bounded (#1143). CPU sessions run exact batches.
+    pub(super) const fn pads_batches(&self) -> bool {
+        self.gpu_policy
+    }
+
+    /// Arena shrinkage request for this run, per policy: reclaim the device
+    /// arena's transient over-extension after first-seen shapes (`new-shape`),
+    /// after every run (`always`), or never (`off`). Logged whenever active.
+    fn shrink_options(&self, new_shape: bool) -> Result<Option<RunOptions>> {
+        let shrink = self.gpu_policy
+            && match self.arena_shrink {
+                ArenaShrinkPolicy::Off => false,
+                ArenaShrinkPolicy::NewShape => new_shape,
+                ArenaShrinkPolicy::Always => true,
+            };
+        if !shrink {
+            return Ok(None);
+        }
+        let mut options = RunOptions::new().map_err(|err| {
+            config_invalid(format!(
+                "ONNX RunOptions create failed for {}: {err}",
+                self.label
+            ))
+        })?;
+        options
+            .add_config_entry(ARENA_SHRINKAGE_RUN_KEY, format!("gpu:{}", self.device_id))
+            .map_err(|err| {
+                config_invalid(format!(
+                    "ONNX arena shrinkage config failed for {}: {err}",
+                    self.label
+                ))
+            })?;
+        eprintln!(
+            "CALYX_ONNX_RUNTIME phase=arena_shrink label={} device_id={} policy={} distinct_shapes={}",
+            self.label,
+            self.device_id,
+            self.arena_shrink.as_str(),
+            self.seen_shapes.len()
+        );
+        Ok(Some(options))
     }
 
     /// Run the session over named input tensors and hand the outputs to
@@ -170,16 +270,22 @@ impl OnnxRunPlan {
         shape: (usize, usize),
         extract: impl FnOnce(&SessionOutputs<'_>) -> Result<R>,
     ) -> Result<R> {
-        self.enforce_shape_contract(shape)?;
+        let new_shape = self.enforce_shape_contract(shape)?;
+        let run_options = self.shrink_options(new_shape)?;
         if !self.io_binding {
             let named: Vec<(String, SessionInputValue<'_>)> = inputs
                 .into_iter()
                 .map(|(name, tensor)| (name, SessionInputValue::from(tensor)))
                 .collect();
-            let outputs = session
-                .run(named)
-                .map_err(|err| config_invalid(format!("ONNX inference failed: {err}")))?;
-            return extract(&outputs);
+            let outputs = match &run_options {
+                Some(options) => session.run_with_options(named, options),
+                None => session.run(named),
+            }
+            .map_err(|err| config_invalid(format!("ONNX inference failed: {err}")))?;
+            let result = extract(&outputs)?;
+            drop(outputs);
+            self.audit_placement_once(session)?;
+            return Ok(result);
         }
         let output_names: Vec<String> = session
             .outputs()
@@ -224,17 +330,63 @@ impl OnnxRunPlan {
                     ))
                 })?;
         }
-        let outputs = session.run_binding(&binding).map_err(|err| {
+        let outputs = match &run_options {
+            Some(options) => session.run_binding_with_options(&binding, options),
+            None => session.run_binding(&binding),
+        }
+        .map_err(|err| {
             config_invalid(format!(
                 "ONNX io-binding inference failed for {}: {err}",
                 self.label
             ))
         })?;
-        extract(&outputs)
+        let result = extract(&outputs)?;
+        drop(outputs);
+        drop(binding);
+        self.audit_placement_once(session)?;
+        Ok(result)
     }
 
-    fn enforce_shape_contract(&mut self, shape: (usize, usize)) -> Result<()> {
-        if self.seen_shapes.insert(shape) {
+    /// Once per session, after the first successful run, read the ORT profiling
+    /// trace and audit per-provider node placement (#1142). No-op unless the
+    /// operator enabled CALYX_ONNX_CPU_FALLBACK_AUDIT. Marked audited even on
+    /// error so a failing gate does not re-run profiling every batch.
+    fn audit_placement_once(&mut self, session: &mut Session) -> Result<()> {
+        if !self.audit_mode.enabled() || self.audited {
+            return Ok(());
+        }
+        self.audited = true;
+        let trace_path = session.end_profiling().map_err(|err| {
+            config_invalid(format!(
+                "ONNX end_profiling failed for {}: {err}",
+                self.label
+            ))
+        })?;
+        let trace = std::fs::read_to_string(&trace_path).map_err(|err| {
+            config_invalid(format!(
+                "read ONNX profiling trace {trace_path} failed for {}: {err}",
+                self.label
+            ))
+        })?;
+        audit_from_trace(
+            &self.label,
+            &trace,
+            self.gpu_policy,
+            self.audit_mode,
+            self.max_cpu_fraction,
+        )
+        .map(|_| ())
+    }
+
+    /// Records the run shape; returns whether it is first-seen. GPU sessions
+    /// fail loud when distinct-shape diversity exceeds the configured cap —
+    /// the ORT CUDA BFC arena retains per-shape allocations forever, so
+    /// unbounded diversity is a slow-motion device OOM (#1143), and the
+    /// batch/seq bucketing upstream keeps legitimate streams far below the
+    /// cap.
+    pub(super) fn enforce_shape_contract(&mut self, shape: (usize, usize)) -> Result<bool> {
+        let new_shape = self.seen_shapes.insert(shape);
+        if new_shape {
             eprintln!(
                 "CALYX_ONNX_RUNTIME phase=io_binding_shape label={} batch={} seq={} io_binding={} distinct_shapes={}",
                 self.label,
@@ -243,16 +395,30 @@ impl OnnxRunPlan {
                 self.io_binding,
                 self.seen_shapes.len()
             );
+            if self.gpu_policy && self.seen_shapes.len() > self.max_distinct_shapes {
+                return Err(CalyxError {
+                    code: "CALYX_ONNX_SHAPE_DIVERSITY",
+                    message: format!(
+                        "{} has run {} distinct (batch, seq) shapes, exceeding {MAX_DISTINCT_SHAPES_ENV}={} — unbounded shape diversity grows the CUDA BFC arena until device OOM (new shape batch={} seq={})",
+                        self.label,
+                        self.seen_shapes.len(),
+                        self.max_distinct_shapes,
+                        shape.0,
+                        shape.1
+                    ),
+                    remediation: "batch and sequence bucketing should cap distinct shapes; find the caller that bypasses bucketed batching, or raise CALYX_ONNX_MAX_DISTINCT_SHAPES only if the workload legitimately needs more shape classes",
+                });
+            }
         }
         if !self.require_static {
-            return Ok(());
+            return Ok(new_shape);
         }
         match self.bound_shape {
             None => {
                 self.bound_shape = Some(shape);
-                Ok(())
+                Ok(new_shape)
             }
-            Some(bound) if bound == shape => Ok(()),
+            Some(bound) if bound == shape => Ok(new_shape),
             Some(bound) => Err(CalyxError {
                 code: "CALYX_ONNX_STATIC_BINDING_SHAPE",
                 message: format!(

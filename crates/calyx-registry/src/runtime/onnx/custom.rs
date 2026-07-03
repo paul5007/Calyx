@@ -40,17 +40,25 @@ impl CustomOnnxRuntime {
         if inputs.is_empty() {
             return Ok(Vec::new());
         }
-        let batches = token_batches(&self.tokenizer, lens, inputs, self.max_tokens, max_batch)?;
+        let batches = token_batches(
+            &self.tokenizer,
+            lens,
+            inputs,
+            self.max_tokens,
+            max_batch,
+            self.run_plan.pads_batches(),
+        )?;
         let mut rows = vec![None; inputs.len()];
         for batch in &batches {
             let pooled = self.run_token_batch(batch)?;
-            if pooled.len() != batch.indices.len() {
+            if pooled.len() != batch.batch {
                 return Err(CalyxError::lens_dim_mismatch(format!(
-                    "custom ONNX returned {} rows for {} bucketed inputs",
+                    "custom ONNX returned {} rows for a padded batch of {}",
                     pooled.len(),
-                    batch.indices.len()
+                    batch.batch
                 )));
             }
+            // Rows beyond the real inputs are #1143 padding replicas.
             for (index, data) in batch.indices.iter().copied().zip(pooled) {
                 rows[index] = Some(data);
             }
@@ -89,6 +97,11 @@ pub fn from_files(spec: OnnxFileSpec) -> Result<OnnxLens> {
         )));
     }
     let run_label = format!("onnx-custom:{}", spec.model_id);
+    super::arena::preflight_gpu_mem_limit_for_artifacts(
+        &run_label,
+        spec.provider_policy,
+        files.artifact_paths().iter().map(|path| path.as_path()),
+    )?;
     let session = build_session(&run_label, &spec.model_file, spec.provider_policy)?;
     let session = CudaDropGuard::new(session, spec.provider_policy);
     let run_plan = OnnxRunPlan::new(spec.provider_policy, run_label)?;

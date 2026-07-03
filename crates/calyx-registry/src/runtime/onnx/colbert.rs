@@ -151,6 +151,11 @@ impl OnnxColbertLens {
             )));
         }
         let run_label = format!("onnx-colbert:{}", spec.model_id);
+        super::arena::preflight_gpu_mem_limit_for_artifacts(
+            &run_label,
+            spec.provider_policy,
+            files.artifact_paths().iter().map(|path| path.as_path()),
+        )?;
         let session = build_session(&run_label, &spec.model_file, spec.provider_policy)?;
         let session = CudaDropGuard::new(session, spec.provider_policy);
         let run_plan = OnnxRunPlan::new(spec.provider_policy, run_label)?;
@@ -274,11 +279,11 @@ impl Lens for OnnxColbertLens {
             .map_err(|_| CalyxError::lens_unreachable("ONNX ColBERT mutex was poisoned"))?;
         let chunk_size = self.max_batch.unwrap_or(inputs.len()).max(1);
         if chunk_size >= inputs.len() {
-            return runtime.measure_batch(self, inputs, self.contract());
+            return runtime.measure_batch(self, inputs, self.contract(), self.max_batch);
         }
         let mut out = Vec::with_capacity(inputs.len());
         for chunk in inputs.chunks(chunk_size) {
-            out.extend(runtime.measure_batch(self, chunk, self.contract())?);
+            out.extend(runtime.measure_batch(self, chunk, self.contract(), self.max_batch)?);
         }
         Ok(out)
     }
@@ -303,18 +308,27 @@ impl OnnxColbertRuntime {
         lens: &dyn Lens,
         inputs: &[Input],
         contract: &FrozenLensContract,
+        max_batch: Option<usize>,
     ) -> Result<Vec<SlotVector>> {
-        let batches = token_batches(&self.tokenizer, lens, inputs, self.max_tokens, None)?;
+        let batches = token_batches(
+            &self.tokenizer,
+            lens,
+            inputs,
+            self.max_tokens,
+            max_batch,
+            self.run_plan.pads_batches(),
+        )?;
         let mut rows = vec![None; inputs.len()];
         for batch in &batches {
             let vectors = self.run_token_batch(batch)?;
-            if vectors.len() != batch.indices.len() {
+            if vectors.len() != batch.batch {
                 return Err(CalyxError::lens_dim_mismatch(format!(
-                    "ONNX ColBERT returned {} rows for {} bucketed inputs",
+                    "ONNX ColBERT returned {} rows for a padded batch of {}",
                     vectors.len(),
-                    batch.indices.len()
+                    batch.batch
                 )));
             }
+            // Rows beyond the real inputs are #1143 padding replicas.
             for (index, data) in batch.indices.iter().copied().zip(vectors) {
                 rows[index] = Some(data);
             }

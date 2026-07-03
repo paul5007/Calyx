@@ -16,6 +16,7 @@ use super::{io_error, local_error};
 mod bits;
 mod evidence;
 mod panel;
+mod parallel;
 mod paths;
 mod pre_gate;
 mod progress;
@@ -104,15 +105,8 @@ fn run_staged(
         lenses.len(),
         staging,
     )?;
-    for (slot, selected) in lenses.into_iter().enumerate() {
-        let meta = worker::lens_meta(args, slot, &selected)?;
-        progress.lens_started(&meta)?;
-        let report = worker::run_one_worker(args, stats, slot, &selected, staging, &worker_root)?;
-        progress.lens_finished(
-            report.corpus_rows_written,
-            report.query_rows_written,
-            report.elapsed_ms,
-        )?;
+    let reports = parallel::run_lenses(args, stats, lenses, staging, &worker_root, &mut progress)?;
+    for report in reports {
         roster.push(report.into_lens_evidence(args)?);
     }
     write_plan(
@@ -146,7 +140,9 @@ fn run_staged(
     };
     fs::write(
         staging.join("stream_fbin_report.json"),
-        serde_json::to_vec_pretty(&evidence).map_err(CliError::from)?,
+        serde_json::to_vec_pretty(&evidence).map_err(|error| {
+            CliError::runtime(format!("serialize stream_fbin_report.json: {error}"))
+        })?,
     )
     .map_err(io_error)?;
     Ok(StagedExport { evidence, progress })
@@ -326,7 +322,7 @@ fn write_timeline_row(
             "query_row": row_idx < query_count,
         }),
     )
-    .map_err(CliError::from)?;
+    .map_err(|error| CliError::runtime(format!("write timeline row {row_idx}: {error}")))?;
     writer.write_all(b"\n").map_err(io_error)
 }
 
@@ -371,7 +367,7 @@ fn write_plan(path: &Path, timeline_path: &str, lenses: &[LensEvidence]) -> CliR
             "streaming_fbin_source": true,
             "slots": slots
         }))
-        .map_err(CliError::from)?,
+        .map_err(|error| CliError::runtime(format!("serialize assay plan: {error}")))?,
     )
     .map_err(io_error)
 }

@@ -50,6 +50,7 @@ const MAX_RESIDENT_SERVICE_FRAME_BYTES: usize = 2 * 1024 * 1024 * 1024;
 mod client;
 mod codec;
 mod dispatch;
+mod parallel;
 mod server;
 mod stream;
 
@@ -78,7 +79,9 @@ fn write_json_file(path: PathBuf, value: &impl Serialize) -> CliResult {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    std::fs::write(path, serde_json::to_vec_pretty(value)?)?;
+    let bytes = serde_json::to_vec_pretty(value)
+        .map_err(|error| CliError::runtime(format!("serialize {}: {error}", path.display())))?;
+    std::fs::write(path, bytes)?;
     Ok(())
 }
 

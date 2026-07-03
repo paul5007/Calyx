@@ -71,6 +71,8 @@ impl Fixture {
             mode: StreamMode::Gate,
             worker_report: None,
             worker_slot: None,
+            lens_parallelism: 1,
+            worker_gpu_mem_limit_mib: None,
         }
     }
 }
@@ -223,6 +225,7 @@ fn learned_manifest(root: &Path, idx: usize, matrix: &[u8], tokenizer: &[u8]) ->
         truncate_dim: None,
         recall_delta: calyx_registry::spec::default_recall_delta(),
         max_batch: None,
+        batch_policy: None,
     };
     fs::write(&path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
     path
@@ -253,6 +256,7 @@ fn write_algorithmic_manifests(root: &Path, count: usize) -> Vec<PathBuf> {
                 truncate_dim: None,
                 recall_delta: calyx_registry::spec::default_recall_delta(),
                 max_batch: None,
+                batch_policy: None,
             };
             fs::write(&path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
             path
