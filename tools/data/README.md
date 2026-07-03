@@ -102,3 +102,9 @@ Verify malformed-line and malformed-frame behavior across Soccer Lab projectors:
 ```bash
 ./tools/data/verify_projector_malformed_input.py
 ```
+
+Verify non-finite numeric inputs and external-cmd non-finite vector rejection:
+
+```bash
+./tools/data/verify_projector_numerical_invariant.py
+```

@@ -26,7 +26,7 @@ struct ExternalRequest<'a> {
     inputs: Vec<&'a [u8]>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct ExternalResponse {
     vectors: Vec<Vec<f32>>,
 }
@@ -105,9 +105,7 @@ impl Lens for ExternalCmdLens {
             CalyxError::lens_unreachable(format!("external request encode failed: {err}"))
         })?;
         let response = run_frame(&self.cmd, &self.args, &request, self.timeout)?;
-        let response: ExternalResponse = serde_json::from_slice(&response).map_err(|err| {
-            CalyxError::lens_unreachable(format!("external response decode failed: {err}"))
-        })?;
+        let response = decode_external_response(&response)?;
         if response.vectors.len() != inputs.len() {
             return Err(CalyxError::lens_dim_mismatch(format!(
                 "external lens returned {} vectors for {} inputs",
@@ -121,6 +119,64 @@ impl Lens for ExternalCmdLens {
             .map(|data| self.slot_from_row(data))
             .collect()
     }
+}
+
+fn decode_external_response(body: &[u8]) -> Result<ExternalResponse> {
+    serde_json::from_slice(body).map_err(|err| {
+        let message = err.to_string();
+        if response_has_non_finite_number_token(body) || message.contains("number out of range") {
+            CalyxError::lens_numerical_invariant(format!(
+                "external response contains non-finite or out-of-range number: {err}"
+            ))
+        } else {
+            CalyxError::lens_unreachable(format!("external response decode failed: {err}"))
+        }
+    })
+}
+
+fn response_has_non_finite_number_token(body: &[u8]) -> bool {
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut index = 0;
+    while index < body.len() {
+        let byte = body[index];
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if byte == b'\\' {
+                escaped = true;
+            } else if byte == b'"' {
+                in_string = false;
+            }
+            index += 1;
+            continue;
+        }
+        if byte == b'"' {
+            in_string = true;
+            index += 1;
+            continue;
+        }
+        for token in [b"-Infinity".as_slice(), b"Infinity".as_slice(), b"NaN".as_slice()] {
+            if body[index..].starts_with(token)
+                && json_token_boundary(body, index, index + token.len())
+            {
+                return true;
+            }
+        }
+        index += 1;
+    }
+    false
+}
+
+fn json_token_boundary(body: &[u8], start: usize, end: usize) -> bool {
+    let before = start
+        .checked_sub(1)
+        .and_then(|idx| body.get(idx))
+        .is_none_or(|byte| !byte.is_ascii_alphanumeric() && *byte != b'_' && *byte != b'.');
+    let after = body
+        .get(end)
+        .is_none_or(|byte| !byte.is_ascii_alphanumeric() && *byte != b'_' && *byte != b'.');
+    before && after
 }
 
 fn run_frame(cmd: &str, args: &[String], request: &[u8], timeout: Duration) -> Result<Vec<u8>> {
@@ -276,6 +332,30 @@ mod tests {
     use std::sync::atomic::{AtomicU64, Ordering};
 
     static NEXT_DIR: AtomicU64 = AtomicU64::new(0);
+
+    #[test]
+    fn non_finite_external_response_decode_is_numerical_invariant() {
+        for body in [
+            br#"{"vectors":[[NaN]]}"#.as_slice(),
+            br#"{"vectors":[[Infinity]]}"#.as_slice(),
+            br#"{"vectors":[[-Infinity]]}"#.as_slice(),
+            br#"{"vectors":[[1e999]]}"#.as_slice(),
+        ] {
+            let error = decode_external_response(body).expect_err("non-finite response fails");
+            assert_eq!(error.code, "CALYX_LENS_NUMERICAL_INVARIANT");
+        }
+    }
+
+    #[test]
+    fn malformed_external_response_decode_stays_unreachable() {
+        for body in [
+            br#"{"vectors":"#.as_slice(),
+            br#"{"vectors":[["NaN"]]}"#.as_slice(),
+        ] {
+            let error = decode_external_response(body).expect_err("malformed response fails");
+            assert_eq!(error.code, "CALYX_LENS_UNREACHABLE");
+        }
+    }
 
     #[test]
     fn timeout_kills_slow_external_process_before_finished_marker() {
