@@ -56,6 +56,11 @@ The player facets use prior appearances, goals, penalties, and bookings only as
 history before the target match. Static player profile columns can be used
 directly.
 
+`output` is an outcome-style facet over goals, starts, substitutions, and
+penalties. In predictive vaults it is legal only after temporal shifting into
+prior-match aggregates. Raw current-match output remains ex-post and must become
+anchors or explanatory-only evidence.
+
 ## Verification
 
 Regenerate no spec by hand. Validate it against the column map:

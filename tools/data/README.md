@@ -81,3 +81,12 @@ Verify the team/match facet projector executables:
 
 The endpoint executables live in `tools/lenses/soccer_lab/team_match/`:
 `attack`, `defense`, `tempo`, `discipline`, `pedigree`, `form`, and `context`.
+
+Verify the player facet projector executables:
+
+```bash
+./tools/data/verify_player_projectors.py
+```
+
+The endpoint executables live in `tools/lenses/soccer_lab/player/`: `output`,
+`profile`, and `efficiency`.

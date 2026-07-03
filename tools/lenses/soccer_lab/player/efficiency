@@ -1,0 +1,217 @@
+#!/usr/bin/env python3
+"""Soccer Lab player facet projector.
+
+Copied verbatim to one executable per facet. The facet is selected from the
+executable basename, so Calyx registers each endpoint with no arguments.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import struct
+import sys
+from pathlib import Path
+from typing import Callable
+
+
+FACETS: dict[str, list[tuple[str, Callable[[dict[str, str]], float]]]] = {}
+
+
+class ProjectorError(RuntimeError):
+    def __init__(self, reason: str, detail: dict[str, object] | None = None):
+        super().__init__(reason)
+        self.reason = reason
+        self.detail = detail or {}
+
+
+def facet_name() -> str:
+    name = Path(sys.argv[0]).name
+    if name.endswith(".py"):
+        name = name[:-3]
+    return name
+
+
+def input_hash(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def err(reason: str, facet: str, raw: bytes = b"", **detail: object) -> None:
+    payload = {
+        "facet": facet,
+        "input_hash": input_hash(raw) if raw else "",
+        "reason": reason,
+        **detail,
+    }
+    print(json.dumps(payload, sort_keys=True), file=sys.stderr)
+
+
+def clamp01(value: float) -> float:
+    if not math.isfinite(value):
+        raise ProjectorError("non_finite_value", {"value": value})
+    if value < 0.0:
+        return 0.0
+    if value > 1.0:
+        return 1.0
+    return float(value)
+
+
+def raw_value(fields: dict[str, str], key: str, default: str = "0") -> str:
+    value = fields.get(key, "")
+    if value == "" or value.upper() == "NA":
+        return default
+    return value
+
+
+def number(fields: dict[str, str], key: str, default: float = 0.0) -> float:
+    value = fields.get(key, "")
+    if value == "" or value.upper() == "NA":
+        return default
+    try:
+        parsed = float(value)
+    except ValueError as exc:
+        raise ProjectorError("invalid_number", {"field": key, "value": value}) from exc
+    if not math.isfinite(parsed):
+        raise ProjectorError("non_finite_number", {"field": key, "value": value})
+    return parsed
+
+
+def boolean(fields: dict[str, str], key: str, default: float = 0.0) -> float:
+    value = raw_value(fields, key, str(int(default))).strip().lower()
+    if value in {"1", "true", "yes", "y"}:
+        return 1.0
+    if value in {"0", "false", "no", "n"}:
+        return 0.0
+    raise ProjectorError("invalid_boolean", {"field": key, "value": value})
+
+
+def ratio(fields: dict[str, str], numerator: str, denominator: str, default: float = 0.0) -> float:
+    num = number(fields, numerator, 0.0)
+    den = number(fields, denominator, 0.0)
+    if den <= 0.0:
+        return default
+    return clamp01(num / den)
+
+
+def scale(fields: dict[str, str], key: str, denom: float, default: float = 0.0) -> float:
+    return clamp01(number(fields, key, default) / denom)
+
+
+def rate(fields: dict[str, str], key: str, default: float = 0.0) -> float:
+    return clamp01(number(fields, key, default))
+
+
+def stable_hash(fields: dict[str, str], key: str, default: float = 0.0) -> float:
+    value = fields.get(key, "")
+    if value == "" or value.upper() == "NA":
+        return default
+    digest = hashlib.sha256(value.encode("utf-8")).digest()
+    bucket = int.from_bytes(digest[:8], "big") % 1024
+    return bucket / 1023.0
+
+
+def parse_line(raw: bytes) -> dict[str, str]:
+    text = raw.decode("utf-8")
+    fields: dict[str, str] = {}
+    if text.strip() == "":
+        return fields
+    for token in text.strip().split():
+        if "=" not in token:
+            raise ProjectorError("malformed_token", {"token": token})
+        key, value = token.split("=", 1)
+        if key == "":
+            raise ProjectorError("empty_field_name", {"token": token})
+        fields[key] = value
+    return fields
+
+
+def frame_read() -> dict[str, object]:
+    header = sys.stdin.buffer.read(4)
+    if len(header) != 4:
+        raise ProjectorError("missing_frame_header", {"bytes_read": len(header)})
+    size = struct.unpack(">I", header)[0]
+    body = sys.stdin.buffer.read(size)
+    if len(body) != size:
+        raise ProjectorError("truncated_frame", {"expected": size, "observed": len(body)})
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError as exc:
+        raise ProjectorError("invalid_json_frame", {"error": str(exc)}) from exc
+    if not isinstance(payload, dict):
+        raise ProjectorError("frame_not_object")
+    return payload
+
+
+def frame_write(payload: dict[str, object]) -> None:
+    encoded = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    sys.stdout.buffer.write(struct.pack(">I", len(encoded)))
+    sys.stdout.buffer.write(encoded)
+    sys.stdout.buffer.flush()
+
+
+def project(facet: str, raw: bytes) -> list[float]:
+    fields = parse_line(raw)
+    vector = [func(fields) for _, func in FACETS[facet]]
+    for value in vector:
+        if not math.isfinite(value):
+            raise ProjectorError("non_finite_output", {"value": value})
+    return vector
+
+
+def run() -> int:
+    facet = facet_name()
+    if facet not in FACETS:
+        err("unknown_facet_executable", facet)
+        return 2
+    try:
+        payload = frame_read()
+        inputs = payload.get("inputs")
+        if not isinstance(inputs, list):
+            raise ProjectorError("missing_inputs_array")
+        vectors = []
+        for item in inputs:
+            if not isinstance(item, list) or not all(isinstance(n, int) and 0 <= n <= 255 for n in item):
+                raise ProjectorError("input_not_byte_array")
+            raw = bytes(item)
+            try:
+                vectors.append(project(facet, raw))
+            except ProjectorError as exc:
+                err(exc.reason, facet, raw, **exc.detail)
+                return 2
+        frame_write({"vectors": vectors})
+        return 0
+    except ProjectorError as exc:
+        err(exc.reason, facet, **exc.detail)
+        return 2
+
+
+FACETS["output"] = [
+    ("trailing_goals_per_appearance", lambda f: ratio(f, "prior_goals", "prior_appearances")),
+    ("trailing_goal_rate", lambda f: rate(f, "trailing_goal_rate")),
+    ("trailing_penalty_conversion_rate", lambda f: ratio(f, "prior_penalties_converted", "prior_penalty_kicks")),
+    ("trailing_start_rate", lambda f: ratio(f, "prior_starts", "prior_appearances")),
+    ("trailing_substitute_rate", lambda f: ratio(f, "prior_substitute_appearances", "prior_appearances")),
+]
+
+FACETS["profile"] = [
+    ("female_flag", lambda f: boolean(f, "female")),
+    ("goal_keeper_flag", lambda f: boolean(f, "goal_keeper")),
+    ("defender_flag", lambda f: boolean(f, "defender")),
+    ("midfielder_flag", lambda f: boolean(f, "midfielder")),
+    ("forward_flag", lambda f: boolean(f, "forward")),
+    ("player_tournament_count_norm", lambda f: scale(f, "count_tournaments", 6.0)),
+    ("position_code_hash_norm", lambda f: stable_hash(f, "position_code")),
+]
+
+FACETS["efficiency"] = [
+    ("prior_appearance_count_norm", lambda f: scale(f, "prior_appearances", 20.0)),
+    ("prior_goal_per_start_norm", lambda f: ratio(f, "prior_goals", "prior_starts")),
+    ("prior_goal_per_sub_norm", lambda f: ratio(f, "prior_substitute_goals", "prior_substitute_appearances")),
+    ("prior_yellow_card_rate", lambda f: ratio(f, "prior_yellow_cards", "prior_appearances")),
+    ("prior_red_card_rate", lambda f: ratio(f, "prior_red_cards", "prior_appearances")),
+]
+
+
+if __name__ == "__main__":
+    raise SystemExit(run())
