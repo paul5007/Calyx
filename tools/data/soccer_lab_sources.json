@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "project": "Soccer Lab",
+  "root": "scratchpad/wc2026/raw",
+  "kaggle": [
+    {
+      "id": "kaggle_international_results",
+      "dataset": "martj42/international-football-results-from-1872-to-2017"
+    },
+    {
+      "id": "kaggle_fifa_world_cup",
+      "dataset": "abecklas/fifa-world-cup"
+    },
+    {
+      "id": "kaggle_world_cup_2022",
+      "dataset": "brenda89/fifa-world-cup-2022"
+    },
+    {
+      "id": "kaggle_fifa_world_cup_all",
+      "dataset": "piterfm/fifa-football-world-cup"
+    },
+    {
+      "id": "kaggle_football_match_data",
+      "dataset": "johnharshith/football-match-data"
+    }
+  ],
+  "http_files": [
+    {
+      "id": "fjelstul_matches",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/matches.csv",
+      "path": "fjelstul/data-csv/matches.csv"
+    },
+    {
+      "id": "fjelstul_teams",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/teams.csv",
+      "path": "fjelstul/data-csv/teams.csv"
+    },
+    {
+      "id": "fjelstul_tournaments",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/data-csv/tournaments.csv",
+      "path": "fjelstul/data-csv/tournaments.csv"
+    },
+    {
+      "id": "fjelstul_codebook_datasets",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/codebook/csv/datasets.csv",
+      "path": "fjelstul/codebook/datasets.csv"
+    },
+    {
+      "id": "fjelstul_codebook_variables",
+      "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/codebook/csv/variables.csv",
+      "path": "fjelstul/codebook/variables.csv"
+    }
+  ],
+  "thestatsapi": {
+    "id": "thestatsapi_wc2026_matches",
+    "base_url": "https://api.thestatsapi.com/api",
+    "api_key_env": "THESTATSAPI_KEY",
+    "competition_id": "comp_6107",
+    "season_id": "sn_118868",
+    "per_page": 100,
+    "path": "thestatsapi/wc2026_matches.json"
+  },
+  "huggingface": {
+    "id": "hf_soccer_lab_mirror",
+    "repo_id_env": "SOCCER_LAB_HF_DATASET_REPO",
+    "token_env": "HF_TOKEN",
+    "revision": "main",
+    "files": [
+      {
+        "path": "manifest.json",
+        "out": "hf-mirror/manifest.json"
+      }
+    ]
+  }
+}
