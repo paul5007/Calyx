@@ -90,3 +90,9 @@ Verify the player facet projector executables:
 
 The endpoint executables live in `tools/lenses/soccer_lab/player/`: `output`,
 `profile`, and `efficiency`.
+
+Verify missing/empty-field behavior across all Soccer Lab projectors:
+
+```bash
+./tools/data/verify_projector_missing_fields.py
+```

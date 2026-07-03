@@ -23,6 +23,11 @@ calyx add-lens <vault> \
 The executable parses the shared stat-line, emits exactly `d` finite floats, and
 fails closed on malformed input.
 
+Absent or empty fields have one defined value: `0.0`. Projectors must not infer,
+backfill, cache, or substitute a nonzero default for missing source data. This
+rule applies to every vector dimension, including hash-derived categorical
+features and time/context features.
+
 ## Team/Match Panel
 
 Prediction target: `match_result`.

@@ -96,6 +96,8 @@ def rate(fields: dict[str, str], key: str, default: float = 0.0) -> float:
 
 
 def mapped(fields: dict[str, str], key: str, lo: float, hi: float, default: float = 0.0) -> float:
+    if fields.get(key, "") == "" or fields.get(key, "").upper() == "NA":
+        return default
     value = number(fields, key, default)
     return clamp01((value - lo) / (hi - lo))
 
@@ -131,10 +133,10 @@ def days_norm(fields: dict[str, str]) -> float:
 
 def kickoff_norm(fields: dict[str, str]) -> float:
     if "kickoff_hour" in fields:
-        return ratio(fields, "kickoff_hour", 23.0, 11.5)
+        return ratio(fields, "kickoff_hour", 23.0, 0.0)
     raw = fields.get("match_time", "")
     if raw == "" or raw.upper() == "NA":
-        return 0.5
+        return 0.0
     try:
         parsed = datetime.strptime(raw[:5], "%H:%M")
     except ValueError as exc:
