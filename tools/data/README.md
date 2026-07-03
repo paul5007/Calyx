@@ -42,3 +42,14 @@ Outputs are written to `scratchpad/wc2026/rows/`:
 
 Match and team-history rows keep ex-post results out of `text`; outcomes are
 stored only as grounded anchors.
+
+Write and verify the raw-source provenance manifest:
+
+```bash
+./tools/data/provenance_manifest.py write
+./tools/data/provenance_manifest.py verify
+```
+
+The manifest records every raw source file with bytes, SHA-256, row-count kind,
+row count where applicable, source id, source kind, URL, and content type.
+Verification recomputes those values from disk and exits nonzero on any mismatch.
