@@ -103,6 +103,29 @@ Verify malformed-line and malformed-frame behavior across Soccer Lab projectors:
 ./tools/data/verify_projector_malformed_input.py
 ```
 
+When a projector fails, it exits nonzero, writes no vector frame to stdout, and
+emits one JSON object to stderr. The stable stderr schema is:
+
+```json
+{"event":"soccer_lab_projector_error","schema_version":1,"facet":"attack","input_hash":"<sha256>","reason":"malformed_token"}
+```
+
+`facet` is the endpoint executable basename, `input_hash` is the SHA-256 of the
+failing input bytes (or the malformed frame/item bytes), and `reason` is the
+fail-closed projector reason such as `malformed_token`, `invalid_number`,
+`invalid_boolean`, `invalid_utf8`, `invalid_json_frame`, or
+`input_not_byte_array`. During `calyx ingest`, the external-cmd runtime preserves
+the projector object in the `stderr_tail=` portion of the `CALYX_LENS_UNREACHABLE`
+message and then appends Calyx's own structured engine error. Read the projector
+object first for the facet-local cause, then the Calyx object for the engine
+error code.
+
+Verify the projector structured-error stderr contract and Calyx propagation:
+
+```bash
+./tools/data/verify_projector_structured_errors.py
+```
+
 Verify non-finite numeric inputs and external-cmd non-finite vector rejection:
 
 ```bash

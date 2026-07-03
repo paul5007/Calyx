@@ -40,9 +40,11 @@ def input_hash(data: bytes) -> str:
 
 def err(reason: str, facet: str, raw: bytes = b"", **detail: object) -> None:
     payload = {
+        "event": "soccer_lab_projector_error",
         "facet": facet,
-        "input_hash": input_hash(raw) if raw else "",
+        "input_hash": input_hash(raw),
         "reason": reason,
+        "schema_version": 1,
         **detail,
     }
     print(json.dumps(payload, sort_keys=True), file=sys.stderr)
@@ -176,7 +178,8 @@ def run() -> int:
         vectors = []
         for item in inputs:
             if not isinstance(item, list) or not all(isinstance(n, int) and 0 <= n <= 255 for n in item):
-                raise ProjectorError("input_not_byte_array")
+                raw = json.dumps(item, separators=(",", ":"), sort_keys=True).encode("utf-8")
+                raise ProjectorError("input_not_byte_array", raw=raw)
             raw = bytes(item)
             try:
                 vectors.append(project(facet, raw))

@@ -200,6 +200,10 @@ fn run_frame(cmd: &str, args: &[String], request: &[u8], timeout: Duration) -> R
         .stdout
         .take()
         .ok_or_else(|| CalyxError::lens_unreachable("external stdout pipe missing"))?;
+    let mut stderr = child
+        .stderr
+        .take()
+        .ok_or_else(|| CalyxError::lens_unreachable("external stderr pipe missing"))?;
 
     let (write_tx, write_rx) = mpsc::channel();
     let request = request.to_vec();
@@ -214,10 +218,18 @@ fn run_frame(cmd: &str, args: &[String], request: &[u8], timeout: Duration) -> R
         let _ = read_tx.send(result);
     });
 
+    let (stderr_tx, stderr_rx) = mpsc::channel();
+    thread::spawn(move || {
+        let mut bytes = Vec::new();
+        let _ = stderr.read_to_end(&mut bytes);
+        let _ = stderr_tx.send(bytes);
+    });
+
     let deadline = Instant::now() + timeout;
     let mut write_result = None;
     let mut body = None;
     let mut status = None;
+    let mut stderr_bytes = None;
     loop {
         if write_result.is_none() {
             match write_rx.try_recv() {
@@ -243,12 +255,20 @@ fn run_frame(cmd: &str, args: &[String], request: &[u8], timeout: Duration) -> R
                 }
             }
         }
+        if stderr_bytes.is_none() {
+            match stderr_rx.try_recv() {
+                Ok(bytes) => stderr_bytes = Some(bytes),
+                Err(TryRecvError::Empty) => {}
+                Err(TryRecvError::Disconnected) => stderr_bytes = Some(Vec::new()),
+            }
+        }
         if status.is_none() {
             status = child.try_wait().map_err(|err| {
                 CalyxError::lens_unreachable(format!("external wait failed: {err}"))
             })?;
         }
-        if write_result.is_some() && body.is_some() && status.is_some() {
+        if write_result.is_some() && body.is_some() && status.is_some() && stderr_bytes.is_some()
+        {
             break;
         }
         let now = Instant::now();
@@ -264,15 +284,45 @@ fn run_frame(cmd: &str, args: &[String], request: &[u8], timeout: Duration) -> R
         thread::sleep(remaining.min(Duration::from_millis(5)));
     }
 
-    write_result.expect("write result is set")?;
-    let body = body.expect("body result is set")?;
+    let stderr_bytes = stderr_bytes.unwrap_or_default();
+    write_result
+        .expect("write result is set")
+        .map_err(|err| enrich_external_error(err, &stderr_bytes))?;
+    let body = body
+        .expect("body result is set")
+        .map_err(|err| enrich_external_error(err, &stderr_bytes))?;
     let status = status.expect("child status is set");
     if !status.success() {
         return Err(CalyxError::lens_unreachable(format!(
-            "external process exited with {status}"
+            "external process exited with {status}; stderr_tail={}",
+            stderr_tail(&stderr_bytes)
         )));
     }
     Ok(body)
+}
+
+fn enrich_external_error(mut error: CalyxError, stderr: &[u8]) -> CalyxError {
+    if !stderr.is_empty() {
+        error.message = format!("{}; stderr_tail={}", error.message, stderr_tail(stderr));
+    }
+    error
+}
+
+fn stderr_tail(stderr: &[u8]) -> String {
+    if stderr.is_empty() {
+        return "empty".to_string();
+    }
+    let text = String::from_utf8_lossy(stderr);
+    let tail = text
+        .lines()
+        .rev()
+        .take(8)
+        .collect::<Vec<_>>()
+        .into_iter()
+        .rev()
+        .collect::<Vec<_>>()
+        .join("\\n");
+    tail.chars().take(4096).collect()
 }
 
 fn write_request(stdin: &mut impl Write, request: &[u8]) -> Result<()> {
@@ -355,6 +405,33 @@ mod tests {
             let error = decode_external_response(body).expect_err("malformed response fails");
             assert_eq!(error.code, "CALYX_LENS_UNREACHABLE");
         }
+    }
+
+    #[test]
+    fn failing_external_process_error_includes_stderr_tail() {
+        let script = r#"import sys
+sys.stderr.write('{"event":"projector_error","reason":"bad_input"}\n')
+sys.stderr.flush()
+sys.exit(2)
+"#;
+        let lens = ExternalCmdLens::new(
+            "external-stderr-tail",
+            "python3",
+            vec!["-c".to_string(), script.to_string()],
+            Modality::Text,
+            4,
+        );
+
+        let error = lens
+            .measure(&Input::new(Modality::Text, b"bad".to_vec()))
+            .expect_err("failing command fails closed");
+
+        assert_eq!(error.code, "CALYX_LENS_UNREACHABLE");
+        assert!(
+            error.message.contains("stderr_tail={\"event\":\"projector_error\""),
+            "stderr tail missing from error message: {}",
+            error.message
+        );
     }
 
     #[test]
