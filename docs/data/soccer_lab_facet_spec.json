@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "project": "Soccer Lab",
+  "status": "frozen-for-implementation",
+  "doctrine": "docs/STRUCTURAL_DATA_DOCTRINE.md",
+  "column_map": "docs/data/soccer_lab_column_facets.csv",
+  "protocol": {
+    "runtime": "external-cmd",
+    "modality": "text",
+    "stdin": "u32_be_len_prefixed_json",
+    "stdout": "u32_be_len_prefixed_json",
+    "finite_vectors_only": true
+  },
+  "panels": [
+    {
+      "name": "teams_matches",
+      "prediction_target": "match_result",
+      "facets": [
+        {
+          "name": "attack",
+          "shape": "Dense(6)",
+          "dense_dim": 6,
+          "timing": "ex_ante",
+          "temporal_policy": "prior_match_only",
+          "source_columns": [
+            "team_appearances.goals_for",
+            "team_appearances.penalties_for",
+            "team_appearances.home_team",
+            "team_appearances.away_team"
+          ],
+          "features": [
+            {
+              "name": "trailing_goals_for_per_match",
+              "normalization": "rolling last-5 mean divided by 6.0, clipped [0,1]"
+            },
+            {
+              "name": "trailing_goal_scoring_rate",
+              "normalization": "rolling last-5 share with goals_for > 0"
+            },
+            {
+              "name": "trailing_multi_goal_rate",
+              "normalization": "rolling last-5 share with goals_for >= 2"
+            },
+            {
+              "name": "trailing_penalties_for_per_match",
+              "normalization": "rolling last-5 mean divided by 5.0, clipped [0,1]"
+            },
+            {
+              "name": "home_attack_context",
+              "normalization": "home_team boolean to 0.0/1.0"
+            },
+            {
+              "name": "away_attack_context",
+              "normalization": "away_team boolean to 0.0/1.0"
+            }
+          ]
+        },
+        {
+          "name": "defense",
+          "shape": "Dense(5)",
+          "dense_dim": 5,
+          "timing": "ex_ante",
+          "temporal_policy": "prior_match_only",
+          "source_columns": [
+            "team_appearances.goals_against",
+            "team_appearances.penalties_against",
+            "team_appearances.goal_differential"
+          ],
+          "features": [
+            {
+              "name": "trailing_goals_against_per_match",
+              "normalization": "rolling last-5 mean divided by 6.0, clipped [0,1]"
+            },
+            {
+              "name": "trailing_clean_sheet_rate",
+              "normalization": "rolling last-5 share with goals_against == 0"
+            },
+            {
+              "name": "trailing_multi_concede_rate",
+              "normalization": "rolling last-5 share with goals_against >= 2"
+            },
+            {
+              "name": "trailing_penalties_against_per_match",
+              "normalization": "rolling last-5 mean divided by 5.0, clipped [0,1]"
+            },
+            {
+              "name": "trailing_goal_differential_norm",
+              "normalization": "rolling last-5 mean goal_differential mapped from [-6,6] to [0,1]"
+            }
+          ]
+        },
+        {
+          "name": "tempo",
+          "shape": "Dense(4)",
+          "dense_dim": 4,
+          "timing": "ex_ante",
+          "temporal_policy": "prior_match_only",
+          "source_columns": [
+            "matches.extra_time",
+            "matches.penalty_shootout",
+            "team_appearances.match_date",
+            "team_appearances.knockout_stage"
+          ],
+          "features": [
+            {
+              "name": "trailing_extra_time_rate",
+              "normalization": "rolling last-5 share of prior matches with extra_time == 1"
+            },
+            {
+              "name": "trailing_penalty_shootout_rate",
+              "normalization": "rolling last-5 share of prior matches with penalty_shootout == 1"
+            },
+            {
+              "name": "days_since_previous_match_norm",
+              "normalization": "days since prior team match divided by 14.0, clipped [0,1]"
+            },
+            {
+              "name": "knockout_context",
+              "normalization": "knockout_stage boolean to 0.0/1.0"
+            }
+          ]
+        },
+        {
+          "name": "discipline",
+          "shape": "Dense(4)",
+          "dense_dim": 4,
+          "timing": "ex_ante",
+          "temporal_policy": "prior_match_only",
+          "source_columns": [
+            "bookings.yellow_card",
+            "bookings.red_card",
+            "bookings.second_yellow_card",
+            "bookings.sending_off"
+          ],
+          "features": [
+            {
+              "name": "trailing_yellow_cards_per_match",
+              "normalization": "rolling last-5 sum divided by 15.0, clipped [0,1]"
+            },
+            {
+              "name": "trailing_red_cards_per_match",
+              "normalization": "rolling last-5 sum of red_card divided by 5.0, clipped [0,1]"
+            },
+            {
+              "name": "trailing_second_yellow_rate",
+              "normalization": "rolling last-5 share with second_yellow_card == 1"
+            },
+            {
+              "name": "trailing_sending_off_rate",
+              "normalization": "rolling last-5 share with sending_off == 1"
+            }
+          ]
+        },
+        {
+          "name": "pedigree",
+          "shape": "Dense(6)",
+          "dense_dim": 6,
+          "timing": "ex_ante",
+          "temporal_policy": "static_or_prior_tournament_only",
+          "source_columns": [
+            "teams.confederation_code",
+            "teams.region_name",
+            "teams.mens_team",
+            "teams.womens_team",
+            "qualified_teams.count_matches",
+            "tournament_standings.position"
+          ],
+          "features": [
+            {
+              "name": "confederation_hash_norm",
+              "normalization": "stable hash bucket divided by 1023.0"
+            },
+            {
+              "name": "region_hash_norm",
+              "normalization": "stable hash bucket divided by 1023.0"
+            },
+            {
+              "name": "mens_team_flag",
+              "normalization": "boolean to 0.0/1.0"
+            },
+            {
+              "name": "womens_team_flag",
+              "normalization": "boolean to 0.0/1.0"
+            },
+            {
+              "name": "prior_world_cup_matches_norm",
+              "normalization": "prior count_matches divided by 30.0, clipped [0,1]"
+            },
+            {
+              "name": "prior_best_finish_norm",
+              "normalization": "prior best tournament_standings.position mapped from [32,1] to [0,1]"
+            }
+          ]
+        },
+        {
+          "name": "form",
+          "shape": "Dense(5)",
+          "dense_dim": 5,
+          "timing": "ex_ante",
+          "temporal_policy": "prior_match_only",
+          "source_columns": [
+            "team_appearances.win",
+            "team_appearances.draw",
+            "team_appearances.lose",
+            "team_appearances.goal_differential",
+            "team_appearances.goals_for"
+          ],
+          "features": [
+            {
+              "name": "trailing_win_rate",
+              "normalization": "rolling last-5 share with win == 1"
+            },
+            {
+              "name": "trailing_draw_rate",
+              "normalization": "rolling last-5 share with draw == 1"
+            },
+            {
+              "name": "trailing_loss_rate",
+              "normalization": "rolling last-5 share with lose == 1"
+            },
+            {
+              "name": "trailing_points_per_match_norm",
+              "normalization": "rolling last-5 mean points (3/1/0) divided by 3.0"
+            },
+            {
+              "name": "trailing_form_goal_diff_norm",
+              "normalization": "rolling last-5 goal_differential mapped from [-6,6] to [0,1]"
+            }
+          ]
+        },
+        {
+          "name": "context",
+          "shape": "Dense(8)",
+          "dense_dim": 8,
+          "timing": "ex_ante",
+          "temporal_policy": "current_fixture_allowed",
+          "source_columns": [
+            "matches.stage_name",
+            "matches.group_name",
+            "matches.group_stage",
+            "matches.knockout_stage",
+            "matches.match_date",
+            "matches.match_time",
+            "matches.city_name",
+            "matches.country_name",
+            "matches.home_team_id",
+            "matches.away_team_id",
+            "stadiums.stadium_capacity"
+          ],
+          "features": [
+            {
+              "name": "stage_hash_norm",
+              "normalization": "stable hash bucket divided by 1023.0"
+            },
+            {
+              "name": "group_hash_norm",
+              "normalization": "stable hash bucket divided by 1023.0; NA to 0.0"
+            },
+            {
+              "name": "group_stage_flag",
+              "normalization": "boolean to 0.0/1.0"
+            },
+            {
+              "name": "knockout_stage_flag",
+              "normalization": "boolean to 0.0/1.0"
+            },
+            {
+              "name": "match_day_of_tournament_norm",
+              "normalization": "days from tournament start divided by 45.0, clipped [0,1]"
+            },
+            {
+              "name": "kickoff_hour_norm",
+              "normalization": "hour of day divided by 23.0; missing to 0.5"
+            },
+            {
+              "name": "host_country_flag",
+              "normalization": "team country equals match country boolean to 0.0/1.0"
+            },
+            {
+              "name": "stadium_capacity_norm",
+              "normalization": "capacity divided by 120000.0, clipped [0,1]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "players",
+      "prediction_target": "player_impact",
+      "facets": [
+        {
+          "name": "output",
+          "shape": "Dense(5)",
+          "dense_dim": 5,
+          "timing": "ex_ante",
+          "temporal_policy": "prior_match_only",
+          "source_columns": [
+            "goals.goal_id",
+            "penalty_kicks.converted",
+            "player_appearances.starter",
+            "player_appearances.substitute"
+          ],
+          "features": [
+            {
+              "name": "trailing_goals_per_appearance",
+              "normalization": "prior goals divided by prior appearances, clipped [0,1]"
+            },
+            {
+              "name": "trailing_goal_rate",
+              "normalization": "prior share of appearances with >=1 goal"
+            },
+            {
+              "name": "trailing_penalty_conversion_rate",
+              "normalization": "prior converted penalty kicks divided by prior penalty kicks; missing to 0.0"
+            },
+            {
+              "name": "trailing_start_rate",
+              "normalization": "prior starts divided by prior appearances"
+            },
+            {
+              "name": "trailing_substitute_rate",
+              "normalization": "prior substitute appearances divided by prior appearances"
+            }
+          ]
+        },
+        {
+          "name": "profile",
+          "shape": "Dense(7)",
+          "dense_dim": 7,
+          "timing": "ex_ante",
+          "temporal_policy": "static_or_prior_tournament_only",
+          "source_columns": [
+            "players.female",
+            "players.goal_keeper",
+            "players.defender",
+            "players.midfielder",
+            "players.forward",
+            "players.count_tournaments",
+            "squads.position_code"
+          ],
+          "features": [
+            {
+              "name": "female_flag",
+              "normalization": "boolean to 0.0/1.0"
+            },
+            {
+              "name": "goal_keeper_flag",
+              "normalization": "boolean to 0.0/1.0"
+            },
+            {
+              "name": "defender_flag",
+              "normalization": "boolean to 0.0/1.0"
+            },
+            {
+              "name": "midfielder_flag",
+              "normalization": "boolean to 0.0/1.0"
+            },
+            {
+              "name": "forward_flag",
+              "normalization": "boolean to 0.0/1.0"
+            },
+            {
+              "name": "player_tournament_count_norm",
+              "normalization": "count_tournaments divided by 6.0, clipped [0,1]"
+            },
+            {
+              "name": "position_code_hash_norm",
+              "normalization": "stable hash bucket divided by 1023.0"
+            }
+          ]
+        },
+        {
+          "name": "efficiency",
+          "shape": "Dense(5)",
+          "dense_dim": 5,
+          "timing": "ex_ante",
+          "temporal_policy": "prior_match_only",
+          "source_columns": [
+            "player_appearances.starter",
+            "player_appearances.substitute",
+            "goals.goal_id",
+            "bookings.yellow_card",
+            "bookings.red_card"
+          ],
+          "features": [
+            {
+              "name": "prior_appearance_count_norm",
+              "normalization": "prior appearances divided by 20.0, clipped [0,1]"
+            },
+            {
+              "name": "prior_goal_per_start_norm",
+              "normalization": "prior goals divided by prior starts, clipped [0,1]"
+            },
+            {
+              "name": "prior_goal_per_sub_norm",
+              "normalization": "prior goals as substitute divided by prior substitute appearances, clipped [0,1]"
+            },
+            {
+              "name": "prior_yellow_card_rate",
+              "normalization": "prior yellow cards divided by prior appearances, clipped [0,1]"
+            },
+            {
+              "name": "prior_red_card_rate",
+              "normalization": "prior red cards divided by prior appearances, clipped [0,1]"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -63,3 +63,12 @@ Generate and verify the source-column facet map:
 
 The generated map is `docs/data/soccer_lab_column_facets.csv`; the narrative
 schema documentation is `docs/SOCCER_LAB_SCHEMA_FACETS.md`.
+
+Validate the frozen facet spec:
+
+```bash
+./tools/data/validate_facet_spec.py
+```
+
+The frozen spec is `docs/data/soccer_lab_facet_spec.json`; the narrative doc is
+`docs/SOCCER_LAB_FACET_SPEC.md`.
