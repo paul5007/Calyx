@@ -53,3 +53,13 @@ Write and verify the raw-source provenance manifest:
 The manifest records every raw source file with bytes, SHA-256, row-count kind,
 row count where applicable, source id, source kind, URL, and content type.
 Verification recomputes those values from disk and exits nonzero on any mismatch.
+
+Generate and verify the source-column facet map:
+
+```bash
+./tools/data/generate_schema_facet_map.py write
+./tools/data/generate_schema_facet_map.py verify
+```
+
+The generated map is `docs/data/soccer_lab_column_facets.csv`; the narrative
+schema documentation is `docs/SOCCER_LAB_SCHEMA_FACETS.md`.
