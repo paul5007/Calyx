@@ -211,6 +211,11 @@ Because everything is built on one ordered, transactional storage core, Calyx ca
 
 The search-shaped paradigms collapse into the association engine; the storage-shaped ones are the general data layer beneath it. One engine, one transaction, one source of truth.
 
+> **Ingesting structured / tabular / numeric data (no free text)?** Read
+> **[Structural-Data Doctrine — Lenses as Facet Projectors](docs/STRUCTURAL_DATA_DOCTRINE.md)**.
+> For column-and-outcome data, a lens is a *facet projector*, not an embedder — that doc is the binding
+> methodology for building facet panels, grounding outcomes, and predicting with Oracle.
+
 ---
 
 ## 🗺️ Project status
