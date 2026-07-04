@@ -5,9 +5,17 @@ facet-projector inputs. It follows `docs/STRUCTURAL_DATA_DOCTRINE.md`: lenses
 are facet projectors, not embedders, and ex-post facts are anchors or
 explanatory-only fields.
 
-The complete column-level map is `docs/data/soccer_lab_column_facets.csv`. It is
-generated from the physical Fjelstul codebook at
-`scratchpad/wc2026/raw/fjelstul/codebook/variables.csv`.
+The complete column-level map for the currently acquired physical sources is
+`docs/data/soccer_lab_column_facets.csv`. It is generated from:
+
+- `scratchpad/wc2026/raw/fjelstul/codebook/variables.csv`
+- `scratchpad/wc2026/raw/harrachimustapha/fifa-world-cup-team-dataset.zip`
+- `scratchpad/wc2026/raw/mominullptr/fifa-world-cup-2026-dataset.zip`
+- `scratchpad/wc2026/raw/swaptr/fifa-wc-2026-matches.zip`
+- `scratchpad/wc2026/raw/openfootball/2026/worldcup.json`
+
+TheStatsAPI and Hugging Face mirror schemas are excluded until their credentials
+and physical source files are provisioned; #73 tracks that external dependency.
 
 ## Timing Classes
 
@@ -46,6 +54,17 @@ The match and team-history outputs deliberately exclude score, goals, result,
 penalties, and win/draw/loss fields from `text`. Those realized facts are
 grounded anchors or explanatory-only fields.
 
+Archive-derived schemas use source-qualified dataset ids such as
+`harrachimustapha.train`, `mominullptr.matches`, `swaptr.matches`, and
+`openfootball.matches.score` so repeated table names cannot collide. Harrachi
+pre-tournament ranking, market, host, and history columns are ex-ante
+`pedigree`/`context` predictors; Harrachi `winner`, `finalist`,
+`semi_finalist`, and `quarter_finalist` are ex-post `outcome_anchor` labels.
+Mominullptr and Swaptr scores, xG, possession, cards, shots, and other realized
+match statistics are ex-post anchors or explanatory-only event outcomes.
+OpenFootball teams, date/time, round, group, and ground fields are ex-ante
+context; score and goal arrays are ex-post.
+
 ## Normalization Policy
 
 - Booleans: project as `0.0` or `1.0`.
@@ -71,3 +90,15 @@ Regenerate and verify the complete map:
 
 Verification rereads the codebook and fails closed on missing input, missing
 required codebook columns, or any map mismatch.
+
+Full-state verification for #14:
+
+```bash
+./tools/data/verify_soccer_lab_schema_facets.py --fsv-root scratchpad/wc2026/fsv/issue14_schema_facets
+```
+
+That verifier writes a fresh map from physical bytes, verifies the committed
+map, checks required source-qualified datasets and sample classifications, runs
+a synthetic happy path, and exercises fail-closed edges for missing codebook,
+missing columns, stale mapping, corrupt archive ZIP, and malformed OpenFootball
+JSON.
