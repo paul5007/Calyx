@@ -21,8 +21,8 @@ use axum::{
 };
 use calyx_web_api::{
     AuthCtx, ErrorCode, Guardrails, PredictionCtx, ProvenanceCtx, app, build_app,
-    build_app_with_predictions, build_app_with_provenance, guardrails, panic_catch_layer,
-    require_bearer,
+    build_app_with_predictions, build_app_with_provenance, build_app_with_search, guardrails,
+    panic_catch_layer, require_bearer,
 };
 use http_body_util::BodyExt;
 use serde_json::Value;
@@ -718,6 +718,314 @@ fn hex(bytes: &[u8]) -> String {
         out.push_str(&format!("{byte:02x}"));
     }
     out
+}
+
+// ---------------------------------------------------------------------------
+// #57: wired `/search` real HTTP response bytes equal physical vault truth.
+// ---------------------------------------------------------------------------
+
+struct SearchFixture {
+    root: PathBuf,
+    vault_dir: PathBuf,
+    vault_id: calyx_core::VaultId,
+    vault_name: String,
+    cx_ids: Vec<calyx_core::CxId>,
+}
+
+fn search_fixture() -> SearchFixture {
+    use calyx_aster::vault::{AsterVault, VaultOptions};
+    use calyx_core::{
+        Asymmetry, Input, Modality, Panel, QuantPolicy, Slot, SlotKey, SlotShape, SlotState,
+        VaultStore,
+    };
+    use calyx_registry::measure::measure_constellation;
+
+    let root = std::env::temp_dir().join(format!(
+        "calyx-web-api-search-{}-{}",
+        std::process::id(),
+        std::thread::current().name().unwrap_or("test")
+    ));
+    std::fs::remove_dir_all(&root).ok();
+    std::fs::create_dir_all(&root).expect("create search fixture root");
+    let vault_dir = root.join("01KWNP57FSV57FSV57FSV57FSV");
+    let vault_id: calyx_core::VaultId = vault_dir
+        .file_name()
+        .and_then(|value| value.to_str())
+        .expect("vault dir name")
+        .parse()
+        .expect("parse vault id");
+    let vault_name = "issue57-search".to_string();
+    let salt = format!("calyx-cli-vault:{vault_id}:{vault_name}").into_bytes();
+
+    let mut registry = calyx_registry::Registry::new();
+    let lens = calyx_registry::AlgorithmicLens::byte_features("issue57-byte", Modality::Text);
+    let contract = lens.contract().clone();
+    let lens_id = contract.lens_id();
+    let spec = calyx_registry::LensSpec {
+        name: "issue57-byte".to_string(),
+        runtime: calyx_registry::LensRuntime::Algorithmic {
+            kind: "byte-features".to_string(),
+        },
+        output: contract.shape(),
+        modality: contract.modality(),
+        weights_sha256: contract.weights_sha256(),
+        corpus_hash: contract.corpus_hash(),
+        norm_policy: contract.norm_policy(),
+        max_batch: None,
+        axis: Some("issue57-byte".to_string()),
+        asymmetry: Asymmetry::None,
+        quant_default: QuantPolicy::turboquant_default(),
+        truncate_dim: None,
+        recall_delta: calyx_registry::spec::default_recall_delta(),
+        retrieval_only: false,
+        excluded_from_dedup: false,
+    };
+    registry
+        .register_frozen_with_spec(lens, contract, spec)
+        .expect("register fixture lens");
+    let slot_id = calyx_core::SlotId::new(0);
+    let panel = Panel {
+        version: 1,
+        slots: vec![Slot {
+            slot_id,
+            slot_key: SlotKey::new(slot_id, "issue57-byte"),
+            lens_id,
+            shape: SlotShape::Dense(16),
+            modality: Modality::Text,
+            asymmetry: Asymmetry::None,
+            quant: QuantPolicy::None,
+            resource: Default::default(),
+            axis: Some("issue57-byte".to_string()),
+            retrieval_only: false,
+            excluded_from_dedup: false,
+            bits_about: Default::default(),
+            state: SlotState::Active,
+            added_at_panel_version: 1,
+        }],
+        created_at: 1,
+        kernel_ref: None,
+        guard_ref: None,
+    };
+    let vault = AsterVault::new_durable(
+        &vault_dir,
+        vault_id,
+        salt,
+        VaultOptions {
+            panel: Some(panel.clone()),
+            ..VaultOptions::default()
+        },
+    )
+    .expect("create durable search vault");
+    calyx_registry::persist_vault_panel_state(&vault_dir, &panel, &registry)
+        .expect("persist panel");
+    let state = calyx_registry::VaultPanelState {
+        panel,
+        registry,
+        registry_snapshot: None,
+    };
+    let mut cx_ids = Vec::new();
+    for input in ["alpha", "alphabet", "beta"] {
+        let measured = measure_constellation(
+            &vault,
+            &state,
+            Input::new(Modality::Text, input.as_bytes().to_vec()),
+            57_000,
+        )
+        .expect("measure fixture row");
+        let cx_id = measured.cx_id;
+        vault.put(measured).expect("put fixture constellation");
+        cx_ids.push(cx_id);
+    }
+    vault.flush().expect("flush search fixture vault");
+    calyx_search::rebuild_for_vault(&vault_dir, &vault).expect("rebuild persisted search index");
+    drop(vault);
+
+    SearchFixture {
+        root,
+        vault_dir,
+        vault_id,
+        vault_name,
+        cx_ids,
+    }
+}
+
+fn search_app(fixture: &SearchFixture) -> Router {
+    let measure = Arc::new(
+        calyx_web_api::MeasureCtx::load(&fixture.vault_dir, &fixture.vault_name)
+            .expect("load search measure ctx"),
+    );
+    let auth = Arc::new(AuthCtx::new("search-secret-FSV").expect("secret"));
+    build_app_with_search(
+        Arc::new(Guardrails::new(
+            100.0,
+            100.0,
+            100.0,
+            100.0,
+            Duration::from_secs(5),
+        )),
+        measure,
+        auth,
+    )
+}
+
+fn open_search_fixture_vault(fixture: &SearchFixture) -> calyx_aster::vault::AsterVault {
+    calyx_aster::vault::AsterVault::open(
+        &fixture.vault_dir,
+        fixture.vault_id,
+        format!(
+            "calyx-cli-vault:{}:{}",
+            fixture.vault_id, fixture.vault_name
+        )
+        .into_bytes(),
+        calyx_aster::vault::VaultOptions::default(),
+    )
+    .expect("open search fixture vault")
+}
+
+#[tokio::test]
+async fn public_search_real_loopback_http_equals_vault_search_truth() {
+    use calyx_aster::cf::ColumnFamily;
+    use calyx_core::VaultStore;
+
+    let fixture = search_fixture();
+    let app = search_app(&fixture);
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind search HTTP listener");
+    let addr = listener.local_addr().expect("local_addr");
+    let server = tokio::spawn(async move {
+        axum::serve(listener, app).await.expect("serve search app");
+    });
+
+    let body = r#"{"query":"alpha","k":2,"fusion":"rrf"}"#;
+    let request = format!(
+        "POST /search HTTP/1.1\r\nHost: {addr}\r\nAuthorization: Bearer search-secret-FSV\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        body.len()
+    );
+    let mut stream = tokio::net::TcpStream::connect(addr)
+        .await
+        .expect("connect search HTTP listener");
+    {
+        use tokio::io::AsyncWriteExt;
+        stream
+            .write_all(request.as_bytes())
+            .await
+            .expect("write search request");
+    }
+    let mut response = Vec::new();
+    {
+        use tokio::io::AsyncReadExt;
+        stream
+            .read_to_end(&mut response)
+            .await
+            .expect("read search response");
+    }
+    server.abort();
+
+    let response = String::from_utf8(response).expect("response utf8");
+    assert!(
+        response.starts_with("HTTP/1.1 200 OK"),
+        "response: {response}"
+    );
+    assert!(
+        response.contains("x-cache: MISS"),
+        "first real HTTP search must be a cache miss: {response}"
+    );
+    let (_, json) = response
+        .split_once("\r\n\r\n")
+        .expect("HTTP response has body separator");
+    let served: Value = serde_json::from_str(json).expect("served JSON");
+
+    let vault = open_search_fixture_vault(&fixture);
+    let state =
+        calyx_registry::load_vault_panel_state(&fixture.vault_dir).expect("load persisted panel");
+    let base_rows = vault
+        .scan_cf_at(vault.snapshot(), ColumnFamily::Base)
+        .expect("scan physical Base CF");
+    assert_eq!(
+        base_rows.len(),
+        fixture.cx_ids.len(),
+        "physical Base CF row count is the source-of-truth corpus size"
+    );
+    let outcome = calyx_search::search_outcome(
+        &vault,
+        &state,
+        &fixture.vault_dir,
+        "alpha",
+        2,
+        calyx_search::FusionChoice::Rrf,
+        calyx_search::GuardChoice::Off,
+        None,
+        false,
+    )
+    .expect("direct search truth");
+    let ledger_store = calyx_aster::ledger_view::AsterLedgerCfStore::open(&fixture.vault_dir)
+        .expect("open physical Ledger CF");
+    let ledger_rows =
+        calyx_ledger::LedgerCfStore::scan(&ledger_store).expect("scan physical Ledger CF");
+    let expected_hits: Vec<Value> = outcome
+        .hits
+        .iter()
+        .map(|hit| {
+            serde_json::json!({
+                "rank": hit.rank,
+                "cxId": hit.cx_id.to_string(),
+                "score": hit.score,
+                "provenance": {
+                    "ledgerSeq": hit.provenance.seq,
+                    "chainHash": hex(&hit.provenance.hash),
+                },
+            })
+        })
+        .collect();
+    let expected = serde_json::json!({
+        "query": "alpha",
+        "k": 2,
+        "guardTau": outcome.guard_tau,
+        "hits": expected_hits,
+    });
+    let expected_bytes = serde_json::to_vec(&expected).expect("serialize expected truth");
+    assert_eq!(
+        json.as_bytes(),
+        expected_bytes.as_slice(),
+        "raw HTTP /search response body bytes must equal direct source-of-truth serialization"
+    );
+    assert_eq!(
+        served, expected,
+        "real HTTP /search JSON must equal direct calyx_search source of truth"
+    );
+    for hit in &outcome.hits {
+        assert!(
+            ledger_rows
+                .iter()
+                .any(|row| calyx_ledger::decode(&row.bytes)
+                    .map(|entry| {
+                        row.seq == hit.provenance.seq && entry.entry_hash == hit.provenance.hash
+                    })
+                    .unwrap_or(false)),
+            "hit {} provenance seq/hash must exist in physical Ledger CF",
+            hit.cx_id
+        );
+    }
+
+    let (slot, query) = calyx_search::measure_query_vectors(&state, "alpha")
+        .expect("measure query vectors")
+        .into_iter()
+        .next()
+        .expect("query vector");
+    let index_candidates = calyx_search::PersistedSearchIndexes::open(&fixture.vault_dir)
+        .expect("open persisted indexes")
+        .search(slot, &query, 2)
+        .expect("search persisted index");
+    let served_first = served["hits"][0]["cxId"].as_str().expect("served hit id");
+    assert!(
+        index_candidates
+            .iter()
+            .any(|hit| hit.cx_id.to_string() == served_first),
+        "served first hit {served_first} must come from persisted index readback"
+    );
+
+    std::fs::remove_dir_all(&fixture.root).ok();
 }
 
 // ---------------------------------------------------------------------------
