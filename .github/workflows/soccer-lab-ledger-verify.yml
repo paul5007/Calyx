@@ -1,0 +1,37 @@
+name: Soccer Lab ledger verify
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+jobs:
+  verify-ledger-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build calyxd verifier
+        run: cargo build -p calyxd --bin calyxd
+
+      - name: Run scheduled ledger verify
+        env:
+          CALYX_LEDGER_VERIFY_TARGETS: ${{ vars.CALYX_LEDGER_VERIFY_TARGETS }}
+          CALYXD_BIN: target/debug/calyxd
+        run: |
+          python3 tools/ops/run_ledger_verify_job.py \
+            --targets "${CALYX_LEDGER_VERIFY_TARGETS:-}" \
+            --out scratchpad/wc2026/fsv/ledger_verify_job/report.json \
+            --log scratchpad/wc2026/fsv/ledger_verify_job/job.jsonl \
+            --calyxd-bin "$CALYXD_BIN"
+
+      - name: Upload ledger verify evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: soccer-lab-ledger-verify
+          path: scratchpad/wc2026/fsv/ledger_verify_job/
