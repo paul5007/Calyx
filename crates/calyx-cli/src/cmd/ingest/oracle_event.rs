@@ -97,15 +97,23 @@ impl OracleEvent {
     }
 
     fn context(&self) -> CliResult<OccurrenceContext> {
-        let value = json!({
+        let mut value = json!({
+            "action_id": self.action,
             "outcome_anchor": { "value": self.outcome },
             "consequence": {
+                "action_or_event": self.action,
                 "domain": self.domain,
-                "outcome": { "value": self.outcome },
-                "grounded": self.grounded,
-                "provisional": !self.grounded
+                "outcome": { "value": self.outcome }
             }
         });
+        if !self.grounded
+            && let Some(consequence) = value
+                .get_mut("consequence")
+                .and_then(serde_json::Value::as_object_mut)
+        {
+            consequence.insert("grounded".to_string(), json!(false));
+            consequence.insert("provisional".to_string(), json!(true));
+        }
         let bytes = serde_json::to_vec(&value).map_err(|error| {
             CliError::runtime(format!("serialize oracle occurrence context: {error}"))
         })?;

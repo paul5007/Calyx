@@ -1,0 +1,216 @@
+{
+  "schema_id": "soccer_lab.oracle_context.v1",
+  "version": 1,
+  "description": "Soccer Lab Oracle occurrence context contract for PredictionContext and ExpansionContext.",
+  "metadata_keys": {
+    "row_metadata_required": [
+      "project",
+      "entity",
+      "source_dataset",
+      "source",
+      "source_key"
+    ],
+    "row_metadata_entity_keys": {
+      "fixture": [
+        "match_id",
+        "tournament_id"
+      ],
+      "team": [
+        "team_id"
+      ],
+      "player": [
+        "player_id",
+        "team_id"
+      ]
+    },
+    "ingest_metadata_required": [
+      "oracle.domain",
+      "oracle.action",
+      "oracle.effect",
+      "oracle.structured"
+    ],
+    "row_oracle_required": [
+      "domain",
+      "action",
+      "outcome",
+      "outcome_kind",
+      "grounded"
+    ],
+    "row_oracle_optional": [
+      "t_secs"
+    ]
+  },
+  "domains": {
+    "fixture": {
+      "domain_ids": [
+        "soccer_lab.match_result"
+      ],
+      "entities": [
+        "match",
+        "match_2026"
+      ],
+      "actions": [
+        "predict_match_result"
+      ],
+      "outcome_kinds": [
+        "label:match_result"
+      ],
+      "outcome_values": [
+        "home_win",
+        "draw",
+        "away_win"
+      ],
+      "required_metadata": [
+        "match_id",
+        "tournament_id"
+      ],
+      "prediction_context": {
+        "action_id": "predict_match_result",
+        "outcome_anchor": {
+          "value": {
+            "enum": "home_win"
+          }
+        },
+        "consequence": {
+          "action_or_event": "predict_match_result",
+          "domain": "soccer_lab.match_result",
+          "outcome": {
+            "value": {
+              "enum": "home_win"
+            }
+          }
+        }
+      },
+      "expansion_context": {
+        "action_id": "predict_match_result",
+        "consequences": [
+          {
+            "action_or_event": "predict_team_match_result",
+            "domain": "soccer_lab.team_match_result",
+            "outcome": {
+              "value": {
+                "enum": "win"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "team": {
+      "domain_ids": [
+        "soccer_lab.team_match_result",
+        "soccer_lab.tournament_winner"
+      ],
+      "entities": [
+        "team_match_history",
+        "team_tournament"
+      ],
+      "actions": [
+        "predict_team_match_result",
+        "predict_tournament_winner"
+      ],
+      "outcome_kinds": [
+        "label:team_match_result",
+        "label:winner"
+      ],
+      "outcome_values": {
+        "soccer_lab.team_match_result": [
+          "win",
+          "draw",
+          "lose"
+        ],
+        "soccer_lab.tournament_winner": [
+          "0",
+          "1"
+        ]
+      },
+      "required_metadata": [
+        "team_id"
+      ],
+      "prediction_context": {
+        "action_id": "predict_team_match_result",
+        "outcome_anchor": {
+          "value": {
+            "enum": "win"
+          }
+        },
+        "consequence": {
+          "action_or_event": "predict_team_match_result",
+          "domain": "soccer_lab.team_match_result",
+          "outcome": {
+            "value": {
+              "enum": "win"
+            }
+          }
+        }
+      },
+      "expansion_context": {
+        "action_id": "predict_team_match_result",
+        "consequences": [
+          {
+            "action_or_event": "predict_match_result",
+            "domain": "soccer_lab.match_result",
+            "outcome": {
+              "value": {
+                "enum": "home_win"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "player": {
+      "domain_ids": [
+        "soccer_lab.player_impact"
+      ],
+      "entities": [
+        "player"
+      ],
+      "actions": [
+        "predict_player_impact"
+      ],
+      "outcome_kinds": [
+        "label:player_impact"
+      ],
+      "outcome_values": [
+        "impact",
+        "no_impact"
+      ],
+      "required_metadata": [
+        "player_id",
+        "team_id"
+      ],
+      "prediction_context": {
+        "action_id": "predict_player_impact",
+        "outcome_anchor": {
+          "value": {
+            "enum": "impact"
+          }
+        },
+        "consequence": {
+          "action_or_event": "predict_player_impact",
+          "domain": "soccer_lab.player_impact",
+          "outcome": {
+            "value": {
+              "enum": "impact"
+            }
+          }
+        }
+      },
+      "expansion_context": {
+        "action_id": "predict_player_impact",
+        "consequences": [
+          {
+            "action_or_event": "predict_team_match_result",
+            "domain": "soccer_lab.team_match_result",
+            "outcome": {
+              "value": {
+                "enum": "win"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
