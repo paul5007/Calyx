@@ -1,0 +1,28 @@
+{
+  "action_id": "predict_match_result",
+  "domain": "soccer_lab.match_result",
+  "generated_at": "2026-07-04",
+  "reason": "current pulled 2026 match source has no blank-score rows and no fixture dates after run_date",
+  "records": [],
+  "run_date": "2026-07-04",
+  "schema_version": 1,
+  "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json",
+  "source_summary": {
+    "after_run_date_rows": 0,
+    "blank_score_rows": 0,
+    "max_date": "2026-07-02",
+    "min_date": "2026-06-11",
+    "rounds": {
+      "Group stage": 72,
+      "Round of 32": 13
+    },
+    "rows": 85,
+    "source_file": {
+      "bytes": 6990,
+      "mode": "0o644",
+      "path": "scratchpad/wc2026/raw/swaptr/fifa-wc-2026-matches.zip",
+      "sha256": "a02ec44706df1eae100a7f3d8f66fbb881c32bdd287fb553c2ea74982fa88588"
+    }
+  },
+  "status": "no_unplayed_fixtures_in_current_source"
+}
