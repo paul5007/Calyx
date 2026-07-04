@@ -1,0 +1,189 @@
+{
+  "$id": "https://calyx.local/schemas/soccer_lab_prediction_record.v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "action_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "domain": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "input": {
+      "additionalProperties": false,
+      "properties": {
+        "attributes": {
+          "type": "object"
+        },
+        "display": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "entity_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "entity_type": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "entity_type",
+        "entity_id",
+        "display",
+        "source",
+        "attributes"
+      ],
+      "type": "object"
+    },
+    "input_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "prediction": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "confidence_caps": {
+          "additionalProperties": false,
+          "properties": {
+            "dpi_ceiling": {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "sufficient": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "dpi_ceiling",
+            "sufficient"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "enum": [
+            "oracle_insufficient",
+            "oracle_predicted"
+          ]
+        },
+        "value": {}
+      },
+      "required": [
+        "status",
+        "value",
+        "confidence",
+        "confidence_caps"
+      ],
+      "type": "object"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "oracle_error_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "oracle_fixture_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "oracle_ledger_key_hex": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "oracle_ledger_ref": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "oracle_stdout_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_prediction_file": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_prediction_file_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_record_kind": {
+          "enum": [
+            "match",
+            "tournament_progression",
+            "player_impact"
+          ]
+        },
+        "source_report": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_report_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_prediction_file",
+        "source_prediction_file_sha256",
+        "source_record_kind",
+        "source_report",
+        "source_report_sha256",
+        "oracle_error_code",
+        "oracle_stdout_sha256",
+        "oracle_fixture_sha256",
+        "oracle_ledger_ref",
+        "oracle_ledger_key_hex"
+      ],
+      "type": "object"
+    },
+    "record_id": {
+      "pattern": "^slpred_[0-9a-f]{24}$",
+      "type": "string"
+    },
+    "record_type": {
+      "enum": [
+        "match",
+        "tournament_progression",
+        "player_impact"
+      ]
+    },
+    "schema_version": {
+      "const": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_id",
+    "record_type",
+    "generated_at",
+    "domain",
+    "action_id",
+    "input",
+    "input_hash",
+    "prediction",
+    "provenance"
+  ],
+  "title": "Soccer Lab prediction record",
+  "type": "object"
+}
