@@ -1,0 +1,737 @@
+{
+  "answer": "win",
+  "answer_anchor_encoding": {
+    "text": "win"
+  },
+  "domain": "soccer_lab.team_match_result",
+  "generated_at": "2026-07-04",
+  "outcome_counts": {
+    "draw": 18,
+    "lose": 91,
+    "win": 92
+  },
+  "prior_answer_rate": 0.4577114427860697,
+  "provenance": {
+    "oracle_fixture_sha256": "f6099c0038f1752848c67a2eb3eaf4f9dff8c82010cec5aa8f67a0b6e8740b8d",
+    "oracle_stdout_sha256": "e9082c45f03136c6325769e5e71ec1dfa665b230a2d339f0aba7e86f0c61a0bf",
+    "source_report": "scratchpad/wc2026/fsv/reverse_query_signatures/report.json"
+  },
+  "reverse_query": {
+    "causes": [
+      {
+        "action_or_event": "ant_sig_02",
+        "confidence": 0.9978308081626892,
+        "domain": "soccer_lab.team_match_result",
+        "provenance": {
+          "hash": [
+            142,
+            76,
+            105,
+            172,
+            3,
+            128,
+            69,
+            244,
+            17,
+            165,
+            99,
+            236,
+            160,
+            163,
+            22,
+            139,
+            197,
+            35,
+            123,
+            122,
+            184,
+            14,
+            103,
+            181,
+            249,
+            222,
+            122,
+            128,
+            154,
+            179,
+            223,
+            157
+          ],
+          "seq": 0
+        },
+        "provisional": false
+      },
+      {
+        "action_or_event": "sig_01",
+        "confidence": 0.9892473220825195,
+        "domain": "soccer_lab.team_match_result",
+        "provenance": {
+          "hash": [
+            142,
+            76,
+            105,
+            172,
+            3,
+            128,
+            69,
+            244,
+            17,
+            165,
+            99,
+            236,
+            160,
+            163,
+            22,
+            139,
+            197,
+            35,
+            123,
+            122,
+            184,
+            14,
+            103,
+            181,
+            249,
+            222,
+            122,
+            128,
+            154,
+            179,
+            223,
+            157
+          ],
+          "seq": 0
+        },
+        "provisional": false
+      },
+      {
+        "action_or_event": "sig_02",
+        "confidence": 0.9830508232116699,
+        "domain": "soccer_lab.team_match_result",
+        "provenance": {
+          "hash": [
+            142,
+            76,
+            105,
+            172,
+            3,
+            128,
+            69,
+            244,
+            17,
+            165,
+            99,
+            236,
+            160,
+            163,
+            22,
+            139,
+            197,
+            35,
+            123,
+            122,
+            184,
+            14,
+            103,
+            181,
+            249,
+            222,
+            122,
+            128,
+            154,
+            179,
+            223,
+            157
+          ],
+          "seq": 0
+        },
+        "provisional": false
+      },
+      {
+        "action_or_event": "sig_04",
+        "confidence": 0.95652174949646,
+        "domain": "soccer_lab.team_match_result",
+        "provenance": {
+          "hash": [
+            142,
+            76,
+            105,
+            172,
+            3,
+            128,
+            69,
+            244,
+            17,
+            165,
+            99,
+            236,
+            160,
+            163,
+            22,
+            139,
+            197,
+            35,
+            123,
+            122,
+            184,
+            14,
+            103,
+            181,
+            249,
+            222,
+            122,
+            128,
+            154,
+            179,
+            223,
+            157
+          ],
+          "seq": 0
+        },
+        "provisional": false
+      },
+      {
+        "action_or_event": "sig_03",
+        "confidence": 0.9090909361839294,
+        "domain": "soccer_lab.team_match_result",
+        "provenance": {
+          "hash": [
+            142,
+            76,
+            105,
+            172,
+            3,
+            128,
+            69,
+            244,
+            17,
+            165,
+            99,
+            236,
+            160,
+            163,
+            22,
+            139,
+            197,
+            35,
+            123,
+            122,
+            184,
+            14,
+            103,
+            181,
+            249,
+            222,
+            122,
+            128,
+            154,
+            179,
+            223,
+            157
+          ],
+          "seq": 0
+        },
+        "provisional": false
+      },
+      {
+        "action_or_event": "struct_sig_01",
+        "confidence": 0.9063817262649536,
+        "domain": "soccer_lab.team_match_result",
+        "provenance": {
+          "hash": [
+            142,
+            76,
+            105,
+            172,
+            3,
+            128,
+            69,
+            244,
+            17,
+            165,
+            99,
+            236,
+            160,
+            163,
+            22,
+            139,
+            197,
+            35,
+            123,
+            122,
+            184,
+            14,
+            103,
+            181,
+            249,
+            222,
+            122,
+            128,
+            154,
+            179,
+            223,
+            157
+          ],
+          "seq": 0
+        },
+        "provisional": true
+      },
+      {
+        "action_or_event": "struct_sig_02",
+        "confidence": 0.3532107174396515,
+        "domain": "soccer_lab.team_match_result",
+        "provenance": {
+          "hash": [
+            142,
+            76,
+            105,
+            172,
+            3,
+            128,
+            69,
+            244,
+            17,
+            165,
+            99,
+            236,
+            160,
+            163,
+            22,
+            139,
+            197,
+            35,
+            123,
+            122,
+            184,
+            14,
+            103,
+            181,
+            249,
+            222,
+            122,
+            128,
+            154,
+            179,
+            223,
+            157
+          ],
+          "seq": 0
+        },
+        "provisional": true
+      },
+      {
+        "action_or_event": "struct_sig_03",
+        "confidence": 0.33715781569480896,
+        "domain": "soccer_lab.team_match_result",
+        "provenance": {
+          "hash": [
+            142,
+            76,
+            105,
+            172,
+            3,
+            128,
+            69,
+            244,
+            17,
+            165,
+            99,
+            236,
+            160,
+            163,
+            22,
+            139,
+            197,
+            35,
+            123,
+            122,
+            184,
+            14,
+            103,
+            181,
+            249,
+            222,
+            122,
+            128,
+            154,
+            179,
+            223,
+            157
+          ],
+          "seq": 0
+        },
+        "provisional": true
+      }
+    ],
+    "grounded_count": 5,
+    "max_reverse_depth": 3,
+    "provisional_count": 3
+  },
+  "schema_version": 1,
+  "selected_signatures": [
+    {
+      "action": "facet:attack.home_attack_context:high",
+      "answer_hits": 92,
+      "facet": "attack",
+      "feature": "home_attack_context",
+      "lift": 1.99009900990099,
+      "mean_value": 1.0,
+      "outcomes": {
+        "draw": 9,
+        "win": 92
+      },
+      "precision": 0.9108910891089109,
+      "prior": 0.4577114427860697,
+      "sample_rows": [
+        {
+          "match_id": "M-1930-01",
+          "outcome": "win",
+          "row_index": 0,
+          "team_id": "T-30",
+          "text_sha256": "32cbabaef91664032a027091016a238079781e72af82a42567526d328d8f57d0",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-02",
+          "outcome": "win",
+          "row_index": 2,
+          "team_id": "T-83",
+          "text_sha256": "6b657f9d65469e94b328d2aaacb9dc4c0fff6422720ead6ddacb650d23be4b86",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-03",
+          "outcome": "win",
+          "row_index": 4,
+          "team_id": "T-87",
+          "text_sha256": "031d9c4f30e3a21a8d92d05266a51f9c69bdd16a7886f626b131eddac02011dd",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-04",
+          "outcome": "win",
+          "row_index": 6,
+          "team_id": "T-61",
+          "text_sha256": "99286f9285a80d0919f4d6c1c5f3dde4df810fa4d8ee253e2c198bd943dab48b",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-05",
+          "outcome": "win",
+          "row_index": 8,
+          "team_id": "T-03",
+          "text_sha256": "593e50df17e8dd3b021e88f11b96432f438c5b4648ef010fd748997bf450293c",
+          "value": 1.0
+        }
+      ],
+      "signature_id": "sig_01",
+      "structural_confidence": 0.9063817272816391,
+      "threshold": 0.66,
+      "total_hits": 101
+    },
+    {
+      "action": "facet:pedigree.prior_best_finish_norm:high",
+      "answer_hits": 58,
+      "facet": "pedigree",
+      "feature": "prior_best_finish_norm",
+      "lift": 1.2423273657289002,
+      "mean_value": 0.9569892473118288,
+      "outcomes": {
+        "draw": 10,
+        "lose": 34,
+        "win": 58
+      },
+      "precision": 0.5686274509803921,
+      "prior": 0.4577114427860697,
+      "sample_rows": [
+        {
+          "match_id": "M-1930-07",
+          "outcome": "win",
+          "row_index": 12,
+          "team_id": "T-87",
+          "text_sha256": "00a92930fbecce08880811bfc669e9fc3bb61e416ffef1343f8b21b3c2ba6112",
+          "value": 0.9032258064516129
+        },
+        {
+          "match_id": "M-1930-08",
+          "outcome": "win",
+          "row_index": 14,
+          "team_id": "T-83",
+          "text_sha256": "974a01e12ffc5260ce219f5ea59e01d099d14b8e5c91823beef69eb312b412a2",
+          "value": 0.9354838709677419
+        },
+        {
+          "match_id": "M-1930-11",
+          "outcome": "win",
+          "row_index": 20,
+          "team_id": "T-03",
+          "text_sha256": "802f643b71d14077f8eb6e61f26b2858d38ceaf883a68c8bd98f3353b14e9085",
+          "value": 0.967741935483871
+        },
+        {
+          "match_id": "M-1930-14",
+          "outcome": "win",
+          "row_index": 26,
+          "team_id": "T-84",
+          "text_sha256": "b16b2175c87ef66a1e539c1dc832067a3a681cb7448778cbcbadf26b2d0a5fa1",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-15",
+          "outcome": "win",
+          "row_index": 28,
+          "team_id": "T-03",
+          "text_sha256": "778352d36f091acc8904d59d1a8b8ff7286233dd33604f5ff24b64fee8d13be6",
+          "value": 0.967741935483871
+        }
+      ],
+      "signature_id": "sig_02",
+      "structural_confidence": 0.35321072162880496,
+      "threshold": 0.66,
+      "total_hits": 102
+    },
+    {
+      "action": "facet:attack.trailing_goals_for_per_match:high",
+      "answer_hits": 10,
+      "facet": "attack",
+      "feature": "trailing_goals_for_per_match",
+      "lift": 1.213768115942029,
+      "mean_value": 0.7236735743680188,
+      "outcomes": {
+        "draw": 2,
+        "lose": 6,
+        "win": 10
+      },
+      "precision": 0.5555555555555556,
+      "prior": 0.4577114427860697,
+      "sample_rows": [
+        {
+          "match_id": "M-1930-05",
+          "outcome": "lose",
+          "row_index": 9,
+          "team_id": "T-30",
+          "text_sha256": "27529f77c4d956b9b0c1d6cc0dd11e7c247aa8df80a02462571a033f75f4e130",
+          "value": 0.6666666666666666
+        },
+        {
+          "match_id": "M-1930-18",
+          "outcome": "lose",
+          "row_index": 35,
+          "team_id": "T-03",
+          "text_sha256": "0538a4fd14c818a5002f77c92b378f26483bbd83abd8735427be950957e2d643",
+          "value": 0.6666666666666666
+        },
+        {
+          "match_id": "M-1934-09",
+          "outcome": "lose",
+          "row_index": 53,
+          "team_id": "T-36",
+          "text_sha256": "b08040f8415be283c68e74566fa9e8a6f96dee9b2f87689ce3a69b9ad136fe66",
+          "value": 0.6666666666666666
+        },
+        {
+          "match_id": "M-1934-11",
+          "outcome": "win",
+          "row_index": 56,
+          "team_id": "T-31",
+          "text_sha256": "aa9d8837fb10f320498bf35bef9e0025bbab54874f20c4ab691972c3512b2e73",
+          "value": 0.8333333333333334
+        },
+        {
+          "match_id": "M-1934-12",
+          "outcome": "draw",
+          "row_index": 58,
+          "team_id": "T-41",
+          "text_sha256": "c983e6925b59f741067640b82d63557f0c4339839b08fe192a74b455d06534f3",
+          "value": 1.0
+        }
+      ],
+      "signature_id": "sig_03",
+      "structural_confidence": 0.337157809983897,
+      "threshold": 0.66,
+      "total_hits": 18
+    },
+    {
+      "action": "facet:defense.trailing_goal_differential_norm:high",
+      "answer_hits": 22,
+      "facet": "defense",
+      "feature": "trailing_goal_differential_norm",
+      "lift": 1.2016304347826088,
+      "mean_value": 0.7264211309523809,
+      "outcomes": {
+        "draw": 3,
+        "lose": 15,
+        "win": 22
+      },
+      "precision": 0.55,
+      "prior": 0.4577114427860697,
+      "sample_rows": [
+        {
+          "match_id": "M-1930-05",
+          "outcome": "lose",
+          "row_index": 9,
+          "team_id": "T-30",
+          "text_sha256": "27529f77c4d956b9b0c1d6cc0dd11e7c247aa8df80a02462571a033f75f4e130",
+          "value": 0.75
+        },
+        {
+          "match_id": "M-1930-08",
+          "outcome": "win",
+          "row_index": 14,
+          "team_id": "T-83",
+          "text_sha256": "974a01e12ffc5260ce219f5ea59e01d099d14b8e5c91823beef69eb312b412a2",
+          "value": 0.75
+        },
+        {
+          "match_id": "M-1930-10",
+          "outcome": "win",
+          "row_index": 18,
+          "team_id": "T-13",
+          "text_sha256": "4b119b8c5be0745b2f791a77b9e4a2957aa46da41410c4d642d32e97ad4ee4c0",
+          "value": 0.75
+        },
+        {
+          "match_id": "M-1930-14",
+          "outcome": "lose",
+          "row_index": 27,
+          "team_id": "T-61",
+          "text_sha256": "25858ea3a3b0b1d7c9ad56d7b361bc07a3020bc6804d3daf2a1d32d9bf0cdf9e",
+          "value": 0.6666666666666666
+        },
+        {
+          "match_id": "M-1930-15",
+          "outcome": "win",
+          "row_index": 28,
+          "team_id": "T-03",
+          "text_sha256": "778352d36f091acc8904d59d1a8b8ff7286233dd33604f5ff24b64fee8d13be6",
+          "value": 0.6666666666666666
+        }
+      ],
+      "signature_id": "sig_04",
+      "structural_confidence": 0.33044836956521745,
+      "threshold": 0.66,
+      "total_hits": 40
+    },
+    {
+      "action": "facet:form.trailing_win_rate:high",
+      "answer_hits": 42,
+      "facet": "form",
+      "feature": "trailing_win_rate",
+      "lift": 1.1916996047430828,
+      "mean_value": 0.8570459122407167,
+      "outcomes": {
+        "draw": 7,
+        "lose": 28,
+        "win": 42
+      },
+      "precision": 0.5454545454545454,
+      "prior": 0.4577114427860697,
+      "sample_rows": [
+        {
+          "match_id": "M-1930-05",
+          "outcome": "lose",
+          "row_index": 9,
+          "team_id": "T-30",
+          "text_sha256": "27529f77c4d956b9b0c1d6cc0dd11e7c247aa8df80a02462571a033f75f4e130",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-07",
+          "outcome": "win",
+          "row_index": 12,
+          "team_id": "T-87",
+          "text_sha256": "00a92930fbecce08880811bfc669e9fc3bb61e416ffef1343f8b21b3c2ba6112",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-08",
+          "outcome": "win",
+          "row_index": 14,
+          "team_id": "T-83",
+          "text_sha256": "974a01e12ffc5260ce219f5ea59e01d099d14b8e5c91823beef69eb312b412a2",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-10",
+          "outcome": "win",
+          "row_index": 18,
+          "team_id": "T-13",
+          "text_sha256": "4b119b8c5be0745b2f791a77b9e4a2957aa46da41410c4d642d32e97ad4ee4c0",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-11",
+          "outcome": "win",
+          "row_index": 20,
+          "team_id": "T-03",
+          "text_sha256": "802f643b71d14077f8eb6e61f26b2858d38ceaf883a68c8bd98f3353b14e9085",
+          "value": 1.0
+        }
+      ],
+      "signature_id": "sig_05",
+      "structural_confidence": 0.3250089831117498,
+      "threshold": 0.66,
+      "total_hits": 77
+    },
+    {
+      "action": "facet:defense.trailing_clean_sheet_rate:high",
+      "answer_hits": 6,
+      "facet": "defense",
+      "feature": "trailing_clean_sheet_rate",
+      "lift": 1.1916996047430828,
+      "mean_value": 0.9090909090909091,
+      "outcomes": {
+        "lose": 5,
+        "win": 6
+      },
+      "precision": 0.5454545454545454,
+      "prior": 0.4577114427860697,
+      "sample_rows": [
+        {
+          "match_id": "M-1930-08",
+          "outcome": "win",
+          "row_index": 14,
+          "team_id": "T-83",
+          "text_sha256": "974a01e12ffc5260ce219f5ea59e01d099d14b8e5c91823beef69eb312b412a2",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-10",
+          "outcome": "win",
+          "row_index": 18,
+          "team_id": "T-13",
+          "text_sha256": "4b119b8c5be0745b2f791a77b9e4a2957aa46da41410c4d642d32e97ad4ee4c0",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-11",
+          "outcome": "win",
+          "row_index": 20,
+          "team_id": "T-03",
+          "text_sha256": "802f643b71d14077f8eb6e61f26b2858d38ceaf883a68c8bd98f3353b14e9085",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-14",
+          "outcome": "win",
+          "row_index": 26,
+          "team_id": "T-84",
+          "text_sha256": "b16b2175c87ef66a1e539c1dc832067a3a681cb7448778cbcbadf26b2d0a5fa1",
+          "value": 1.0
+        },
+        {
+          "match_id": "M-1930-15",
+          "outcome": "lose",
+          "row_index": 29,
+          "team_id": "T-13",
+          "text_sha256": "af2f8cdc227ccd1e142740d7a469b8817aae787e4e912123a601c1f4006e92e8",
+          "value": 1.0
+        }
+      ],
+      "signature_id": "sig_06",
+      "structural_confidence": 0.3250089831117498,
+      "threshold": 0.66,
+      "total_hits": 11
+    }
+  ]
+}
