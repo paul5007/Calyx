@@ -1,5 +1,6 @@
 //! Anneal self-optimization contracts for reversible tuning loops.
 
+mod autotune;
 mod budget;
 mod heal;
 mod integration_fsv;
@@ -15,6 +16,12 @@ mod shadow;
 mod tripwire;
 mod tune;
 
+pub use autotune::{
+    AutotunePolicy, AutotunePolicyReadback, AutotuneTripwires,
+    CALYX_ANNEAL_AUTOTUNE_INVALID_CONFIG, CALYX_ANNEAL_AUTOTUNE_NOT_REVERSIBLE, RollbackMode,
+    RollbackPolicy, ShadowPolicy, autotune_config_path, enable_autotune_in_vault,
+    read_autotune_policy_from_vault,
+};
 pub use budget::{
     BACKGROUND_NICE, BudgetConfig, BudgetConfigReadback, BudgetEnforcer, BudgetHandle, BudgetProbe,
     BudgetProbeSample, BudgetStatus, CALYX_ANNEAL_BUDGET_EXHAUSTED,

@@ -20,8 +20,18 @@ pub(super) struct AnnealStatusOut {
     proposals: Vec<ProposalOut>,
     last_soak_at: Option<u64>,
     p99_latency_ms: Option<f64>,
+    autotune: Option<AutotuneOut>,
     health: Vec<HealthOut>,
     recent_changes: Vec<RecentAnnealOut>,
+}
+
+#[derive(Serialize)]
+struct AutotuneOut {
+    enabled: bool,
+    rollback_mode: String,
+    shadow_required: bool,
+    min_replay_queries: usize,
+    policy_path: String,
 }
 
 #[derive(Serialize)]
@@ -60,10 +70,12 @@ pub(super) fn run(resolved: &ResolvedVault) -> CliResult {
 
 pub(super) fn anneal_status(path: &Path, vault: &AsterVault) -> CliResult<AnnealStatusOut> {
     let tripwires = tripwire_rows(path)?;
+    let autotune = autotune_row(path)?;
     let proposals = proposal_rows(vault)?;
     let health = health_rows(vault)?;
     let recent_changes = recent_anneal(path)?;
     if tripwires.is_empty()
+        && autotune.is_none()
         && proposals.is_empty()
         && health.is_empty()
         && recent_changes.is_empty()
@@ -92,9 +104,25 @@ pub(super) fn anneal_status(path: &Path, vault: &AsterVault) -> CliResult<Anneal
         proposals,
         last_soak_at,
         p99_latency_ms: latest_p99(path)?,
+        autotune,
         health,
         recent_changes,
     })
+}
+
+fn autotune_row(path: &Path) -> CliResult<Option<AutotuneOut>> {
+    let policy_path = calyx_anneal::autotune_config_path(path);
+    if !policy_path.exists() {
+        return Ok(None);
+    }
+    let readback = calyx_anneal::read_autotune_policy_from_vault(path)?;
+    Ok(Some(AutotuneOut {
+        enabled: readback.policy.enabled,
+        rollback_mode: format!("{:?}", readback.policy.rollback.mode),
+        shadow_required: readback.policy.shadow.required,
+        min_replay_queries: readback.policy.shadow.min_replay_queries,
+        policy_path: readback.policy_path.display().to_string(),
+    }))
 }
 
 fn tripwire_rows(path: &Path) -> CliResult<Vec<TripwireOut>> {
