@@ -158,6 +158,17 @@ The machine-readable policy is
 registered in predictive panels, which anchor axes carry the ex-post outcomes,
 and which current-event keys are forbidden in generated predictive `text`.
 
+Verify Soccer Lab Oracle occurrence metadata on generated outcome rows:
+
+```bash
+./tools/data/verify_soccer_lab_oracle_metadata.py
+```
+
+This regenerates the outcome-bearing Soccer Lab rows, verifies `oracle.domain`,
+`oracle.action`, and outcome anchors are present where real outcomes exist,
+ingests a sampled real batch into a fresh vault, reads Base bytes plus Recurrence
+contexts back from Calyx, and exercises fail-closed malformed Oracle edge cases.
+
 Build and verify the teams-history ex-ante Calyx vault from the Harrachi
 team-tournament dataset:
 

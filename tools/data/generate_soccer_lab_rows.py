@@ -14,7 +14,7 @@ import sys
 import time
 import zipfile
 from collections import Counter
-from datetime import date
+from datetime import date, datetime, time as datetime_time, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -132,6 +132,16 @@ def stat_line(pairs: list[tuple[str, Any]]) -> str:
     return " ".join(f"{key}={token(value)}" for key, value in pairs)
 
 
+def date_t_secs(value: str) -> int:
+    day = date.fromisoformat(value)
+    return int(datetime.combine(day, datetime_time.min, tzinfo=timezone.utc).timestamp())
+
+
+def non_negative_date_t_secs(value: str) -> int | None:
+    t_secs = date_t_secs(value)
+    return t_secs if t_secs >= 0 else None
+
+
 def metadata(entity: str, dataset: str, source_key: str, row: dict[str, str]) -> dict[str, str]:
     return {
         "project": "Soccer Lab",
@@ -141,6 +151,19 @@ def metadata(entity: str, dataset: str, source_key: str, row: dict[str, str]) ->
         "source_key": source_key,
         "source_row_key": row.get("key_id", ""),
     }
+
+
+def oracle_event(domain: str, action: str, anchor: dict[str, Any], t_secs: int | None = None) -> dict[str, Any]:
+    event: dict[str, Any] = {
+        "domain": domain,
+        "action": action,
+        "outcome": str(anchor["value"]),
+        "outcome_kind": anchor["kind"],
+        "grounded": True,
+    }
+    if t_secs is not None:
+        event["t_secs"] = t_secs
+    return event
 
 
 def match_result_anchor(row: dict[str, str]) -> dict[str, Any]:
@@ -427,6 +450,7 @@ def team_tournament_rows(raw_root: Path) -> list[dict[str, Any]]:
     for split in ["train", "test"]:
         for idx, row in enumerate(read_harrachi_split(raw_root, f"{split}.csv")):
             anchors = [anchor for axis in ["winner", "finalist", "semi_finalist", "quarter_finalist"] if (anchor := team_tournament_anchor(row, axis))]
+            winner_anchor = team_tournament_anchor(row, "winner")
             out.append(
                 {
                     "text": team_tournament_text(row, split),
@@ -442,6 +466,18 @@ def team_tournament_rows(raw_root: Path) -> list[dict[str, Any]]:
                         "dataset_split": split,
                     },
                     **({"anchors": anchors} if anchors else {}),
+                    **(
+                        {
+                            "oracle": oracle_event(
+                                "soccer_lab.tournament_winner",
+                                "predict_tournament_winner",
+                                winner_anchor,
+                                non_negative_date_t_secs(f"{row['version']}-01-01"),
+                            )
+                        }
+                        if winner_anchor
+                        else {}
+                    ),
                 }
             )
     return out
@@ -474,6 +510,7 @@ def match_2026_rows(raw_root: Path) -> list[dict[str, Any]]:
         knockout_stage = 0 if group_stage else 1
         venue = row.get("venue", "")
         match_id = f"WC-2026-M{idx + 1:03d}"
+        anchor = score_anchor(row)
         out.append(
             {
                 "text": stat_line(
@@ -510,7 +547,13 @@ def match_2026_rows(raw_root: Path) -> list[dict[str, Any]]:
                     "away_team": row["away_team"],
                     "date": row["date"],
                 },
-                "anchors": [score_anchor(row)],
+                "anchors": [anchor],
+                "oracle": oracle_event(
+                    "soccer_lab.match_result",
+                    "predict_match_result",
+                    anchor,
+                    non_negative_date_t_secs(row["date"]),
+                ),
             }
         )
     return out
@@ -732,6 +775,7 @@ def match_rows(raw_root: Path) -> list[dict[str, Any]]:
     source_key = sha256_file(path)
     out = []
     for row in sorted(rows, key=lambda r: r["key_id"]):
+        anchor = match_result_anchor(row)
         out.append(
             {
                 "text": stat_line(
@@ -753,7 +797,13 @@ def match_rows(raw_root: Path) -> list[dict[str, Any]]:
                 ),
                 "metadata": metadata("match", "fjelstul.matches", source_key, row)
                 | {"match_id": row["match_id"], "tournament_id": row["tournament_id"]},
-                "anchors": [match_result_anchor(row)],
+                "anchors": [anchor],
+                "oracle": oracle_event(
+                    "soccer_lab.match_result",
+                    "predict_match_result",
+                    anchor,
+                    non_negative_date_t_secs(row["match_date"]),
+                ),
             }
         )
     return out
@@ -772,6 +822,7 @@ def teams_history_rows(raw_root: Path) -> list[dict[str, Any]]:
     out = []
     for row in sorted(rows, key=match_sort_key):
         prior = history.setdefault(row["team_id"], [])
+        anchor = team_result_anchor(row)
         out.append(
             {
                 "text": stat_line(
@@ -793,7 +844,13 @@ def teams_history_rows(raw_root: Path) -> list[dict[str, Any]]:
                 ),
                 "metadata": metadata("team_match_history", "fjelstul.team_appearances", source_key, row)
                 | {"match_id": row["match_id"], "team_id": row["team_id"], "tournament_id": row["tournament_id"]},
-                "anchors": [team_result_anchor(row)],
+                "anchors": [anchor],
+                "oracle": oracle_event(
+                    "soccer_lab.team_match_result",
+                    "predict_team_match_result",
+                    anchor,
+                    non_negative_date_t_secs(row["match_date"]),
+                ),
             }
         )
         cards = bookings.get((row["match_id"], row["team_id"]), {})
