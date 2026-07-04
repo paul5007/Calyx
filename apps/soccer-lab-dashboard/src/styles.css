@@ -185,15 +185,17 @@ h2 {
 }
 
 .match-row {
-  min-height: 78px;
+  min-height: 86px;
   gap: 18px;
   padding: 12px 14px;
   border: 1px solid var(--line);
   background: #fffdf7;
 }
 
-.match-row > div:first-child {
+.match-fixture {
   min-width: 210px;
+  display: grid;
+  gap: 3px;
 }
 
 .match-id {
@@ -203,20 +205,51 @@ h2 {
   font-weight: 800;
 }
 
-.pending-copy {
-  margin: 0;
-  flex: 1;
+.match-fixture small {
   color: var(--muted);
   font-weight: 700;
 }
 
+.outcome-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(72px, 1fr));
+  gap: 8px;
+}
+
+.outcome-lane {
+  min-height: 50px;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: #f8f4ea;
+}
+
+.outcome-lane span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.outcome-lane b {
+  color: var(--field);
+}
+
+.outcome-lane.is-blocked b {
+  color: var(--muted);
+}
+
 .tag {
-  min-width: 64px;
+  min-width: 128px;
   padding: 6px 8px;
   text-align: center;
   border: 1px solid var(--line);
   font-size: 0.75rem;
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .tag.high {
@@ -246,7 +279,7 @@ h2 {
 
 .radar-row {
   display: grid;
-  grid-template-columns: 64px minmax(76px, 1fr);
+  grid-template-columns: 112px minmax(76px, 1fr);
   gap: 10px;
 }
 
@@ -324,6 +357,11 @@ h2 {
   font-weight: 800;
 }
 
+.trace-list b {
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
 @media (max-width: 900px) {
   .shell {
     grid-template-columns: 1fr;
@@ -360,13 +398,18 @@ h2 {
 }
 
 @media (max-width: 560px) {
+  .match-row {
+    align-items: stretch;
+  }
+
   .match-row,
+  .outcome-grid,
   .ledger-grid {
     display: grid;
     grid-template-columns: 1fr;
   }
 
-  .match-row > div:first-child,
+  .match-fixture,
   .tag {
     width: 100%;
     min-width: 0;
