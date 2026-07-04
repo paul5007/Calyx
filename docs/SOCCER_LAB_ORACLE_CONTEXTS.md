@@ -91,12 +91,15 @@ fabricating a prediction.
 | Fixture | `soccer_lab.match_result` | `match`, `match_2026` | `predict_match_result` | `label:match_result` |
 | Team | `soccer_lab.team_match_result` | `team_match_history` | `predict_team_match_result` | `label:team_match_result` |
 | Team | `soccer_lab.tournament_winner` | `team_tournament` | `predict_tournament_winner` | `label:winner` |
+| Team | `soccer_lab.tournament_finalist` | `team_tournament` | `predict_tournament_finalist` | `label:finalist` |
+| Team | `soccer_lab.tournament_semi_finalist` | `team_tournament` | `predict_tournament_semi_finalist` | `label:semi_finalist` |
 | Player | `soccer_lab.player_impact` | `player` | `predict_player_impact` | `label:player_impact` |
 
 Fixture outcomes are `home_win`, `draw`, and `away_win`. Team match outcomes are
-`win`, `draw`, and `lose`. Tournament winner outcomes use `0` and `1`. Player
-impact is a v1 design target; current generated player rows remain unanchored
-until a grounded player-impact axis is added.
+`win`, `draw`, and `lose`. Tournament progression outcomes (`winner`,
+`finalist`, and `semi_finalist`) use `0` and `1`. Player impact is a v1 design
+target; current generated player rows remain unanchored until a grounded
+player-impact axis is added.
 
 ## Verification
 

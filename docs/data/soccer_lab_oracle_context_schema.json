@@ -99,7 +99,9 @@
     "team": {
       "domain_ids": [
         "soccer_lab.team_match_result",
-        "soccer_lab.tournament_winner"
+        "soccer_lab.tournament_winner",
+        "soccer_lab.tournament_finalist",
+        "soccer_lab.tournament_semi_finalist"
       ],
       "entities": [
         "team_match_history",
@@ -107,11 +109,15 @@
       ],
       "actions": [
         "predict_team_match_result",
-        "predict_tournament_winner"
+        "predict_tournament_winner",
+        "predict_tournament_finalist",
+        "predict_tournament_semi_finalist"
       ],
       "outcome_kinds": [
         "label:team_match_result",
-        "label:winner"
+        "label:winner",
+        "label:finalist",
+        "label:semi_finalist"
       ],
       "outcome_values": {
         "soccer_lab.team_match_result": [
@@ -120,6 +126,14 @@
           "lose"
         ],
         "soccer_lab.tournament_winner": [
+          "0",
+          "1"
+        ],
+        "soccer_lab.tournament_finalist": [
+          "0",
+          "1"
+        ],
+        "soccer_lab.tournament_semi_finalist": [
           "0",
           "1"
         ]

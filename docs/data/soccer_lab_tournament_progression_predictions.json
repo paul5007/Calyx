@@ -1,0 +1,3189 @@
+{
+  "axes": {
+    "finalist": {
+      "action_id": "predict_tournament_finalist",
+      "domain": "soccer_lab.tournament_finalist"
+    },
+    "semi_finalist": {
+      "action_id": "predict_tournament_semi_finalist",
+      "domain": "soccer_lab.tournament_semi_finalist"
+    },
+    "winner": {
+      "action_id": "predict_tournament_winner",
+      "domain": "soccer_lab.tournament_winner"
+    }
+  },
+  "generated_at": "2026-07-04",
+  "records": [
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 0,
+      "team": "France",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 0,
+      "team": "France",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 0,
+      "team": "France",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 1,
+      "team": "Spain",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 1,
+      "team": "Spain",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 1,
+      "team": "Spain",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 2,
+      "team": "Argentina",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 2,
+      "team": "Argentina",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 2,
+      "team": "Argentina",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 3,
+      "team": "England",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 3,
+      "team": "England",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 3,
+      "team": "England",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 4,
+      "team": "Portugal",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 4,
+      "team": "Portugal",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 4,
+      "team": "Portugal",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 5,
+      "team": "Brazil",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 5,
+      "team": "Brazil",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 5,
+      "team": "Brazil",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 6,
+      "team": "Netherlands",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 6,
+      "team": "Netherlands",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 6,
+      "team": "Netherlands",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 7,
+      "team": "Morocco",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 7,
+      "team": "Morocco",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 7,
+      "team": "Morocco",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 8,
+      "team": "Belgium",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 8,
+      "team": "Belgium",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 8,
+      "team": "Belgium",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 9,
+      "team": "Germany",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 9,
+      "team": "Germany",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 9,
+      "team": "Germany",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 10,
+      "team": "Croatia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 10,
+      "team": "Croatia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 10,
+      "team": "Croatia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 11,
+      "team": "Colombia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 11,
+      "team": "Colombia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 11,
+      "team": "Colombia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 12,
+      "team": "Senegal",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 12,
+      "team": "Senegal",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 12,
+      "team": "Senegal",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 13,
+      "team": "Mexico",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 13,
+      "team": "Mexico",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 13,
+      "team": "Mexico",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 14,
+      "team": "United States",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 14,
+      "team": "United States",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 14,
+      "team": "United States",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 15,
+      "team": "Uruguay",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 15,
+      "team": "Uruguay",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 15,
+      "team": "Uruguay",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 16,
+      "team": "Japan",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 16,
+      "team": "Japan",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 16,
+      "team": "Japan",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 17,
+      "team": "Switzerland",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 17,
+      "team": "Switzerland",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 17,
+      "team": "Switzerland",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 18,
+      "team": "Iran",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 18,
+      "team": "Iran",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 18,
+      "team": "Iran",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 19,
+      "team": "Turkey",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 19,
+      "team": "Turkey",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 19,
+      "team": "Turkey",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 20,
+      "team": "Ecuador",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 20,
+      "team": "Ecuador",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 20,
+      "team": "Ecuador",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 21,
+      "team": "Austria",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 21,
+      "team": "Austria",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 21,
+      "team": "Austria",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 22,
+      "team": "South Korea",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 22,
+      "team": "South Korea",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 22,
+      "team": "South Korea",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Oceania",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 23,
+      "team": "Australia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Oceania",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 23,
+      "team": "Australia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Oceania",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 23,
+      "team": "Australia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 24,
+      "team": "Algeria",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 24,
+      "team": "Algeria",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 24,
+      "team": "Algeria",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 25,
+      "team": "Egypt",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 25,
+      "team": "Egypt",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 25,
+      "team": "Egypt",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 26,
+      "team": "Canada",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 26,
+      "team": "Canada",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 26,
+      "team": "Canada",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 27,
+      "team": "Norway",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 27,
+      "team": "Norway",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 27,
+      "team": "Norway",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 28,
+      "team": "Panama",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 28,
+      "team": "Panama",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 28,
+      "team": "Panama",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 29,
+      "team": "Ivory Coast",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 29,
+      "team": "Ivory Coast",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 29,
+      "team": "Ivory Coast",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 30,
+      "team": "Sweden",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 30,
+      "team": "Sweden",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 30,
+      "team": "Sweden",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 31,
+      "team": "Paraguay",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 31,
+      "team": "Paraguay",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "South America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 31,
+      "team": "Paraguay",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 32,
+      "team": "Czech Republic",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 32,
+      "team": "Czech Republic",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 32,
+      "team": "Czech Republic",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 33,
+      "team": "Scotland",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 33,
+      "team": "Scotland",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 33,
+      "team": "Scotland",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 34,
+      "team": "Tunisia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 34,
+      "team": "Tunisia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 34,
+      "team": "Tunisia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 35,
+      "team": "DR Congo",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 35,
+      "team": "DR Congo",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 35,
+      "team": "DR Congo",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 36,
+      "team": "Uzbekistan",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 36,
+      "team": "Uzbekistan",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 36,
+      "team": "Uzbekistan",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 37,
+      "team": "Qatar",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 37,
+      "team": "Qatar",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 37,
+      "team": "Qatar",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 38,
+      "team": "Iraq",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 38,
+      "team": "Iraq",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 38,
+      "team": "Iraq",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 39,
+      "team": "South Africa",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 39,
+      "team": "South Africa",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 39,
+      "team": "South Africa",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 40,
+      "team": "Saudi Arabia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 40,
+      "team": "Saudi Arabia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 40,
+      "team": "Saudi Arabia",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 41,
+      "team": "Jordan",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 41,
+      "team": "Jordan",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Asia",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 41,
+      "team": "Jordan",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 42,
+      "team": "Bosnia and Herzegovina",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 42,
+      "team": "Bosnia and Herzegovina",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Europe",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 42,
+      "team": "Bosnia and Herzegovina",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 43,
+      "team": "Cape Verde",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 43,
+      "team": "Cape Verde",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 43,
+      "team": "Cape Verde",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 44,
+      "team": "Ghana",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 44,
+      "team": "Ghana",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Africa",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 44,
+      "team": "Ghana",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 45,
+      "team": "Cura?o",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 45,
+      "team": "Cura?o",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 45,
+      "team": "Cura?o",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 46,
+      "team": "Haiti",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 46,
+      "team": "Haiti",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "North America",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 46,
+      "team": "Haiti",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_winner",
+      "axis": "winner",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Oceania",
+      "domain": "soccer_lab.tournament_winner",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "349916a3d1b59d17f9aaf8da59de83a16d72f07e2749d535c171d3f488510957",
+        "oracle_stdout_sha256": "92d58e53862db4c16afef55d6b43ef175dbf4cf37adbf1e3aab1b563c228108b",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 47,
+      "team": "New Zealand",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_finalist",
+      "axis": "finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Oceania",
+      "domain": "soccer_lab.tournament_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "a07bcfe1f1a5e6aed7e17ea6fb4628d39ce26a396fcea200e53efe7ff2ae7bb7",
+        "oracle_stdout_sha256": "ddff6bec760789f10a6d22beff45591fcf2a181f0d96bb1b1e6612de565fba10",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 47,
+      "team": "New Zealand",
+      "version": "2026"
+    },
+    {
+      "action_id": "predict_tournament_semi_finalist",
+      "axis": "semi_finalist",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.0,
+        "sufficient": false
+      },
+      "continent": "Oceania",
+      "domain": "soccer_lab.tournament_semi_finalist",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "e16ee9e6f6a5e58e813299f3bae685f9c8df80cdd83057f3474f881ca846a31f",
+        "oracle_stdout_sha256": "62c0312bdef14e6329318f028a52f47392b544a7bca15ff39b2d1a785f26f265",
+        "source_report": "scratchpad/wc2026/fsv/oracle_tournament_progression/report.json"
+      },
+      "source_row_index": 47,
+      "team": "New Zealand",
+      "version": "2026"
+    }
+  ],
+  "schema_version": 1,
+  "source": "harrachimustapha/fifa-world-cup-team-dataset test.csv"
+}
