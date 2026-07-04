@@ -19,7 +19,8 @@ use axum::{
     routing::get,
 };
 use calyx_web_api::{
-    AuthCtx, ErrorCode, Guardrails, app, build_app, guardrails, panic_catch_layer, require_bearer,
+    AuthCtx, ErrorCode, Guardrails, PredictionCtx, app, build_app, build_app_with_predictions,
+    guardrails, panic_catch_layer, require_bearer,
 };
 use http_body_util::BodyExt;
 use serde_json::Value;
@@ -53,6 +54,25 @@ async fn call(app: Router, req: Request<Body>) -> (StatusCode, Value) {
         .to_bytes();
     let json: Value = serde_json::from_slice(&bytes).expect("error responses are JSON envelopes");
     (status, json)
+}
+
+/// Drive one request through a router and return status, selected headers, and
+/// parsed JSON body.
+async fn call_with_headers(
+    app: Router,
+    req: Request<Body>,
+) -> (StatusCode, axum::http::HeaderMap, Value) {
+    let resp = app.oneshot(req).await.expect("router is infallible");
+    let status = resp.status();
+    let headers = resp.headers().clone();
+    let bytes = resp
+        .into_body()
+        .collect()
+        .await
+        .expect("collect body")
+        .to_bytes();
+    let json: Value = serde_json::from_slice(&bytes).expect("response is JSON");
+    (status, headers, json)
 }
 
 /// Assert a body is the closed `{code,message,remediation}` envelope for `code`.
@@ -371,6 +391,192 @@ fn auth_ctx_rejects_empty_secret_loud() {
         AuthCtx::new("   ").is_err(),
         "an empty/blank bearer secret must fail loud, never anonymous"
     );
+}
+
+// ---------------------------------------------------------------------------
+// #50: POST /predict/match serves real Soccer Lab Oracle export records.
+// ---------------------------------------------------------------------------
+
+fn soccer_prediction_export() -> std::path::PathBuf {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../docs/data/soccer_lab_prediction_export.json")
+}
+
+fn prediction_app() -> Router {
+    let predict =
+        Arc::new(PredictionCtx::load(&soccer_prediction_export()).expect("load prediction export"));
+    assert_eq!(
+        predict.match_count(),
+        16,
+        "real export has 16 match records"
+    );
+    let auth = Arc::new(AuthCtx::new("predict-secret-FSV").expect("secret"));
+    build_app_with_predictions(
+        Arc::new(Guardrails::new(
+            100.0,
+            100.0,
+            100.0,
+            100.0,
+            Duration::from_secs(5),
+        )),
+        predict,
+        auth,
+    )
+}
+
+fn match_truth(match_id: &str) -> Value {
+    let export: Value =
+        serde_json::from_slice(&std::fs::read(soccer_prediction_export()).expect("read export"))
+            .expect("parse export");
+    export["records"]
+        .as_array()
+        .expect("records array")
+        .iter()
+        .find(|record| record.pointer("/input/entity_id").and_then(Value::as_str) == Some(match_id))
+        .expect("match record present")
+        .clone()
+}
+
+fn predict_req(body: &'static str) -> Request<Body> {
+    Request::post("/predict/match")
+        .header(header::AUTHORIZATION, "Bearer predict-secret-FSV")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(body))
+        .unwrap()
+}
+
+#[tokio::test]
+async fn predict_match_returns_exact_export_record_and_cache_headers() {
+    let app = prediction_app();
+    let truth = match_truth("WC-2026-M089");
+    let (status, headers, body) =
+        call_with_headers(app.clone(), predict_req(r#"{"matchId":"WC-2026-M089"}"#)).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        headers.get("x-cache").and_then(|v| v.to_str().ok()),
+        Some("MISS")
+    );
+    assert_eq!(
+        body, truth,
+        "HTTP response must equal export source of truth"
+    );
+
+    let (status, headers, body) =
+        call_with_headers(app, predict_req(r#"{"matchId":"WC-2026-M089"}"#)).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        headers.get("x-cache").and_then(|v| v.to_str().ok()),
+        Some("HIT")
+    );
+    assert_eq!(body, truth, "cache hit must replay the same record");
+}
+
+#[tokio::test]
+async fn predict_match_real_loopback_http_equals_export_truth() {
+    let app = prediction_app();
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind prediction HTTP listener");
+    let addr = listener.local_addr().expect("local_addr");
+    let server = tokio::spawn(async move {
+        axum::serve(listener, app)
+            .await
+            .expect("serve prediction app");
+    });
+
+    let body = r#"{"matchId":"WC-2026-M090"}"#;
+    let request = format!(
+        "POST /predict/match HTTP/1.1\r\nHost: {addr}\r\nAuthorization: Bearer predict-secret-FSV\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        body.len()
+    );
+    let mut stream = tokio::net::TcpStream::connect(addr)
+        .await
+        .expect("connect prediction HTTP listener");
+    {
+        use tokio::io::AsyncWriteExt;
+        stream
+            .write_all(request.as_bytes())
+            .await
+            .expect("write request");
+    }
+    let mut response = Vec::new();
+    {
+        use tokio::io::AsyncReadExt;
+        stream
+            .read_to_end(&mut response)
+            .await
+            .expect("read response");
+    }
+    server.abort();
+
+    let response = String::from_utf8(response).expect("response utf8");
+    assert!(
+        response.starts_with("HTTP/1.1 200 OK"),
+        "response: {response}"
+    );
+    let (_, json) = response
+        .split_once("\r\n\r\n")
+        .expect("HTTP response has body separator");
+    let served: Value = serde_json::from_str(json).expect("served JSON");
+    assert_eq!(
+        served,
+        match_truth("WC-2026-M090"),
+        "real HTTP response must equal export source of truth"
+    );
+}
+
+#[tokio::test]
+async fn predict_match_requires_bearer() {
+    let (status, body) = call(
+        prediction_app(),
+        Request::post("/predict/match")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(r#"{"matchId":"WC-2026-M089"}"#))
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_envelope(&body, ErrorCode::Unauthorized);
+}
+
+#[tokio::test]
+async fn predict_match_unknown_id_is_404_envelope() {
+    let (status, body) = call(
+        prediction_app(),
+        predict_req(r#"{"matchId":"WC-2026-M999"}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_envelope(&body, ErrorCode::NotFound);
+}
+
+#[tokio::test]
+async fn predict_match_rejects_malformed_json() {
+    let (status, body) = call(
+        prediction_app(),
+        predict_req(r#"{"matchId":"WC-2026-M089""#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+}
+
+#[tokio::test]
+async fn predict_match_rejects_empty_match_id() {
+    let (status, body) = call(prediction_app(), predict_req(r#"{"matchId":"   "}"#)).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+}
+
+#[tokio::test]
+async fn predict_match_rejects_unknown_fields() {
+    let (status, body) = call(
+        prediction_app(),
+        predict_req(r#"{"matchId":"WC-2026-M089","extra":true}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
 }
 
 // ---------------------------------------------------------------------------

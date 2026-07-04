@@ -8,7 +8,8 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use calyx_web_api::{
-    AuthCtx, BIND_ADDR, MeasureCtx, ProvenanceCtx, app_with_measure_and_provenance,
+    AuthCtx, BIND_ADDR, MeasureCtx, PredictionCtx, ProvenanceCtx,
+    app_with_measure_provenance_and_predictions,
 };
 
 #[tokio::main]
@@ -24,6 +25,11 @@ async fn main() {
     // provenance endpoint is never served over an unreadable ledger.
     let prov = ProvenanceCtx::from_env()
         .unwrap_or_else(|error| panic!("CALYX_WEB_API_LEDGER_LOAD_FAILED: {error}"));
+
+    // Fail loud at startup if the prediction export is not configured/readable:
+    // `/predict/match` must serve real Soccer Lab Oracle records, never a stub.
+    let predict = PredictionCtx::from_env()
+        .unwrap_or_else(|error| panic!("CALYX_WEB_API_PREDICTION_LOAD_FAILED: {error}"));
 
     // Fail loud at startup if the bearer secret is unset — the origin is never
     // anonymous (#1906/#587); every request must present the shared-secret bearer.
@@ -43,12 +49,17 @@ async fn main() {
         .unwrap_or_else(|e| panic!("CALYX_WEB_API_BIND_FAILED: cannot bind {addr}: {e}"));
 
     tracing::info!(
-        "calyx-web-api listening on http://{addr} (read-only, bearer-locked, measure + provenance wired)"
+        "calyx-web-api listening on http://{addr} (read-only, bearer-locked, measure + provenance + predictions wired)"
     );
 
     axum::serve(
         listener,
-        app_with_measure_and_provenance(Arc::new(ctx), Arc::new(prov), Arc::new(auth)),
+        app_with_measure_provenance_and_predictions(
+            Arc::new(ctx),
+            Arc::new(prov),
+            Arc::new(predict),
+            Arc::new(auth),
+        ),
     )
     .await
     .unwrap_or_else(|e| panic!("CALYX_WEB_API_SERVE_FAILED: {e}"));

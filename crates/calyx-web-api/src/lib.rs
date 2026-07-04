@@ -122,6 +122,10 @@ mod provenance;
 pub use provenance::ProvenanceCtx;
 use provenance::provenance_wired;
 
+mod prediction;
+pub use prediction::PredictionCtx;
+use prediction::predict_match;
+
 /// Build the app with `/v1/provenance/{id}` wired to a real Ledger but
 /// `/v1/measure` still scaffolded (501). Used by the provenance FSV tests so a
 /// real on-disk ledger can be exercised over HTTP without a loaded vault.
@@ -236,6 +240,86 @@ pub fn app_with_measure_and_provenance(
         prov,
         auth,
     )
+}
+
+/// Production app with measure + provenance + Soccer Lab prediction endpoints
+/// behind the same bearer auth, guardrails, metrics, and panic envelope.
+pub fn build_app_with_measure_provenance_and_predictions(
+    limiter: Arc<Guardrails>,
+    measure_ctx: Arc<MeasureCtx>,
+    prov: Arc<ProvenanceCtx>,
+    predict: Arc<PredictionCtx>,
+    auth: Arc<AuthCtx>,
+) -> Router {
+    let http_metrics = Arc::new(HttpMetrics::new());
+    let metrics_ctx = Arc::new(MetricsCtx {
+        measure: Arc::clone(&measure_ctx),
+        prov: Arc::clone(&prov),
+        http: Arc::clone(&http_metrics),
+    });
+    let metrics_route = Router::new()
+        .route("/metrics", get(metrics_handler))
+        .with_state(metrics_ctx);
+    let measure_route = Router::new()
+        .route("/v1/health", get(health_full))
+        .route("/v1/measure", post(measure))
+        .route("/v1/search", post(search))
+        .route("/v1/guard", post(guard_handler))
+        .route("/v1/kernel", get(kernel_handler))
+        .route("/v1/assay/bits", get(assay_bits_handler))
+        .with_state(measure_ctx);
+    let prov_route = Router::new()
+        .route("/v1/provenance/{id}", get(provenance_wired))
+        .with_state(prov);
+    let prediction_route = Router::new()
+        .route("/predict/match", post(predict_match))
+        .with_state(predict);
+    routes_base()
+        .merge(metrics_route)
+        .merge(measure_route)
+        .merge(prov_route)
+        .merge(prediction_route)
+        .fallback(fallback_404)
+        .method_not_allowed_fallback(fallback_405)
+        .route_layer(middleware::from_fn_with_state(http_metrics, track_metrics))
+        .layer(middleware::from_fn_with_state(limiter, guardrails))
+        .layer(middleware::from_fn_with_state(auth, require_bearer))
+        .layer(panic_catch_layer())
+}
+
+/// Production app with measure + provenance + prediction endpoints wired.
+pub fn app_with_measure_provenance_and_predictions(
+    measure_ctx: Arc<MeasureCtx>,
+    prov: Arc<ProvenanceCtx>,
+    predict: Arc<PredictionCtx>,
+    auth: Arc<AuthCtx>,
+) -> Router {
+    build_app_with_measure_provenance_and_predictions(
+        Arc::new(Guardrails::production()),
+        measure_ctx,
+        prov,
+        predict,
+        auth,
+    )
+}
+
+/// Prediction-only app used by endpoint FSV tests and lightweight deployments
+/// that only need the Soccer Lab prediction surface.
+pub fn build_app_with_predictions(
+    limiter: Arc<Guardrails>,
+    predict: Arc<PredictionCtx>,
+    auth: Arc<AuthCtx>,
+) -> Router {
+    let prediction_route = Router::new()
+        .route("/predict/match", post(predict_match))
+        .with_state(predict);
+    routes_base()
+        .merge(prediction_route)
+        .fallback(fallback_404)
+        .method_not_allowed_fallback(fallback_405)
+        .layer(middleware::from_fn_with_state(limiter, guardrails))
+        .layer(middleware::from_fn_with_state(auth, require_bearer))
+        .layer(panic_catch_layer())
 }
 
 /// `/v1/provenance/{id}` scaffold (used by [`build_app`]/[`app`]): echoes the
