@@ -2,7 +2,7 @@ use super::cache::{cached_json_response, store_and_respond};
 use super::*;
 
 // ---------------------------------------------------------------------------
-// /v1/provenance/{id} — real Ledger answer-trace (#577)
+// /v1/provenance/{id} and /provenance/{id} — real Ledger answer-trace (#577)
 // ---------------------------------------------------------------------------
 
 /// Real vault-manifest-backed quarantine: a ledger seq is quarantined iff the
@@ -30,8 +30,9 @@ impl QuarantineLookup for VaultQuarantine {
 pub struct ProvenanceCtx {
     pub(super) store: AsterLedgerCfStore,
     quarantine: VaultQuarantine,
-    /// Bounded TTL cache for `/v1/provenance/{id}` (#1898) — the headline win,
-    /// since each miss does a full ledger `scan()` + `verify_chain()`.
+    /// Bounded TTL cache for `/v1/provenance/{id}` and `/provenance/{id}`
+    /// (#1898) — the headline win, since each miss does a full ledger `scan()`
+    /// + `verify_chain()`.
     pub(super) cache: ResponseCache,
 }
 
@@ -100,7 +101,8 @@ fn chain_json(result: &VerifyResult) -> Value {
     }
 }
 
-/// `GET /v1/provenance/{id}` — the real Ledger answer-trace for an answer id.
+/// `GET /v1/provenance/{id}` / `GET /provenance/{id}` — the real Ledger
+/// answer-trace for an answer id.
 ///
 /// The `{id}` path segment is the answer id (matched against the `Query`
 /// subject bytes of `Answer` ledger entries). Returns the answer trace's
@@ -163,6 +165,17 @@ pub(super) async fn provenance_wired(
         "complete": trace.complete,
         "warnings": trace.warnings.iter().map(|warning| format!("{warning:?}")).collect::<Vec<_>>(),
         "chain": chain_json(&chain),
+        "path": trace.path.iter().map(|hop| json!({
+            "cxId": hop.cx_id.to_string(),
+            "fromCxId": hop.from_cx_id.map(|cx_id| cx_id.to_string()),
+            "hop": hop.hop,
+            "score": hop.score,
+            "lensId": hop.lens_id.map(|lens_id| lens_id.to_string()),
+            "ledgerSeq": hop.ledger_seq,
+        })).collect::<Vec<_>>(),
+        "fusionWeights": trace.fusion_weights,
+        "guardResult": trace.guard_result,
+        "freshnessTs": trace.freshness_ts,
         "entries": entries,
     });
     store_and_respond(&ctx.cache, cache_key, &body)

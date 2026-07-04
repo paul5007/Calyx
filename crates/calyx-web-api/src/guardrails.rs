@@ -113,6 +113,7 @@ fn routes() -> Router {
         .route("/v1/kernel", get(not_implemented))
         .route("/v1/assay/bits", get(not_implemented))
         .route("/v1/provenance/{id}", get(provenance_stub))
+        .route("/provenance/{id}", get(provenance_stub))
 }
 
 /// The shared base with NO route attached — every endpoint (including the now

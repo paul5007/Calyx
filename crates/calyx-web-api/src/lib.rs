@@ -132,6 +132,7 @@ use prediction::{predict_match, predict_player, predict_progression};
 pub fn build_app_with_provenance(limiter: Arc<Guardrails>, prov: Arc<ProvenanceCtx>) -> Router {
     let prov_route = Router::new()
         .route("/v1/provenance/{id}", get(provenance_wired))
+        .route("/provenance/{id}", get(provenance_wired))
         .with_state(prov);
     routes_base()
         .route("/v1/health", get(health))
@@ -171,6 +172,7 @@ pub fn build_app_with_search(
         .with_state(measure_ctx);
     routes_base()
         .route("/v1/provenance/{id}", get(provenance_stub))
+        .route("/provenance/{id}", get(provenance_stub))
         .merge(vault_route)
         .fallback(fallback_404)
         .method_not_allowed_fallback(fallback_405)
@@ -219,6 +221,7 @@ pub fn build_app_with_measure_and_provenance(
         .with_state(measure_ctx);
     let prov_route = Router::new()
         .route("/v1/provenance/{id}", get(provenance_wired))
+        .route("/provenance/{id}", get(provenance_wired))
         .with_state(prov);
     routes_base()
         .merge(metrics_route)
@@ -278,6 +281,7 @@ pub fn build_app_with_measure_provenance_and_predictions(
         .with_state(measure_ctx);
     let prov_route = Router::new()
         .route("/v1/provenance/{id}", get(provenance_wired))
+        .route("/provenance/{id}", get(provenance_wired))
         .with_state(prov);
     let prediction_route = Router::new()
         .route("/predict/match", post(predict_match))
@@ -334,13 +338,13 @@ pub fn build_app_with_predictions(
         .layer(panic_catch_layer())
 }
 
-/// `/v1/provenance/{id}` scaffold (used by [`build_app`]/[`app`]): echoes the
-/// requested id into the fail-loud 501 so the unwired route is unambiguous in
-/// logs.
+/// `/v1/provenance/{id}` and `/provenance/{id}` scaffold (used by
+/// [`build_app`]/[`app`]): echoes the requested id into the fail-loud 501 so
+/// the unwired route is unambiguous in logs.
 async fn provenance_stub(Path(id): Path<String>) -> ApiError {
     ApiError::new(
         ErrorCode::NotImplemented,
-        format!("/v1/provenance/{id} is scaffolded but not yet wired to calyxd"),
+        format!("provenance/{id} is scaffolded but not yet wired to calyxd"),
     )
 }
 
