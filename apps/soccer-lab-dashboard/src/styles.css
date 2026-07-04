@@ -154,7 +154,8 @@ h2 {
 .bracket-panel,
 .ledger-panel,
 .trace-panel,
-.player-panel {
+.player-panel,
+.explain-panel {
   border: 1px solid var(--line);
   background: rgba(255, 250, 240, 0.92);
   box-shadow: 0 20px 70px rgba(24, 33, 29, 0.08);
@@ -167,7 +168,8 @@ h2 {
 .bracket-panel,
 .ledger-panel,
 .trace-panel,
-.player-panel {
+.player-panel,
+.explain-panel {
   padding: 18px;
 }
 
@@ -422,7 +424,8 @@ h2 {
   color: var(--muted);
 }
 
-.player-panel {
+.player-panel,
+.explain-panel {
   margin-top: 18px;
 }
 
@@ -503,6 +506,61 @@ h2 {
   color: var(--field);
 }
 
+.explain-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.facet-card,
+.kernel-card,
+.bits-card,
+.provenance-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.facet-card article,
+.kernel-card article,
+.bits-card article,
+.provenance-card article {
+  min-height: 72px;
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: #fffdf7;
+  min-width: 0;
+}
+
+.facet-card strong,
+.bits-card strong,
+.kernel-card span,
+.provenance-card span {
+  overflow-wrap: anywhere;
+}
+
+.facet-card span,
+.facet-card small,
+.kernel-card small,
+.bits-card span,
+.provenance-card span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.facet-card b,
+.kernel-card b,
+.bits-card b,
+.provenance-card b {
+  color: var(--field);
+  overflow-wrap: anywhere;
+}
+
 .trace-list {
   margin: 0;
   padding: 0;
@@ -575,6 +633,7 @@ h2 {
   .butterfly-grid,
   .player-summary,
   .player-row,
+  .explain-grid,
   .ledger-grid {
     display: grid;
     grid-template-columns: 1fr;

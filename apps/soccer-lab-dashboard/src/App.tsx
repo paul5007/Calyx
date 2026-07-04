@@ -10,8 +10,11 @@ import {
 } from "lucide-react";
 import butterflyTree from "../../../docs/data/soccer_lab_bracket_butterfly_tree.json";
 import matchPredictions from "../../../docs/data/soccer_lab_match_predictions.json";
+import sufficiencyVerdicts from "../../../docs/data/soccer_lab_oracle_sufficiency_verdicts.json";
 import playerPredictions from "../../../docs/data/soccer_lab_player_impact_predictions.json";
 import progressionPredictions from "../../../docs/data/soccer_lab_tournament_progression_predictions.json";
+import reverseSignatures from "../../../docs/data/soccer_lab_reverse_causal_signatures.json";
+import routeAudit from "../../../docs/data/soccer_lab_serving_route_audit.json";
 
 type PredictionOutcome = "home_win" | "draw" | "away_win";
 type ProgressionAxis = "winner" | "finalist" | "semi_finalist";
@@ -142,6 +145,64 @@ type PlayerImpactExport = {
   schema_version: number;
 };
 
+type ReverseCause = {
+  action_or_event: string;
+  confidence: number;
+  provisional: boolean;
+};
+
+type FacetSignature = {
+  action: string;
+  answer_hits: number;
+  facet: string;
+  feature: string;
+  lift: number;
+  precision: number;
+  signature_id: string;
+  structural_confidence: number;
+  total_hits: number;
+};
+
+type ReverseSignatureExport = {
+  answer: string;
+  domain: string;
+  generated_at: string;
+  prior_answer_rate: number;
+  provenance: {
+    oracle_stdout_sha256: string;
+    source_report: string;
+  };
+  reverse_query: {
+    causes: ReverseCause[];
+  };
+  selected_signatures: FacetSignature[];
+};
+
+type SufficiencyVerdict = {
+  I_panel_oracle: number | null;
+  deficit_bits: number | null;
+  outcome_entropy_bits: number | null;
+  panel_bits_gte_outcome_entropy: boolean;
+  status: string;
+};
+
+type SufficiencyExport = {
+  source_report: {
+    path: string;
+    sha256: string;
+  };
+  verdicts: Record<string, SufficiencyVerdict>;
+};
+
+type RouteAudit = {
+  required_soccer_lab_endpoints: Array<{
+    method: string;
+    path: string;
+    status: string;
+  }>;
+  route_count: number;
+};
+
 type OutcomeLane = {
   label: string;
   outcome: PredictionOutcome;
@@ -156,6 +217,9 @@ const progressionRecords = progressionExport.records;
 const bracketTree = butterflyTree as ButterflyTree;
 const playerExport = playerPredictions as PlayerImpactExport;
 const playerRecords = playerExport.records;
+const reverseExport = reverseSignatures as ReverseSignatureExport;
+const sufficiencyExport = sufficiencyVerdicts as SufficiencyExport;
+const servingAudit = routeAudit as RouteAudit;
 
 const outcomes: Array<{ label: string; outcome: PredictionOutcome }> = [
   { label: "Home", outcome: "home_win" },
@@ -192,6 +256,10 @@ const playerSummary = {
 
 function percent(value: number) {
   return `${Math.round(value * 100)}%`;
+}
+
+function bits(value: number | null) {
+  return value == null ? "n/a" : value.toFixed(3);
 }
 
 function outcomeLanes(record: MatchPredictionRecord): OutcomeLane[] {
@@ -267,6 +335,13 @@ const playerLeaderboard = [...playerRecords]
       right.prior_goals - left.prior_goals || right.prior_caps - left.prior_caps,
   )
   .slice(0, 10);
+
+const topFacetSignatures = reverseExport.selected_signatures.slice(0, 4);
+const kernelPath = reverseExport.reverse_query.causes.slice(0, 5);
+const sufficiencyRows = Object.entries(sufficiencyExport.verdicts);
+const provenanceRoute = servingAudit.required_soccer_lab_endpoints.find(
+  (route) => route.path === "/provenance/:id",
+);
 
 const butterflyHops = Array.from(
   bracketTree.records
@@ -481,6 +556,67 @@ export function App() {
                 </span>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="explain-panel" aria-label="Prediction explainability">
+          <div className="panel-head compact">
+            <div>
+              <p className="eyebrow">Explainability</p>
+              <h2>Kernel, bits, provenance</h2>
+            </div>
+            <Braces size={20} />
+          </div>
+          <div className="explain-grid">
+            <div className="facet-card">
+              <p className="eyebrow">Contributing facets</p>
+              {topFacetSignatures.map((signature) => (
+                <article key={signature.signature_id}>
+                  <strong>{signature.feature}</strong>
+                  <span>{signature.facet}</span>
+                  <b>{percent(signature.precision)}</b>
+                  <small>{signature.answer_hits}/{signature.total_hits} answer hits</small>
+                </article>
+              ))}
+            </div>
+
+            <div className="kernel-card">
+              <p className="eyebrow">Kernel path</p>
+              {kernelPath.map((cause) => (
+                <article key={cause.action_or_event}>
+                  <span>{cause.action_or_event}</span>
+                  <b>{percent(cause.confidence)}</b>
+                  <small>{cause.provisional ? "provisional" : "anchored"}</small>
+                </article>
+              ))}
+            </div>
+
+            <div className="bits-card">
+              <p className="eyebrow">Oracle bits</p>
+              {sufficiencyRows.map(([domain, verdict]) => (
+                <article key={domain}>
+                  <strong>{domain.replace("soccer_lab.", "")}</strong>
+                  <span>{verdict.status}</span>
+                  <b>{bits(verdict.deficit_bits)}</b>
+                </article>
+              ))}
+            </div>
+
+            <div className="provenance-card">
+              <p className="eyebrow">Provenance</p>
+              <article>
+                <span>reverse report</span>
+                <b>{reverseExport.provenance.oracle_stdout_sha256.slice(0, 12)}</b>
+              </article>
+              <article>
+                <span>sufficiency report</span>
+                <b>{sufficiencyExport.source_report.sha256.slice(0, 12)}</b>
+              </article>
+              <article>
+                <span>{provenanceRoute?.path ?? "/provenance/:id"}</span>
+                <b>{provenanceRoute?.status ?? "missing"}</b>
+              </article>
+            </div>
           </div>
         </section>
       </section>
