@@ -16,8 +16,8 @@ use std::sync::Arc;
 
 use calyxd::health::CalyxHealthResult;
 use calyxd::metrics::{
-    CalyxMetrics, ChainVerifyMetrics, SearchStrategy, VerifyOutcome, ZfsDatasetChecksum,
-    ZfsIntegritySnapshot, ZfsPoolIntegrity,
+    CalyxMetrics, ChainVerifyMetrics, PredictionSurface, SearchStrategy, VerifyOutcome,
+    ZfsDatasetChecksum, ZfsIntegritySnapshot, ZfsPoolIntegrity,
 };
 use calyxd::server::MetricsServer;
 use calyxd::verify::VerifyRestoreReport;
@@ -36,6 +36,7 @@ fn recorded_surface() -> Arc<CalyxMetrics> {
     // Synthetic inputs with hand-computable exposition outputs:
     surface.observe_ingest(VAULT, 0.150, true); // 0.150s → le="0.25" bucket
     surface.observe_search(VAULT, SearchStrategy::WeightedRrf, 0.020, true);
+    surface.observe_prediction(VAULT, PredictionSurface::Match, 0.030, true);
     surface.set_recall_tripwire(VAULT, false); // tripped → 0
     surface.set_guard_rates(VAULT, "subject", 0.01, 0.02);
     surface.set_assay_n_eff(VAULT, "default", 128.0);
@@ -129,6 +130,14 @@ fn full_surface_served_over_real_http_with_recorded_values() {
     assert_line(
         &body,
         "calyx_search_recall_tripwire{vault=\"/data/fsv-vault\"} 0",
+    );
+    assert_line(
+        &body,
+        "calyx_prediction_total{endpoint=\"match\",status=\"ok\",vault=\"/data/fsv-vault\"} 1",
+    );
+    assert_line(
+        &body,
+        "calyx_prediction_duration_seconds_bucket{endpoint=\"match\",vault=\"/data/fsv-vault\",le=\"0.05\"} 1",
     );
 
     // Dynamic-cardinality families materialize on first observation.

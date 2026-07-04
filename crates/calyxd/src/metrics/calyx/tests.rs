@@ -134,11 +134,18 @@ fn verify_restore_records_pass_fail_gauges_and_counts() {
 fn search_strategy_and_guard_families_appear_on_record() {
     let metrics = metrics();
     metrics.observe_search("/data/vault-a", SearchStrategy::WeightedRrf, 0.02, true);
+    metrics.observe_prediction("/data/vault-a", PredictionSurface::Match, 0.03, true);
     metrics.set_guard_rates("/data/vault-a", "subject", 0.01, 0.02);
     metrics.set_assay_n_eff("/data/vault-a", "default", 128.0);
     let text = metrics.encode_text().unwrap();
     assert!(text.contains(
         "calyx_search_total{status=\"ok\",strategy=\"weighted_rrf\",vault=\"/data/vault-a\"} 1"
+    ));
+    assert!(text.contains(
+        "calyx_prediction_total{endpoint=\"match\",status=\"ok\",vault=\"/data/vault-a\"} 1"
+    ));
+    assert!(text.contains(
+        "calyx_prediction_duration_seconds_count{endpoint=\"match\",vault=\"/data/vault-a\"} 1"
     ));
     assert!(text.contains("calyx_guard_far{slot=\"subject\",vault=\"/data/vault-a\"} 0.01"));
     assert!(text.contains("calyx_guard_frr{slot=\"subject\",vault=\"/data/vault-a\"} 0.02"));

@@ -61,6 +61,31 @@ impl SearchStrategy {
     }
 }
 
+/// Soccer Lab prediction endpoint labels. Kept closed to avoid unbounded
+/// cardinality from request payloads or route aliases.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PredictionSurface {
+    Match,
+    Progression,
+    Player,
+}
+
+impl PredictionSurface {
+    pub const ALL: [PredictionSurface; 3] = [
+        PredictionSurface::Match,
+        PredictionSurface::Progression,
+        PredictionSurface::Player,
+    ];
+
+    pub fn label(&self) -> &'static str {
+        match self {
+            PredictionSurface::Match => "match",
+            PredictionSurface::Progression => "progression",
+            PredictionSurface::Player => "player",
+        }
+    }
+}
+
 /// Outcome `status` label value for ingest/search counters.
 fn status_label(ok: bool) -> &'static str {
     if ok { "ok" } else { "err" }
@@ -75,6 +100,8 @@ pub struct CalyxMetrics {
     search_duration: HistogramVec,
     search_recall_tripwire: IntGaugeVec,
     search_total: IntCounterVec,
+    prediction_duration: HistogramVec,
+    prediction_total: IntCounterVec,
     guard_far: GaugeVec,
     guard_frr: GaugeVec,
     assay_n_eff: GaugeVec,
@@ -140,6 +167,15 @@ impl CalyxMetrics {
                         .with_label_values(&[vault, strategy.label(), status]);
                 }
             }
+            for endpoint in PredictionSurface::ALL {
+                let _ = self
+                    .prediction_duration
+                    .with_label_values(&[vault, endpoint.label()]);
+                for status in ["ok", "err"] {
+                    self.prediction_total
+                        .with_label_values(&[vault, endpoint.label(), status]);
+                }
+            }
         }
     }
 
@@ -166,6 +202,22 @@ impl CalyxMetrics {
             .observe(duration_secs);
         self.search_total
             .with_label_values(&[vault, strategy.label(), status_label(ok)])
+            .inc();
+    }
+
+    /// Records one Soccer Lab prediction request: latency + outcome counter.
+    pub fn observe_prediction(
+        &self,
+        vault: &str,
+        endpoint: PredictionSurface,
+        duration_secs: f64,
+        ok: bool,
+    ) {
+        self.prediction_duration
+            .with_label_values(&[vault, endpoint.label()])
+            .observe(duration_secs);
+        self.prediction_total
+            .with_label_values(&[vault, endpoint.label(), status_label(ok)])
             .inc();
     }
 

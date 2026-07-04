@@ -82,6 +82,29 @@ impl CalyxMetrics {
             )
             .expect("define calyx_search_total"),
         );
+        let prediction_duration = register(
+            &registry,
+            HistogramVec::new(
+                HistogramOpts::new(
+                    "calyx_prediction_duration_seconds",
+                    "Soccer Lab prediction request latency in seconds by endpoint",
+                )
+                .buckets(LATENCY_BUCKETS.to_vec()),
+                &["vault", "endpoint"],
+            )
+            .expect("define calyx_prediction_duration_seconds"),
+        );
+        let prediction_total = register(
+            &registry,
+            IntCounterVec::new(
+                Opts::new(
+                    "calyx_prediction_total",
+                    "Soccer Lab prediction requests by endpoint and outcome status",
+                ),
+                &["vault", "endpoint", "status"],
+            )
+            .expect("define calyx_prediction_total"),
+        );
         let guard_far = register(
             &registry,
             GaugeVec::new(
@@ -293,6 +316,8 @@ impl CalyxMetrics {
             search_duration,
             search_recall_tripwire,
             search_total,
+            prediction_duration,
+            prediction_total,
             guard_far,
             guard_frr,
             assay_n_eff,

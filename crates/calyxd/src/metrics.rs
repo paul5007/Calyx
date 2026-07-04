@@ -10,10 +10,15 @@
 
 mod calyx;
 mod hazards;
+mod ops_log;
 mod zfs;
 
-pub use calyx::{CalyxMetrics, SearchStrategy};
+pub use calyx::{CalyxMetrics, PredictionSurface, SearchStrategy};
 pub use hazards::HAZARD_IDS;
+pub use ops_log::{
+    CALYX_METRICS_INVALID_OBSERVATION, CALYX_METRICS_LOG_WRITE_FAILED, StructuredMetricEvent,
+    StructuredMetricLog, StructuredMetricLogError,
+};
 pub use zfs::{
     DEFAULT_ZFS_DATASETS, ZFS_SCRUB_MAX_AGE_SECONDS, ZfsDatasetChecksum, ZfsIntegritySnapshot,
     ZfsPoolIntegrity, collect_default_zfs_integrity, collect_zfs_integrity,
