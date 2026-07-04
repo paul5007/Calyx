@@ -97,9 +97,11 @@ fabricating a prediction.
 
 Fixture outcomes are `home_win`, `draw`, and `away_win`. Team match outcomes are
 `win`, `draw`, and `lose`. Tournament progression outcomes (`winner`,
-`finalist`, and `semi_finalist`) use `0` and `1`. Player impact is a v1 design
-target; current generated player rows remain unanchored until a grounded
-player-impact axis is added.
+`finalist`, and `semi_finalist`) use `0` and `1`. Player impact is a scorer
+axis with `impact` meaning the player scored a non-own goal in the target match
+and `no_impact` meaning no such goal. Historical player impact grounding comes
+from Fjelstul `player_appearances.csv` joined to `goals.csv`; 2026 player
+statistics are ex-post evidence and must not be used as predictive inputs.
 
 ## Verification
 
