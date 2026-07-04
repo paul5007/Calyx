@@ -2,27 +2,456 @@
   "action_id": "predict_match_result",
   "domain": "soccer_lab.match_result",
   "generated_at": "2026-07-04",
-  "reason": "current pulled 2026 match source has no blank-score rows and no fixture dates after run_date",
-  "records": [],
-  "run_date": "2026-07-04",
-  "schema_version": 1,
-  "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json",
-  "source_summary": {
-    "after_run_date_rows": 0,
-    "blank_score_rows": 0,
-    "max_date": "2026-07-02",
-    "min_date": "2026-06-11",
-    "rounds": {
-      "Group stage": 72,
-      "Round of 32": 13
+  "records": [
+    {
+      "action_id": "predict_match_result",
+      "away_team": "France",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-04",
+      "domain": "soccer_lab.match_result",
+      "home_team": "Paraguay",
+      "match_id": "WC-2026-M089",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Round of 16",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 88,
+      "start_time": "17:00 UTC-4",
+      "unplayed_reason": "blank_score",
+      "venue": "Philadelphia"
     },
-    "rows": 85,
-    "source_file": {
-      "bytes": 6990,
-      "mode": "0o644",
-      "path": "scratchpad/wc2026/raw/swaptr/fifa-wc-2026-matches.zip",
-      "sha256": "a02ec44706df1eae100a7f3d8f66fbb881c32bdd287fb553c2ea74982fa88588"
+    {
+      "action_id": "predict_match_result",
+      "away_team": "Morocco",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-04",
+      "domain": "soccer_lab.match_result",
+      "home_team": "Canada",
+      "match_id": "WC-2026-M090",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Round of 16",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 89,
+      "start_time": "12:00 UTC-5",
+      "unplayed_reason": "blank_score",
+      "venue": "Houston"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "Norway",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-05",
+      "domain": "soccer_lab.match_result",
+      "home_team": "Brazil",
+      "match_id": "WC-2026-M091",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Round of 16",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 90,
+      "start_time": "16:00 UTC-4",
+      "unplayed_reason": "blank_score",
+      "venue": "New York/New Jersey (East Rutherford)"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "England",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-05",
+      "domain": "soccer_lab.match_result",
+      "home_team": "Mexico",
+      "match_id": "WC-2026-M092",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Round of 16",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 91,
+      "start_time": "18:00 UTC-6",
+      "unplayed_reason": "blank_score",
+      "venue": "Mexico City"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "Spain",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-06",
+      "domain": "soccer_lab.match_result",
+      "home_team": "Portugal",
+      "match_id": "WC-2026-M093",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Round of 16",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 92,
+      "start_time": "14:00 UTC-5",
+      "unplayed_reason": "blank_score",
+      "venue": "Dallas (Arlington)"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "Belgium",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-06",
+      "domain": "soccer_lab.match_result",
+      "home_team": "USA",
+      "match_id": "WC-2026-M094",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Round of 16",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 93,
+      "start_time": "17:00 UTC-7",
+      "unplayed_reason": "blank_score",
+      "venue": "Seattle"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "W88",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-07",
+      "domain": "soccer_lab.match_result",
+      "home_team": "W86",
+      "match_id": "WC-2026-M095",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Round of 16",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 94,
+      "start_time": "12:00 UTC-4",
+      "unplayed_reason": "blank_score",
+      "venue": "Atlanta"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "W87",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-07",
+      "domain": "soccer_lab.match_result",
+      "home_team": "Switzerland",
+      "match_id": "WC-2026-M096",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Round of 16",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 95,
+      "start_time": "13:00 UTC-7",
+      "unplayed_reason": "blank_score",
+      "venue": "Vancouver"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "W90",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-09",
+      "domain": "soccer_lab.match_result",
+      "home_team": "W89",
+      "match_id": "WC-2026-M097",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Quarter-final",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 96,
+      "start_time": "16:00 UTC-4",
+      "unplayed_reason": "blank_score",
+      "venue": "Boston (Foxborough)"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "W94",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-10",
+      "domain": "soccer_lab.match_result",
+      "home_team": "W93",
+      "match_id": "WC-2026-M098",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Quarter-final",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 97,
+      "start_time": "12:00 UTC-7",
+      "unplayed_reason": "blank_score",
+      "venue": "Los Angeles (Inglewood)"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "W92",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-11",
+      "domain": "soccer_lab.match_result",
+      "home_team": "W91",
+      "match_id": "WC-2026-M099",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Quarter-final",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 98,
+      "start_time": "17:00 UTC-4",
+      "unplayed_reason": "blank_score",
+      "venue": "Miami (Miami Gardens)"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "W96",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-11",
+      "domain": "soccer_lab.match_result",
+      "home_team": "W95",
+      "match_id": "WC-2026-M100",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Quarter-final",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 99,
+      "start_time": "20:00 UTC-5",
+      "unplayed_reason": "blank_score",
+      "venue": "Kansas City"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "W98",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-14",
+      "domain": "soccer_lab.match_result",
+      "home_team": "W97",
+      "match_id": "WC-2026-M101",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Semi-final",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 100,
+      "start_time": "14:00 UTC-5",
+      "unplayed_reason": "blank_score",
+      "venue": "Dallas (Arlington)"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "W100",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-15",
+      "domain": "soccer_lab.match_result",
+      "home_team": "W99",
+      "match_id": "WC-2026-M102",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Semi-final",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 101,
+      "start_time": "15:00 UTC-4",
+      "unplayed_reason": "blank_score",
+      "venue": "Atlanta"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "L102",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-18",
+      "domain": "soccer_lab.match_result",
+      "home_team": "L101",
+      "match_id": "WC-2026-M103",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Match for third place",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 102,
+      "start_time": "17:00 UTC-4",
+      "unplayed_reason": "blank_score",
+      "venue": "Miami (Miami Gardens)"
+    },
+    {
+      "action_id": "predict_match_result",
+      "away_team": "W102",
+      "confidence": 0.0,
+      "confidence_caps": {
+        "dpi_ceiling": 0.04273055121302605,
+        "sufficient": false
+      },
+      "date": "2026-07-19",
+      "domain": "soccer_lab.match_result",
+      "home_team": "W101",
+      "match_id": "WC-2026-M104",
+      "prediction": null,
+      "prediction_status": "oracle_insufficient",
+      "provenance": {
+        "oracle_error_code": "CALYX_ORACLE_INSUFFICIENT",
+        "oracle_fixture_sha256": "2c15fd2b8325cb4227300bf7254e2b52b884dff867539d1041b286127555a103",
+        "oracle_stdout_sha256": "7383052409c1a3cadce9bf7370556d4406a2571030053338e4917c49b2e43804",
+        "source_report": "scratchpad/wc2026/fsv/oracle_match_predictions/report.json"
+      },
+      "round": "Final",
+      "score_columns_ignored": true,
+      "source": "openfootball/worldcup.json/2026",
+      "source_row_index": 103,
+      "start_time": "15:00 UTC-4",
+      "unplayed_reason": "blank_score",
+      "venue": "New York/New Jersey (East Rutherford)"
     }
-  },
-  "status": "no_unplayed_fixtures_in_current_source"
+  ],
+  "run_date": "2026-07-04",
+  "schema_version": 1
 }

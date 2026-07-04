@@ -184,6 +184,11 @@
       "id": "mominullptr_fifa_world_cup_2026_dataset",
       "url": "https://www.kaggle.com/api/v1/datasets/download/mominullptr/fifa-world-cup-2026-dataset",
       "path": "mominullptr/fifa-world-cup-2026-dataset.zip"
+    },
+    {
+      "id": "openfootball_worldcup_2026_json",
+      "url": "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json",
+      "path": "openfootball/2026/worldcup.json"
     }
   ],
   "thestatsapi": {

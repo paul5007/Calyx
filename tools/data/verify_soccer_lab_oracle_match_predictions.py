@@ -60,47 +60,98 @@ def run_ok(args: list[str], env: dict[str, str], reason: str, timeout: int = 180
     return proc
 
 
-def read_2026_matches(raw_root: Path) -> list[dict[str, str]]:
+def read_swaptr_matches(raw_root: Path) -> list[dict[str, Any]]:
     path = raw_root / "swaptr" / "fifa-wc-2026-matches.zip"
     with zipfile.ZipFile(path) as archive:
         payload = archive.read("matches.csv")
     rows = list(csv.DictReader(payload.decode("utf-8-sig").splitlines()))
     require(rows, "missing_2026_matches", {"path": str(path.relative_to(ROOT))})
-    return rows
+    return [
+        {
+            "source": "swaptr/fifa-wc-2026-matches",
+            "source_file": path,
+            "match_id": f"WC-2026-M{idx + 1:03d}",
+            "source_row_index": idx,
+            "date": row["date"],
+            "start_time": row["start_time"],
+            "round": row["round"],
+            "home_team": row["home_team"],
+            "away_team": row["away_team"],
+            "venue": row["venue"],
+            "score": row.get("score", ""),
+        }
+        for idx, row in enumerate(rows)
+    ]
+
+
+def read_openfootball_matches(raw_root: Path) -> list[dict[str, Any]]:
+    path = raw_root / "openfootball" / "2026" / "worldcup.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    rows = payload.get("matches")
+    require(isinstance(rows, list) and rows, "missing_openfootball_matches", {"path": str(path.relative_to(ROOT))})
+    return [
+        {
+            "source": "openfootball/worldcup.json/2026",
+            "source_file": path,
+            "match_id": f"WC-2026-M{int(row.get('num', idx + 1)):03d}",
+            "source_row_index": idx,
+            "date": row["date"],
+            "start_time": row.get("time", ""),
+            "round": row["round"],
+            "home_team": row["team1"],
+            "away_team": row["team2"],
+            "venue": row.get("ground", ""),
+            "score": row.get("score", ""),
+        }
+        for idx, row in enumerate(rows)
+    ]
+
+
+def read_current_matches(raw_root: Path) -> list[dict[str, Any]]:
+    openfootball = raw_root / "openfootball" / "2026" / "worldcup.json"
+    if openfootball.exists():
+        return read_openfootball_matches(raw_root)
+    return read_swaptr_matches(raw_root)
 
 
 def unplayed_fixtures(raw_root: Path) -> list[dict[str, Any]]:
     fixtures = []
-    for idx, row in enumerate(read_2026_matches(raw_root)):
+    for idx, row in enumerate(read_current_matches(raw_root)):
         fixture_date = date.fromisoformat(row["date"])
-        if fixture_date <= RUN_DATE:
+        score_blank = not row.get("score")
+        if fixture_date < RUN_DATE:
+            continue
+        if fixture_date == RUN_DATE and not score_blank:
             continue
         fixtures.append(
             {
-                "match_id": f"WC-2026-M{idx + 1:03d}",
+                "match_id": row["match_id"],
                 "date": row["date"],
                 "start_time": row["start_time"],
                 "round": row["round"],
                 "home_team": row["home_team"],
                 "away_team": row["away_team"],
                 "venue": row["venue"],
-                "source_row_index": idx,
+                "source": row["source"],
+                "source_row_index": row["source_row_index"],
                 "score_columns_ignored": True,
+                "unplayed_reason": "blank_score" if score_blank else "after_run_date",
             }
         )
     return fixtures
 
 
 def match_source_summary(raw_root: Path) -> dict[str, Any]:
-    path = raw_root / "swaptr" / "fifa-wc-2026-matches.zip"
-    rows = read_2026_matches(raw_root)
+    rows = read_current_matches(raw_root)
+    path = rows[0]["source_file"]
     dates = [row["date"] for row in rows]
-    blank_scores = [idx for idx, row in enumerate(rows) if not row.get("score", "").strip()]
+    blank_scores = [idx for idx, row in enumerate(rows) if not row.get("score")]
     after_run_date = [idx for idx, row in enumerate(rows) if row["date"] > RUN_DATE.isoformat()]
     rounds: dict[str, int] = {}
     for row in rows:
         rounds[row["round"]] = rounds.get(row["round"], 0) + 1
     return {
+        "source": rows[0]["source"],
         "source_file": oracle_context.file_stat(path),
         "rows": len(rows),
         "min_date": min(dates),
@@ -221,11 +272,6 @@ def fixture_from_bits(bits_report: dict[str, Any], generated: dict[str, Any]) ->
             {
                 "outcome": {"enum": outcome},
                 "count": count,
-                "consequence": {
-                    "action_or_event": ACTION_ID,
-                    "domain": DOMAIN,
-                    "outcome": {"enum": outcome},
-                },
             }
             for outcome, count in sorted(counts.items())
         ],
