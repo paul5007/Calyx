@@ -233,6 +233,55 @@ def read_harrachi_split(raw_root: Path, name: str) -> list[dict[str, str]]:
     return rows
 
 
+def read_swaptr_matches(raw_root: Path) -> list[dict[str, str]]:
+    path = raw_root / "swaptr" / "fifa-wc-2026-matches.zip"
+    if not path.exists():
+        raise RowGenError("matches_2026", "missing_required_input", {"path": str(path.relative_to(ROOT))})
+    raw = path.read_bytes()
+    if not raw:
+        raise RowGenError("matches_2026", "empty_required_input", {"path": str(path.relative_to(ROOT))})
+    try:
+        archive = zipfile.ZipFile(path)
+    except zipfile.BadZipFile as exc:
+        raise RowGenError("matches_2026", "invalid_zip", {"path": str(path.relative_to(ROOT)), "sha256": sha256_bytes(raw)}) from exc
+    try:
+        payload = archive.read("matches.csv")
+    except KeyError as exc:
+        raise RowGenError("matches_2026", "missing_zip_member", {"path": str(path.relative_to(ROOT)), "member": "matches.csv"}) from exc
+    required = {"round", "gameweek", "date", "start_time", "home_team", "away_team", "score", "venue"}
+    try:
+        text = payload.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise RowGenError("matches_2026", "invalid_utf8", {"path": str(path.relative_to(ROOT)), "member": "matches.csv", "sha256": sha256_bytes(payload)}) from exc
+    reader = csv.DictReader(text.splitlines())
+    headers = set(reader.fieldnames or [])
+    missing = sorted(required - headers)
+    if missing:
+        raise RowGenError("matches_2026", "missing_required_columns", {"path": str(path.relative_to(ROOT)), "member": "matches.csv", "missing": missing})
+    rows = [dict(row) for row in reader]
+    if not rows:
+        raise RowGenError("matches_2026", "empty_zip_member", {"path": str(path.relative_to(ROOT)), "member": "matches.csv"})
+    return rows
+
+
+TEAM_ALIASES = {
+    "Bosnia-Herz": "Bosnia and Herzegovina",
+    "Bosnia–Herz": "Bosnia and Herzegovina",
+    "Cabo Verde": "Cape Verde",
+    "Congo DR": "DR Congo",
+    "Curaçao": "Cura?o",
+    "Czechia": "Czech Republic",
+    "Côte d'Ivoire": "Ivory Coast",
+    "IR Iran": "Iran",
+    "Korea Republic": "South Korea",
+    "Türkiye": "Turkey",
+}
+
+
+def canonical_team(name: str) -> str:
+    return TEAM_ALIASES.get(name, name)
+
+
 def harrachi_num(row: dict[str, str], key: str) -> float:
     value = row.get(key, "").strip()
     if value == "":
@@ -254,7 +303,7 @@ def best_finish(row: dict[str, str]) -> int:
     return 32
 
 
-def team_tournament_text(row: dict[str, str], split: str) -> str:
+def harrachi_team_feature_pairs(row: dict[str, str], home_team: Any | None = None, away_team: Any | None = None) -> list[tuple[str, Any]]:
     wins = harrachi_num(row, "wins_last_4y")
     losses = harrachi_num(row, "losses_last_4y")
     draws = harrachi_num(row, "draws_last_4y")
@@ -264,6 +313,46 @@ def team_tournament_text(row: dict[str, str], split: str) -> str:
     goal_diff = goals_for_per_match - goals_against_per_match
     rank = max(1.0, harrachi_num(row, "fifa_rank_pre_tournament"))
     market_value = harrachi_num(row, "squad_total_market_value_eur")
+    home_value = row["is_host"] if home_team is None else home_team
+    away_value = (0 if row["is_host"] == "1" else 1) if away_team is None else away_team
+    return [
+        ("home_team", home_value),
+        ("away_team", away_value),
+        ("trailing_goals_for_per_match", goals_for_per_match),
+        ("trailing_goal_scoring_rate", clamp((wins + draws) / matches)),
+        ("trailing_multi_goal_rate", clamp(goals_for_per_match / 2.0)),
+        ("trailing_penalties_for_per_match", 0),
+        ("trailing_goals_against_per_match", goals_against_per_match),
+        ("trailing_clean_sheet_rate", clamp(wins / matches)),
+        ("trailing_multi_concede_rate", clamp(goals_against_per_match / 2.0)),
+        ("trailing_penalties_against_per_match", 0),
+        ("trailing_goal_differential", goal_diff),
+        ("trailing_extra_time_rate", 0),
+        ("trailing_penalty_shootout_rate", 0),
+        ("trailing_replay_rate", 0),
+        ("days_since_previous_match", 0),
+        ("trailing_yellow_cards_per_match", 0),
+        ("trailing_red_cards_per_match", 0),
+        ("trailing_second_yellow_rate", 0),
+        ("trailing_sending_off_rate", 0),
+        ("confederation_code", row["continent"]),
+        ("region_name", row["continent"]),
+        ("mens_team", 1),
+        ("womens_team", 0),
+        ("prior_world_cup_matches", row["world_cup_participations_before"]),
+        ("prior_best_finish", best_finish(row)),
+        ("trailing_win_rate", clamp(wins / matches)),
+        ("trailing_draw_rate", clamp(draws / matches)),
+        ("trailing_loss_rate", clamp(losses / matches)),
+        ("trailing_unbeaten_rate", clamp((wins + draws) / matches)),
+        ("fifa_rank_pre_tournament", rank),
+        ("fifa_points_pre_tournament", row["fifa_points_pre_tournament"]),
+        ("squad_total_market_value_eur", market_value),
+        ("squad_avg_age", row["squad_avg_age"]),
+    ]
+
+
+def team_tournament_text(row: dict[str, str], split: str) -> str:
     return stat_line(
         [
             ("entity", "team_tournament"),
@@ -278,43 +367,11 @@ def team_tournament_text(row: dict[str, str], split: str) -> str:
             ("group_stage", 1),
             ("knockout_stage", 0),
             ("date", f"{row['version']}-01-01"),
-            ("home_team", row["is_host"]),
-            ("away_team", 0 if row["is_host"] == "1" else 1),
-            ("trailing_goals_for_per_match", goals_for_per_match),
-            ("trailing_goal_scoring_rate", clamp((wins + draws) / matches)),
-            ("trailing_multi_goal_rate", clamp(goals_for_per_match / 2.0)),
-            ("trailing_penalties_for_per_match", 0),
-            ("trailing_goals_against_per_match", goals_against_per_match),
-            ("trailing_clean_sheet_rate", clamp(wins / matches)),
-            ("trailing_multi_concede_rate", clamp(goals_against_per_match / 2.0)),
-            ("trailing_penalties_against_per_match", 0),
-            ("trailing_goal_differential", goal_diff),
-            ("trailing_extra_time_rate", 0),
-            ("trailing_penalty_shootout_rate", 0),
-            ("trailing_replay_rate", 0),
-            ("days_since_previous_match", 0),
-            ("trailing_yellow_cards_per_match", 0),
-            ("trailing_red_cards_per_match", 0),
-            ("trailing_second_yellow_rate", 0),
-            ("trailing_sending_off_rate", 0),
-            ("confederation_code", row["continent"]),
-            ("region_name", row["continent"]),
-            ("mens_team", 1),
-            ("womens_team", 0),
-            ("prior_world_cup_matches", row["world_cup_participations_before"]),
-            ("prior_best_finish", best_finish(row)),
-            ("trailing_win_rate", clamp(wins / matches)),
-            ("trailing_draw_rate", clamp(draws / matches)),
-            ("trailing_loss_rate", clamp(losses / matches)),
-            ("trailing_unbeaten_rate", clamp((wins + draws) / matches)),
             ("match_day_of_tournament", 0),
             ("kickoff_hour", 0),
             ("host_country", row["is_host"]),
             ("stadium_capacity", 0),
-            ("fifa_rank_pre_tournament", rank),
-            ("fifa_points_pre_tournament", row["fifa_points_pre_tournament"]),
-            ("squad_total_market_value_eur", market_value),
-            ("squad_avg_age", row["squad_avg_age"]),
+            *harrachi_team_feature_pairs(row),
         ]
     )
 
@@ -357,6 +414,75 @@ def team_tournament_rows(raw_root: Path) -> list[dict[str, Any]]:
                     **({"anchors": anchors} if anchors else {}),
                 }
             )
+    return out
+
+
+def score_anchor(row: dict[str, str]) -> dict[str, Any]:
+    home = num(row, "home_score")
+    away = num(row, "away_score")
+    if home > away:
+        value = "home_win"
+    elif away > home:
+        value = "away_win"
+    else:
+        value = "draw"
+    return {"kind": "label:match_result", "value": value, "source": "swaptr/fifa-wc-2026-matches", "confidence": 1.0}
+
+
+def match_2026_rows(raw_root: Path) -> list[dict[str, Any]]:
+    source_path = raw_root / "swaptr" / "fifa-wc-2026-matches.zip"
+    source_key = sha256_file(source_path) if source_path.exists() else ""
+    harrachi = {row["team"]: row for row in read_harrachi_split(raw_root, "test.csv")}
+    out = []
+    for idx, row in enumerate(read_swaptr_matches(raw_root)):
+        home_key = canonical_team(row["home_team"])
+        if home_key not in harrachi:
+            raise RowGenError("matches_2026", "missing_home_team_prior", {"home_team": row["home_team"], "canonical": home_key})
+        home_prior = harrachi[home_key]
+        stage = row.get("round", "")
+        group_stage = 1 if "group" in stage.lower() else 0
+        knockout_stage = 0 if group_stage else 1
+        venue = row.get("venue", "")
+        match_id = f"WC-2026-M{idx + 1:03d}"
+        out.append(
+            {
+                "text": stat_line(
+                    [
+                        ("entity", "match_2026"),
+                        ("match_id", match_id),
+                        ("tournament_id", "WC-2026"),
+                        ("stage_name", stage),
+                        ("group_name", ""),
+                        ("group_stage", group_stage),
+                        ("knockout_stage", knockout_stage),
+                        ("date", row["date"]),
+                        ("match_day_of_tournament", idx),
+                        ("kickoff_hour", row["start_time"][:2]),
+                        ("venue", venue),
+                        ("home_team_id", row["home_team"]),
+                        ("away_team_id", row["away_team"]),
+                        ("team_id", row["home_team"]),
+                        ("opponent_id", row["away_team"]),
+                        ("host_country", home_prior["is_host"]),
+                        ("stadium_capacity", 0),
+                        *harrachi_team_feature_pairs(home_prior, home_team=1, away_team=0),
+                    ]
+                ),
+                "metadata": {
+                    "project": "Soccer Lab",
+                    "entity": "match_2026",
+                    "source_dataset": "swaptr.fifa-wc-2026-matches.matches",
+                    "source": "Kaggle: swaptr/fifa-wc-2026-matches",
+                    "source_key": source_key,
+                    "source_row_index": str(idx),
+                    "match_id": match_id,
+                    "home_team": row["home_team"],
+                    "away_team": row["away_team"],
+                    "date": row["date"],
+                },
+                "anchors": [score_anchor(row)],
+            }
+        )
     return out
 
 
@@ -646,6 +772,7 @@ def fixture_rows(raw_root: Path) -> list[dict[str, Any]]:
 GENERATORS: dict[str, tuple[str, Callable[[Path], list[dict[str, Any]]]]] = {
     "players": ("players.jsonl", player_rows),
     "matches": ("matches.jsonl", match_rows),
+    "matches-2026": ("matches-2026.jsonl", match_2026_rows),
     "teams-history": ("teams-history.jsonl", teams_history_rows),
     "team-tournaments": ("team-tournaments.jsonl", team_tournament_rows),
     "fjelstul": ("fjelstul.jsonl", fjelstul_rows),

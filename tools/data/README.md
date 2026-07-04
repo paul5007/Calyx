@@ -29,13 +29,14 @@ Generate deterministic Calyx batch JSONL rows:
 
 ```bash
 ./tools/data/generate_soccer_lab_rows.py
-./tools/data/generate_soccer_lab_rows.py --only players --only matches --only teams-history --only team-tournaments --only fjelstul
+./tools/data/generate_soccer_lab_rows.py --only players --only matches --only matches-2026 --only teams-history --only team-tournaments --only fjelstul
 ```
 
 Outputs are written to `scratchpad/wc2026/rows/`:
 
 - `players.jsonl`
 - `matches.jsonl`
+- `matches-2026.jsonl`
 - `teams-history.jsonl`
 - `team-tournaments.jsonl`
 - `fjelstul.jsonl`
@@ -167,3 +168,15 @@ This downloads the public Kaggle zip if it is missing from
 `scratchpad/wc2026/raw/harrachimustapha/`, generates 240 team-tournament rows,
 creates a fresh vault, registers the seven team/match facet projectors, ingests
 the rows, and verifies `cx-list --include-slots` has every expected dense slot.
+
+Build and verify the 2026 matches ex-ante Calyx vault from the swaptr match
+dataset enriched with Harrachi pre-tournament team priors:
+
+```bash
+./tools/data/verify_soccer_lab_matches_vault.py
+```
+
+This downloads the public swaptr and Harrachi Kaggle zips if missing, generates
+85 match rows without post-match stat leakage in `text`, creates a fresh vault,
+registers the seven team/match facet projectors, ingests the rows, and verifies
+physical `cx-list --include-slots` slot presence plus vault bytes.
