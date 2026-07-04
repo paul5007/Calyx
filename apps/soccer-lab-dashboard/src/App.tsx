@@ -8,9 +8,12 @@ import {
   ShieldCheck,
   Trophy,
 } from "lucide-react";
+import butterflyTree from "../../../docs/data/soccer_lab_bracket_butterfly_tree.json";
 import matchPredictions from "../../../docs/data/soccer_lab_match_predictions.json";
+import progressionPredictions from "../../../docs/data/soccer_lab_tournament_progression_predictions.json";
 
 type PredictionOutcome = "home_win" | "draw" | "away_win";
+type ProgressionAxis = "winner" | "finalist" | "semi_finalist";
 
 type MatchPredictionRecord = {
   domain: string;
@@ -50,6 +53,56 @@ type MatchPredictionExport = {
   schema_version: number;
 };
 
+type ProgressionRecord = {
+  action_id: string;
+  axis: ProgressionAxis;
+  confidence: number;
+  confidence_caps: {
+    dpi_ceiling: number;
+    sufficient: boolean;
+  };
+  continent: string;
+  domain: string;
+  prediction: boolean | null;
+  prediction_status: "oracle_insufficient" | "oracle_predicted";
+  source_row_index: number;
+  team: string;
+  version: string;
+  provenance: {
+    oracle_error_code: string | null;
+    oracle_stdout_sha256: string;
+  };
+};
+
+type ProgressionExport = {
+  generated_at: string;
+  records: ProgressionRecord[];
+  schema_version: number;
+};
+
+type ButterflyRecord = {
+  action_or_event: string;
+  confidence: number;
+  domain: "soccer_lab.bracket_butterfly";
+  hop: number;
+  outcome: {
+    enum: string;
+  };
+};
+
+type ButterflyTree = {
+  domain: "soccer_lab.bracket_butterfly";
+  generated_at: string;
+  hop_counts: Record<string, number>;
+  max_observed_hop: number;
+  records: ButterflyRecord[];
+  root_action: string;
+  root_outcome: {
+    enum: string;
+  };
+  selected: ButterflyRecord;
+};
+
 type OutcomeLane = {
   label: string;
   outcome: PredictionOutcome;
@@ -59,6 +112,9 @@ type OutcomeLane = {
 
 const soccerLabExport = matchPredictions as MatchPredictionExport;
 const matchRecords = soccerLabExport.records;
+const progressionExport = progressionPredictions as ProgressionExport;
+const progressionRecords = progressionExport.records;
+const bracketTree = butterflyTree as ButterflyTree;
 
 const outcomes: Array<{ label: string; outcome: PredictionOutcome }> = [
   { label: "Home", outcome: "home_win" },
@@ -76,7 +132,14 @@ const matchSummary = {
   ).length,
 };
 
-const sourceHash = matchRecords[0]?.provenance.oracle_stdout_sha256 ?? "";
+const progressionSummary = {
+  total: progressionRecords.length,
+  teams: new Set(progressionRecords.map((record) => record.team)).size,
+  blocked: progressionRecords.filter(
+    (record) => record.prediction_status === "oracle_insufficient",
+  ).length,
+  butterfly: bracketTree.records.length,
+};
 
 function percent(value: number) {
   return `${Math.round(value * 100)}%`;
@@ -106,59 +169,60 @@ function statusLabel(record: MatchPredictionRecord) {
 
 const readiness = [
   {
-    label: "Match records",
-    value: `${matchSummary.total}`,
-    detail: "source export rows",
+    label: "Teams",
+    value: `${progressionSummary.teams}`,
+    detail: "progression candidates",
   },
   {
-    label: "Published",
-    value: `${matchSummary.publishable}`,
-    detail: "oracle_predicted",
+    label: "Records",
+    value: `${progressionSummary.total}`,
+    detail: "3 axes per team",
   },
   {
-    label: "Refused",
-    value: `${matchSummary.blocked}`,
-    detail: "oracle_insufficient",
+    label: "Butterfly",
+    value: `${progressionSummary.butterfly}`,
+    detail: "reachable expansion nodes",
   },
   {
-    label: "Generated",
-    value: soccerLabExport.run_date,
-    detail: "export timestamp",
+    label: "Root",
+    value: bracketTree.root_outcome.enum,
+    detail: bracketTree.root_action,
   },
 ];
 
-const ledger = [
-  { label: "Export", value: "loaded", tone: "good" },
-  { label: "Matches", value: `${matchSummary.total}`, tone: "good" },
-  { label: "Confidence", value: "fail-closed", tone: "warn" },
-  { label: "Source hash", value: sourceHash.slice(0, 10), tone: "good" },
+const progressionAxes: Array<{ axis: ProgressionAxis; label: string }> = [
+  { axis: "winner", label: "Win" },
+  { axis: "finalist", label: "Final" },
+  { axis: "semi_finalist", label: "Semi" },
 ];
 
-type LedgerTone = (typeof ledger)[number]["tone"];
+const progressionTeams = Array.from(
+  progressionRecords
+    .reduce((teams, record) => {
+      if (!teams.has(record.team)) {
+        teams.set(record.team, {
+          team: record.team,
+          continent: record.continent,
+          records: new Map<ProgressionAxis, ProgressionRecord>(),
+        });
+      }
+      teams.get(record.team)?.records.set(record.axis, record);
+      return teams;
+    }, new Map<string, { team: string; continent: string; records: Map<ProgressionAxis, ProgressionRecord> }>())
+    .values(),
+).slice(0, 8);
 
-function toneClass(tone: LedgerTone) {
-  return tone === "warn" ? "warn" : "good";
-}
-
-type TraceRow = {
-  label: string;
-  state: string;
-};
-
-const traceRows: TraceRow[] = [
-  {
-    label: "source",
-    state: "docs/data/soccer_lab_match_predictions.json",
-  },
-  {
-    label: "domain",
-    state: "soccer_lab.match_result",
-  },
-  {
-    label: "contract",
-    state: "win/draw/loss lanes",
-  },
-];
+const butterflyHops = Array.from(
+  bracketTree.records
+    .reduce((hops, record) => {
+      const key = String(record.hop);
+      const records = hops.get(key) ?? [];
+      records.push(record);
+      hops.set(key, records);
+      return hops;
+    }, new Map<string, ButterflyRecord[]>())
+    .entries(),
+).sort(([left], [right]) => Number(left) - Number(right));
 
 export function App() {
   return (
@@ -232,7 +296,7 @@ export function App() {
 
           <div className="bracket-panel" aria-label="Tournament progression">
             <div className="panel-head compact">
-              <p className="eyebrow">Tooling</p>
+              <p className="eyebrow">Progression</p>
               <ArrowUpRight size={20} />
             </div>
             <div className="radar">
@@ -250,32 +314,61 @@ export function App() {
         <section className="lower-grid">
           <div className="ledger-panel">
             <div className="panel-head compact">
-              <p className="eyebrow">Origin health</p>
+              <p className="eyebrow">Tournament axes</p>
               <ShieldCheck size={20} />
             </div>
-            <div className="ledger-grid">
-              {ledger.map((item) => (
-                <div className="ledger-cell" key={item.label}>
-                  <span>{item.label}</span>
-                  <b className={toneClass(item.tone)}>{item.value}</b>
-                </div>
+            <div className="progression-table">
+              {progressionTeams.map((team) => (
+                <article className="progression-row" key={team.team}>
+                  <div>
+                    <strong>{team.team}</strong>
+                    <span>{team.continent}</span>
+                  </div>
+                  {progressionAxes.map(({ axis, label }) => {
+                    const record = team.records.get(axis);
+                    const available = record?.prediction_status === "oracle_predicted";
+                    return (
+                      <span className="axis-cell" key={axis}>
+                        <small>{label}</small>
+                        <b>{available ? percent(record.confidence) : "0%"}</b>
+                      </span>
+                    );
+                  })}
+                  <span className="tag pending">
+                    {team.records.get("winner")?.provenance.oracle_error_code ??
+                      "oracle_insufficient"}
+                  </span>
+                </article>
               ))}
             </div>
           </div>
 
           <div className="trace-panel">
             <div className="panel-head compact">
-              <p className="eyebrow">Explainability trace</p>
+              <p className="eyebrow">Butterfly expansion</p>
               <Braces size={20} />
             </div>
-            <ol className="trace-list">
-              {traceRows.map((row) => (
-                <li key={row.label}>
-                  <span>{row.label}</span>
-                  <b>{row.state}</b>
-                </li>
+            <div className="butterfly-grid">
+              {butterflyHops.map(([hop, records]) => (
+                <div className="hop-column" key={hop}>
+                  <strong>Hop {hop}</strong>
+                  {records.map((record) => (
+                    <span
+                      className={
+                        record.action_or_event === bracketTree.selected.action_or_event
+                          ? "is-selected"
+                          : undefined
+                      }
+                      key={`${record.action_or_event}-${record.outcome.enum}`}
+                    >
+                      {record.action_or_event}
+                      <b>{record.outcome.enum}</b>
+                      <small>{percent(record.confidence)}</small>
+                    </span>
+                  ))}
+                </div>
               ))}
-            </ol>
+            </div>
           </div>
         </section>
       </section>

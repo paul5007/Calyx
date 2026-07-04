@@ -336,6 +336,90 @@ h2 {
   color: var(--signal);
 }
 
+.progression-table {
+  display: grid;
+  gap: 10px;
+}
+
+.progression-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) repeat(3, minmax(58px, 0.4fr)) minmax(142px, 0.7fr);
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: #fffdf7;
+}
+
+.progression-row > div {
+  display: grid;
+  gap: 2px;
+}
+
+.progression-row > div span,
+.axis-cell small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.axis-cell {
+  min-height: 48px;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  background: #f8f4ea;
+}
+
+.axis-cell b {
+  color: var(--field);
+}
+
+.butterfly-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.hop-column {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.hop-column > strong {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.hop-column > span {
+  min-height: 64px;
+  display: grid;
+  gap: 2px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  background: #fffdf7;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.hop-column > span.is-selected {
+  border-color: var(--field);
+  background: var(--field-soft);
+}
+
+.hop-column b {
+  color: var(--field);
+}
+
+.hop-column small {
+  color: var(--muted);
+}
+
 .trace-list {
   margin: 0;
   padding: 0;
@@ -404,6 +488,8 @@ h2 {
 
   .match-row,
   .outcome-grid,
+  .progression-row,
+  .butterfly-grid,
   .ledger-grid {
     display: grid;
     grid-template-columns: 1fr;
