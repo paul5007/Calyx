@@ -1,0 +1,955 @@
+{
+  "artifact": "soccer_lab_serving_route_audit",
+  "controls": {
+    "controls": [
+      {
+        "category": "auth",
+        "evidence": [
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 4,
+            "snippet": "/// (#1906/#587). Loaded once at startup from `CALYX_WEB_API_BEARER_SECRET`"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 6,
+            "snippet": "/// Worker sends as `Authorization: Bearer <CALYX_ORIGIN_SHARED_SECRET>`."
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 23,
+            "snippet": "/// Load from the required `CALYX_WEB_API_BEARER_SECRET` env var. Fail loud if"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 26,
+            "snippet": "let secret = std::env::var(\"CALYX_WEB_API_BEARER_SECRET\").map_err(|_| {"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 27,
+            "snippet": "\"CALYX_WEB_API_BEARER_SECRET is required (the shared-secret bearer; no anonymous access)\""
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 35,
+            "snippet": "fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 47,
+            "snippet": "/// `Authorization: Bearer <expected>` or it gets a 401 closed envelope +"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 48,
+            "snippet": "/// `WWW-Authenticate: Bearer realm=\"calyx-origin\"` (matching the HHEM origin"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 59,
+            "snippet": ".and_then(|value| value.strip_prefix(\"Bearer \"));"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 61,
+            "snippet": "if constant_time_eq(token.as_bytes(), auth.expected_bearer.as_bytes()));"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 66,
+            "snippet": "header::HeaderValue::from_static(\"Bearer realm=\\\"calyx-origin\\\"\"),"
+          },
+          {
+            "file": "crates/calyxd/src/learner_origin/service.rs",
+            "line": 196,
+            "snippet": "let Some(token) = header.strip_prefix(\"Bearer \") else {"
+          }
+        ],
+        "status": "present"
+      },
+      {
+        "category": "guardrails",
+        "evidence": [
+          {
+            "file": "crates/calyx-web-api/src/guardrails.rs",
+            "line": 52,
+            "snippet": "/// with the standard [`REQUEST_TIMEOUT`]."
+          },
+          {
+            "file": "crates/calyx-web-api/src/guardrails.rs",
+            "line": 54,
+            "snippet": "Self::new(60.0, 30.0, 8.0, 2.0, REQUEST_TIMEOUT)"
+          },
+          {
+            "file": "crates/calyx-web-api/src/guardrails.rs",
+            "line": 133,
+            "snippet": "ErrorCode::RateLimited,"
+          },
+          {
+            "file": "crates/calyx-web-api/src/guardrails.rs",
+            "line": 143,
+            "snippet": "MAX_GPU_BODY_BYTES"
+          },
+          {
+            "file": "crates/calyx-web-api/src/guardrails.rs",
+            "line": 145,
+            "snippet": "MAX_BODY_BYTES"
+          },
+          {
+            "file": "crates/calyx-web-api/src/guardrails.rs",
+            "line": 152,
+            "snippet": "ErrorCode::PayloadTooLarge,"
+          }
+        ],
+        "status": "present"
+      },
+      {
+        "category": "response_cache",
+        "evidence": [
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 8,
+            "snippet": "/// byte-for-byte) plus the monotonic instant it was stored (for TTL + `Age`)."
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 28,
+            "snippet": "pub struct ResponseCache {"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 34,
+            "snippet": "impl ResponseCache {"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 45,
+            "snippet": "/// Build from the optional `CALYX_WEB_API_CACHE_TTL_SECS` (default 30, `0`"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 50,
+            "snippet": "let ttl_secs = parse_env_u64(\"CALYX_WEB_API_CACHE_TTL_SECS\", 30)?;"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 117,
+            "snippet": "/// (Varnish/CloudFront/Fastly convention) and `Age` (seconds since stored,"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 128,
+            "snippet": ".header(\"x-cache\", cache_status)"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 137,
+            "snippet": "pub(super) fn store_and_respond(cache: &ResponseCache, key: String, body: &Value) -> Response {"
+          }
+        ],
+        "status": "present"
+      },
+      {
+        "category": "loopback",
+        "evidence": [
+          {
+            "file": "crates/calyx-web-api/src/guardrails.rs",
+            "line": 10,
+            "snippet": "/// key here: the service is loopback-only behind a reverse proxy, so every"
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 3,
+            "snippet": "//! Binding any non-loopback address is a hard `CALYX_DAEMON_BIND_FAILED`; the"
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 7,
+            "snippet": "//! served on the same loopback listener with bounded JSON bodies and bearer auth."
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 42,
+            "snippet": "/// Binds `addr`, refusing any non-loopback IP before touching the OS."
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 60,
+            "snippet": "if !addr.ip().is_loopback() {"
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 62,
+            "snippet": "\"refused non-loopback bind address {addr}; calyxd serves loopback only\""
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 259,
+            "snippet": "fn bind_refuses_non_loopback_address() {"
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 261,
+            "snippet": "panic!(\"non-loopback bind must fail\");"
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 268,
+            "snippet": "fn bind_accepts_ipv4_loopback() {"
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 269,
+            "snippet": "let server = MetricsServer::bind(\"127.0.0.1:0\".parse().unwrap(), metrics()).unwrap();"
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 270,
+            "snippet": "assert!(server.local_addr().unwrap().ip().is_loopback());"
+          },
+          {
+            "file": "crates/calyxd/src/server.rs",
+            "line": 315,
+            "snippet": "let server = MetricsServer::bind(\"127.0.0.1:0\".parse().unwrap(), metrics()).unwrap();"
+          }
+        ],
+        "status": "present"
+      },
+      {
+        "category": "structured_errors",
+        "evidence": [
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 4,
+            "snippet": "/// (#1906/#587). Loaded once at startup from `CALYX_WEB_API_BEARER_SECRET`"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 6,
+            "snippet": "/// Worker sends as `Authorization: Bearer <CALYX_ORIGIN_SHARED_SECRET>`."
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 23,
+            "snippet": "/// Load from the required `CALYX_WEB_API_BEARER_SECRET` env var. Fail loud if"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 26,
+            "snippet": "let secret = std::env::var(\"CALYX_WEB_API_BEARER_SECRET\").map_err(|_| {"
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 27,
+            "snippet": "\"CALYX_WEB_API_BEARER_SECRET is required (the shared-secret bearer; no anonymous access)\""
+          },
+          {
+            "file": "crates/calyx-web-api/src/auth.rs",
+            "line": 63,
+            "snippet": "let mut resp = ApiError::of(ErrorCode::Unauthorized).into_response();"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 45,
+            "snippet": "/// Build from the optional `CALYX_WEB_API_CACHE_TTL_SECS` (default 30, `0`"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 46,
+            "snippet": "/// disables) and `CALYX_WEB_API_CACHE_CAPACITY` (default 256) env vars. A"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 50,
+            "snippet": "let ttl_secs = parse_env_u64(\"CALYX_WEB_API_CACHE_TTL_SECS\", 30)?;"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 51,
+            "snippet": "let capacity = parse_env_u64(\"CALYX_WEB_API_CACHE_CAPACITY\", 256)? as usize;"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 145,
+            "snippet": "tracing::error!(error = ?error, \"CALYX_WEB_API_CACHE_SERIALIZE_FAILED\");"
+          },
+          {
+            "file": "crates/calyx-web-api/src/cache.rs",
+            "line": 146,
+            "snippet": "ApiError::of(ErrorCode::Internal).into_response()"
+          }
+        ],
+        "status": "present"
+      }
+    ],
+    "gaps_for_soccer_lab_serving": [
+      "No Soccer Lab-specific /predict/* routes are registered.",
+      "No unprefixed /search, /kernel-answer, /provenance/:id, or /healthcheck routes are registered for the Soccer Lab serving API.",
+      "Existing cache coverage is limited to /v1/search and /v1/provenance/{id}; prediction endpoints need explicit cache policy in #55.",
+      "Existing bearer middleware applies to production calyx-web-api builders, but new Soccer Lab endpoints need tests proving they are behind the same fail-closed layer."
+    ],
+    "summary": "Existing web-api/calyxd surfaces include bearer auth, route guardrails, loopback binding, structured errors, and bounded response cache for generic read endpoints."
+  },
+  "current_routes": [
+    {
+      "handler": "metrics_handler",
+      "method": "GET",
+      "path": "/metrics",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 200,
+        "snippet": ".route(\"/metrics\", get(metrics_handler))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "not_implemented",
+      "method": "GET",
+      "path": "/v1/assay/bits",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/guardrails.rs",
+        "line": 109,
+        "snippet": ".route(\"/v1/assay/bits\", get(not_implemented))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "not_implemented",
+      "method": "GET",
+      "path": "/v1/assay/bits",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 138,
+        "snippet": ".route(\"/v1/assay/bits\", get(not_implemented))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "assay_bits_handler",
+      "method": "GET",
+      "path": "/v1/assay/bits",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 162,
+        "snippet": ".route(\"/v1/assay/bits\", get(assay_bits_handler))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "assay_bits_handler",
+      "method": "GET",
+      "path": "/v1/assay/bits",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 208,
+        "snippet": ".route(\"/v1/assay/bits\", get(assay_bits_handler))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "not_implemented",
+      "method": "POST",
+      "path": "/v1/guard",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/guardrails.rs",
+        "line": 107,
+        "snippet": ".route(\"/v1/guard\", post(not_implemented))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "not_implemented",
+      "method": "POST",
+      "path": "/v1/guard",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 136,
+        "snippet": ".route(\"/v1/guard\", post(not_implemented))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "guard_handler",
+      "method": "POST",
+      "path": "/v1/guard",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 160,
+        "snippet": ".route(\"/v1/guard\", post(guard_handler))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "guard_handler",
+      "method": "POST",
+      "path": "/v1/guard",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 206,
+        "snippet": ".route(\"/v1/guard\", post(guard_handler))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "health",
+      "method": "GET",
+      "path": "/v1/health",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/guardrails.rs",
+        "line": 104,
+        "snippet": ".route(\"/v1/health\", get(health))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "health",
+      "method": "GET",
+      "path": "/v1/health",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 133,
+        "snippet": ".route(\"/v1/health\", get(health))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "health_full",
+      "method": "GET",
+      "path": "/v1/health",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 157,
+        "snippet": ".route(\"/v1/health\", get(health_full))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "health_full",
+      "method": "GET",
+      "path": "/v1/health",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 203,
+        "snippet": ".route(\"/v1/health\", get(health_full))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "not_implemented",
+      "method": "GET",
+      "path": "/v1/kernel",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/guardrails.rs",
+        "line": 108,
+        "snippet": ".route(\"/v1/kernel\", get(not_implemented))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "not_implemented",
+      "method": "GET",
+      "path": "/v1/kernel",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 137,
+        "snippet": ".route(\"/v1/kernel\", get(not_implemented))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "kernel_handler",
+      "method": "GET",
+      "path": "/v1/kernel",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 161,
+        "snippet": ".route(\"/v1/kernel\", get(kernel_handler))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "kernel_handler",
+      "method": "GET",
+      "path": "/v1/kernel",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 207,
+        "snippet": ".route(\"/v1/kernel\", get(kernel_handler))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "not_implemented",
+      "method": "POST",
+      "path": "/v1/measure",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/guardrails.rs",
+        "line": 105,
+        "snippet": ".route(\"/v1/measure\", post(not_implemented))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "not_implemented",
+      "method": "POST",
+      "path": "/v1/measure",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 134,
+        "snippet": ".route(\"/v1/measure\", post(not_implemented))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "measure",
+      "method": "POST",
+      "path": "/v1/measure",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 158,
+        "snippet": ".route(\"/v1/measure\", post(measure))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "measure",
+      "method": "POST",
+      "path": "/v1/measure",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 204,
+        "snippet": ".route(\"/v1/measure\", post(measure))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "provenance_stub",
+      "method": "GET",
+      "path": "/v1/provenance/{id}",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/guardrails.rs",
+        "line": 110,
+        "snippet": ".route(\"/v1/provenance/{id}\", get(provenance_stub))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "provenance_wired",
+      "method": "GET",
+      "path": "/v1/provenance/{id}",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 130,
+        "snippet": ".route(\"/v1/provenance/{id}\", get(provenance_wired))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "provenance_stub",
+      "method": "GET",
+      "path": "/v1/provenance/{id}",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 165,
+        "snippet": ".route(\"/v1/provenance/{id}\", get(provenance_stub))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "provenance_wired",
+      "method": "GET",
+      "path": "/v1/provenance/{id}",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 211,
+        "snippet": ".route(\"/v1/provenance/{id}\", get(provenance_wired))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "not_implemented",
+      "method": "POST",
+      "path": "/v1/search",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/guardrails.rs",
+        "line": 106,
+        "snippet": ".route(\"/v1/search\", post(not_implemented))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "not_implemented",
+      "method": "POST",
+      "path": "/v1/search",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 135,
+        "snippet": ".route(\"/v1/search\", post(not_implemented))"
+      },
+      "wired_state": "scaffolded_501"
+    },
+    {
+      "handler": "search",
+      "method": "POST",
+      "path": "/v1/search",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 159,
+        "snippet": ".route(\"/v1/search\", post(search))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "search",
+      "method": "POST",
+      "path": "/v1/search",
+      "router": "axum",
+      "service": "calyx-web-api",
+      "source": {
+        "file": "crates/calyx-web-api/src/lib.rs",
+        "line": 205,
+        "snippet": ".route(\"/v1/search\", post(search))"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "metrics.encode_text",
+      "method": "GET",
+      "path": "/metrics",
+      "router": "hand_rolled_http",
+      "service": "calyxd",
+      "source": {
+        "file": "crates/calyxd/src/server.rs",
+        "line": 193,
+        "snippet": "(\"GET\", \"/metrics\") => match metrics.encode_text() {"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "handle_outcome",
+      "method": "POST",
+      "path": "/v1/interventions/:decision_id/outcomes",
+      "router": "hand_rolled_http",
+      "service": "calyxd_learner_origin",
+      "source": {
+        "file": "crates/calyxd/src/learner_origin/service.rs",
+        "line": 293,
+        "snippet": "let rest = path.strip_prefix(\"/v1/interventions/\")?;"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "handle_decision",
+      "method": "POST",
+      "path": "/v1/interventions/decide",
+      "router": "hand_rolled_http",
+      "service": "calyxd_learner_origin",
+      "source": {
+        "file": "crates/calyxd/src/learner_origin/service.rs",
+        "line": 278,
+        "snippet": "if path == \"/v1/interventions/decide\" {"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "handle_track_spines",
+      "method": "POST",
+      "path": "/v1/kernel/track-spines",
+      "router": "hand_rolled_http",
+      "service": "calyxd_learner_origin",
+      "source": {
+        "file": "crates/calyxd/src/learner_origin/service.rs",
+        "line": 290,
+        "snippet": "if path == \"/v1/kernel/track-spines\" {"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "handle_signal_batch",
+      "method": "POST",
+      "path": "/v1/learner-signals/batches",
+      "router": "hand_rolled_http",
+      "service": "calyxd_learner_origin",
+      "source": {
+        "file": "crates/calyxd/src/learner_origin/service.rs",
+        "line": 275,
+        "snippet": "if path == \"/v1/learner-signals/batches\" {"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "handle_mastery_estimate",
+      "method": "POST",
+      "path": "/v1/mastery/estimate",
+      "router": "hand_rolled_http",
+      "service": "calyxd_learner_origin",
+      "source": {
+        "file": "crates/calyxd/src/learner_origin/service.rs",
+        "line": 281,
+        "snippet": "if path == \"/v1/mastery/estimate\" {"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "handle_oracle_forecast",
+      "method": "POST",
+      "path": "/v1/oracle/forecast",
+      "router": "hand_rolled_http",
+      "service": "calyxd_learner_origin",
+      "source": {
+        "file": "crates/calyxd/src/learner_origin/service.rs",
+        "line": 284,
+        "snippet": "if path == \"/v1/oracle/forecast\" {"
+      },
+      "wired_state": "wired"
+    },
+    {
+      "handler": "handle_reactive_affect",
+      "method": "POST",
+      "path": "/v1/reactive/affect-signals",
+      "router": "hand_rolled_http",
+      "service": "calyxd_learner_origin",
+      "source": {
+        "file": "crates/calyxd/src/learner_origin/service.rs",
+        "line": 287,
+        "snippet": "if path == \"/v1/reactive/affect-signals\" {"
+      },
+      "wired_state": "wired"
+    }
+  ],
+  "docs_section_25": {
+    "checked": [
+      "docs/STRUCTURAL_DATA_DOCTRINE.md",
+      "docs/adr/0001-soccer-lab-facet-projector-ingest.md",
+      "docs/SOCCER_LAB_SCHEMA_FACETS.md"
+    ],
+    "note": "No section 25 route inventory was present in the docs tree; this artifact is the generated route inventory for #49.",
+    "status": "not_found"
+  },
+  "fsv": {
+    "artifact_write_readback_probe": {
+      "existed_before": false,
+      "exists_after_cleanup": false,
+      "readback": {
+        "ok": true
+      }
+    },
+    "duplicate_route_registrations": [
+      {
+        "registrations": 2,
+        "route": "GET /metrics"
+      },
+      {
+        "registrations": 4,
+        "route": "GET /v1/assay/bits"
+      },
+      {
+        "registrations": 4,
+        "route": "GET /v1/health"
+      },
+      {
+        "registrations": 4,
+        "route": "GET /v1/kernel"
+      },
+      {
+        "registrations": 4,
+        "route": "GET /v1/provenance/:id"
+      },
+      {
+        "registrations": 4,
+        "route": "POST /v1/guard"
+      },
+      {
+        "registrations": 4,
+        "route": "POST /v1/measure"
+      },
+      {
+        "registrations": 4,
+        "route": "POST /v1/search"
+      }
+    ],
+    "required_gap_detection": true,
+    "route_parser_happy_path": true,
+    "route_parser_malformed_ignored": true,
+    "sample_source": {
+      "file": "crates/calyx-web-api/src/lib.rs",
+      "line": 0,
+      "snippet": ".route(\"/v1/search\", post(search))"
+    }
+  },
+  "generated_at": "2026-07-04",
+  "issue": 49,
+  "prediction_record_contract": {
+    "domain_counts": {
+      "soccer_lab.match_result": 16,
+      "soccer_lab.player_impact": 1248,
+      "soccer_lab.tournament_finalist": 48,
+      "soccer_lab.tournament_semi_finalist": 48,
+      "soccer_lab.tournament_winner": 48
+    },
+    "expected_serving_groups": {
+      "match": 16,
+      "player_impact": 1248,
+      "tournament_progression": 144
+    },
+    "export_file": "docs/data/soccer_lab_prediction_export.json",
+    "export_sha256": "b1949e7475643378863fb9b16f05fe73ed8b775febd0f52f3a1bab2de8903a95",
+    "record_count": 1408,
+    "schema_file": "docs/data/soccer_lab_prediction_record_schema.json",
+    "schema_sha256": "df74d588b67e7ba0940db011b47c6deaf1190bcb7ba9f8c7ec1efb40be3b53c5",
+    "serving_groups": {
+      "match": 16,
+      "player_impact": 1248,
+      "tournament_progression": 144
+    },
+    "status": "verified"
+  },
+  "required_soccer_lab_endpoints": [
+    {
+      "contract": "Return match-result prediction records from the Soccer Lab prediction export.",
+      "issue": 50,
+      "matches": [],
+      "method": "POST",
+      "path": "/predict/match",
+      "status": "missing"
+    },
+    {
+      "contract": "Return tournament progression prediction records.",
+      "issue": 51,
+      "matches": [],
+      "method": "POST",
+      "path": "/predict/progression",
+      "status": "missing"
+    },
+    {
+      "contract": "Return player-impact prediction records.",
+      "issue": 52,
+      "matches": [],
+      "method": "POST",
+      "path": "/predict/player",
+      "status": "missing"
+    },
+    {
+      "contract": "Expose Soccer Lab search over HTTP without requiring the generic /v1 prefix.",
+      "issue": 53,
+      "matches": [],
+      "method": "POST",
+      "path": "/search",
+      "status": "missing"
+    },
+    {
+      "contract": "Expose kernel-answer retrieval over HTTP.",
+      "issue": 53,
+      "matches": [],
+      "method": "POST",
+      "path": "/kernel-answer",
+      "status": "missing"
+    },
+    {
+      "contract": "Expose explainability/provenance by prediction id.",
+      "issue": 54,
+      "matches": [],
+      "method": "GET",
+      "path": "/provenance/:id",
+      "status": "missing"
+    },
+    {
+      "contract": "Expose service healthcheck for the Soccer Lab serving surface.",
+      "issue": 56,
+      "matches": [],
+      "method": "GET",
+      "path": "/healthcheck",
+      "status": "missing"
+    }
+  ],
+  "route_count": 37,
+  "source_manifest": [
+    {
+      "bytes": 2483,
+      "file": "crates/calyx-web-api/src/auth.rs",
+      "sha256": "c9759907765b72c38b269a5aac16d695c5c5791832ead8183e88c37853cd8c10"
+    },
+    {
+      "bytes": 6242,
+      "file": "crates/calyx-web-api/src/cache.rs",
+      "sha256": "a84d36a24af460cfccff8ef1a769f391d393c0a2b0db3bd12c4bafee5aef76f6"
+    },
+    {
+      "bytes": 5884,
+      "file": "crates/calyx-web-api/src/guardrails.rs",
+      "sha256": "2a4814bb3cafc0786c9d0fd26bb1f365754d207c1ba7401ebf2e4f1beb409e48"
+    },
+    {
+      "bytes": 12385,
+      "file": "crates/calyx-web-api/src/lib.rs",
+      "sha256": "8c987881eeb93b8849300a12be2a147c680a5f1ed702c4096e74033dc9b575bc"
+    },
+    {
+      "bytes": 11773,
+      "file": "crates/calyxd/src/learner_origin/service.rs",
+      "sha256": "644b75ed38ab2c4cbdcde0084246d0ae3c27308ce04353b7cc335772dbd47170"
+    },
+    {
+      "bytes": 12504,
+      "file": "crates/calyxd/src/server.rs",
+      "sha256": "80762f26940568840c5851daad09dafbe3c53aea288b4f7c72e3c3619865e0df"
+    }
+  ]
+}
