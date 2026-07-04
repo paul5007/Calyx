@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   ArrowUpRight,
@@ -15,6 +16,11 @@ import playerPredictions from "../../../docs/data/soccer_lab_player_impact_predi
 import progressionPredictions from "../../../docs/data/soccer_lab_tournament_progression_predictions.json";
 import reverseSignatures from "../../../docs/data/soccer_lab_reverse_causal_signatures.json";
 import routeAudit from "../../../docs/data/soccer_lab_serving_route_audit.json";
+import {
+  type ApiPredictionRecord,
+  type LiveRequestIndex,
+  fetchLivePredictions,
+} from "./liveApi";
 
 type PredictionOutcome = "home_win" | "draw" | "away_win";
 type ProgressionAxis = "winner" | "finalist" | "semi_finalist";
@@ -57,6 +63,8 @@ type MatchPredictionExport = {
   schema_version: number;
 };
 
+type MatchSeedRecord = MatchPredictionRecord;
+
 type ProgressionRecord = {
   action_id: string;
   axis: ProgressionAxis;
@@ -83,6 +91,8 @@ type ProgressionExport = {
   records: ProgressionRecord[];
   schema_version: number;
 };
+
+type ProgressionSeedRecord = ProgressionRecord;
 
 type ButterflyRecord = {
   action_or_event: string;
@@ -144,6 +154,8 @@ type PlayerImpactExport = {
   records: PlayerImpactRecord[];
   schema_version: number;
 };
+
+type PlayerSeedRecord = PlayerImpactRecord;
 
 type ReverseCause = {
   action_or_event: string;
@@ -211,12 +223,12 @@ type OutcomeLane = {
 };
 
 const soccerLabExport = matchPredictions as MatchPredictionExport;
-const matchRecords = soccerLabExport.records;
+const matchSeeds = soccerLabExport.records as MatchSeedRecord[];
 const progressionExport = progressionPredictions as ProgressionExport;
-const progressionRecords = progressionExport.records;
+const progressionSeeds = progressionExport.records as ProgressionSeedRecord[];
 const bracketTree = butterflyTree as ButterflyTree;
 const playerExport = playerPredictions as PlayerImpactExport;
-const playerRecords = playerExport.records;
+const playerSeeds = playerExport.records as PlayerSeedRecord[];
 const reverseExport = reverseSignatures as ReverseSignatureExport;
 const sufficiencyExport = sufficiencyVerdicts as SufficiencyExport;
 const servingAudit = routeAudit as RouteAudit;
@@ -226,33 +238,6 @@ const outcomes: Array<{ label: string; outcome: PredictionOutcome }> = [
   { label: "Draw", outcome: "draw" },
   { label: "Away", outcome: "away_win" },
 ];
-
-const matchSummary = {
-  total: matchRecords.length,
-  publishable: matchRecords.filter(
-    (record) => record.prediction_status === "oracle_predicted",
-  ).length,
-  blocked: matchRecords.filter(
-    (record) => record.prediction_status === "oracle_insufficient",
-  ).length,
-};
-
-const progressionSummary = {
-  total: progressionRecords.length,
-  teams: new Set(progressionRecords.map((record) => record.team)).size,
-  blocked: progressionRecords.filter(
-    (record) => record.prediction_status === "oracle_insufficient",
-  ).length,
-  butterfly: bracketTree.records.length,
-};
-
-const playerSummary = {
-  total: playerRecords.length,
-  teams: new Set(playerRecords.map((record) => record.team_id)).size,
-  blocked: playerRecords.filter(
-    (record) => record.prediction_status === "oracle_insufficient",
-  ).length,
-};
 
 function percent(value: number) {
   return `${Math.round(value * 100)}%`;
@@ -284,37 +269,14 @@ function statusLabel(record: MatchPredictionRecord) {
   return record.provenance.oracle_error_code ?? "oracle_insufficient";
 }
 
-const readiness = [
-  {
-    label: "Teams",
-    value: `${progressionSummary.teams}`,
-    detail: "progression candidates",
-  },
-  {
-    label: "Records",
-    value: `${progressionSummary.total}`,
-    detail: "3 axes per team",
-  },
-  {
-    label: "Butterfly",
-    value: `${progressionSummary.butterfly}`,
-    detail: "reachable expansion nodes",
-  },
-  {
-    label: "Root",
-    value: bracketTree.root_outcome.enum,
-    detail: bracketTree.root_action,
-  },
-];
-
 const progressionAxes: Array<{ axis: ProgressionAxis; label: string }> = [
   { axis: "winner", label: "Win" },
   { axis: "finalist", label: "Final" },
   { axis: "semi_finalist", label: "Semi" },
 ];
 
-const progressionTeams = Array.from(
-  progressionRecords
+const progressionSeedTeams = Array.from(
+  progressionSeeds
     .reduce((teams, record) => {
       if (!teams.has(record.team)) {
         teams.set(record.team, {
@@ -329,7 +291,7 @@ const progressionTeams = Array.from(
     .values(),
 ).slice(0, 8);
 
-const playerLeaderboard = [...playerRecords]
+const playerSeedLeaderboard = [...playerSeeds]
   .sort(
     (left, right) =>
       right.prior_goals - left.prior_goals || right.prior_caps - left.prior_caps,
@@ -355,7 +317,264 @@ const butterflyHops = Array.from(
     .entries(),
 ).sort(([left], [right]) => Number(left) - Number(right));
 
+const liveRequestIndex: LiveRequestIndex = {
+  matchIds: matchSeeds.map((record) => record.match_id),
+  progressions: progressionSeedTeams.flatMap((team) =>
+    progressionAxes.map(({ axis }) => ({
+      version: team.records.get(axis)?.version ?? "2026",
+      team: team.team,
+      axis,
+    })),
+  ),
+  playerIds: playerSeedLeaderboard.map((record) => record.player_id),
+};
+
+type LiveViewState =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | {
+      status: "ready";
+      matches: MatchPredictionRecord[];
+      progressions: ProgressionRecord[];
+      players: PlayerImpactRecord[];
+    };
+
+const emptyMatches: MatchPredictionRecord[] = [];
+const emptyProgressions: ProgressionRecord[] = [];
+const emptyPlayers: PlayerImpactRecord[] = [];
+
+function stringAttr(record: ApiPredictionRecord, key: string): string {
+  const value = record.input.attributes[key];
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new Error(`${record.record_id} missing string input.attributes.${key}`);
+  }
+  return value;
+}
+
+function numberAttr(record: ApiPredictionRecord, key: string): number {
+  const value = record.input.attributes[key];
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`${record.record_id} missing numeric input.attributes.${key}`);
+  }
+  return value;
+}
+
+function predictionStatus(record: ApiPredictionRecord) {
+  return record.prediction.status;
+}
+
+function toMatchRecord(record: ApiPredictionRecord): MatchPredictionRecord {
+  if (record.record_type !== "match") {
+    throw new Error(`expected match record, got ${record.record_type}`);
+  }
+  const value = record.prediction.value;
+  return {
+    domain: record.domain,
+    action_id: record.action_id,
+    match_id: record.input.entity_id,
+    home_team: stringAttr(record, "home_team"),
+    away_team: stringAttr(record, "away_team"),
+    confidence: record.prediction.confidence,
+    confidence_caps: record.prediction.confidence_caps,
+    date: stringAttr(record, "date"),
+    prediction:
+      value === "home_win" || value === "draw" || value === "away_win"
+        ? value
+        : null,
+    prediction_status: predictionStatus(record),
+    round: stringAttr(record, "round"),
+    score_columns_ignored: record.input.attributes.score_columns_ignored === true,
+    source: String(record.input.source.dataset ?? ""),
+    source_row_index: Number(record.input.source.row_index ?? -1),
+    start_time: stringAttr(record, "start_time"),
+    unplayed_reason: stringAttr(record, "unplayed_reason"),
+    venue: stringAttr(record, "venue"),
+    provenance: {
+      oracle_error_code: record.provenance.oracle_error_code,
+      oracle_fixture_sha256: record.provenance.oracle_fixture_sha256,
+      oracle_stdout_sha256: record.provenance.oracle_stdout_sha256,
+      source_report: record.provenance.source_report,
+    },
+  };
+}
+
+function toProgressionRecord(record: ApiPredictionRecord): ProgressionRecord {
+  if (record.record_type !== "tournament_progression") {
+    throw new Error(`expected progression record, got ${record.record_type}`);
+  }
+  const axis = stringAttr(record, "axis");
+  if (!["winner", "finalist", "semi_finalist"].includes(axis)) {
+    throw new Error(`${record.record_id} has unsupported axis ${axis}`);
+  }
+  return {
+    action_id: record.action_id,
+    axis: axis as ProgressionAxis,
+    confidence: record.prediction.confidence,
+    confidence_caps: record.prediction.confidence_caps,
+    continent: stringAttr(record, "continent"),
+    domain: record.domain,
+    prediction: typeof record.prediction.value === "boolean" ? record.prediction.value : null,
+    prediction_status: predictionStatus(record),
+    source_row_index: Number(record.input.source.row_index ?? -1),
+    team: stringAttr(record, "team"),
+    version: stringAttr(record, "version"),
+    provenance: {
+      oracle_error_code: record.provenance.oracle_error_code,
+      oracle_stdout_sha256: record.provenance.oracle_stdout_sha256,
+    },
+  };
+}
+
+function toPlayerRecord(record: ApiPredictionRecord): PlayerImpactRecord {
+  if (record.record_type !== "player_impact") {
+    throw new Error(`expected player impact record, got ${record.record_type}`);
+  }
+  return {
+    action_id: record.action_id,
+    confidence: record.prediction.confidence,
+    confidence_caps: record.prediction.confidence_caps,
+    domain: "soccer_lab.player_impact",
+    player_id: stringAttr(record, "player_id"),
+    player_name: stringAttr(record, "player_name"),
+    position: stringAttr(record, "position"),
+    prediction: typeof record.prediction.value === "boolean" ? record.prediction.value : null,
+    prediction_status: predictionStatus(record),
+    prior_caps: numberAttr(record, "prior_caps"),
+    prior_goals: numberAttr(record, "prior_goals"),
+    source_row_index: Number(record.input.source.row_index ?? -1),
+    team_id: stringAttr(record, "team_id"),
+    team_name: stringAttr(record, "team_name"),
+    provenance: {
+      oracle_error_code: record.provenance.oracle_error_code,
+      oracle_stdout_sha256: record.provenance.oracle_stdout_sha256,
+    },
+  };
+}
+
 export function App() {
+  const [liveView, setLiveView] = useState<LiveViewState>({ status: "loading" });
+
+  useEffect(() => {
+    let cancelled = false;
+    setLiveView({ status: "loading" });
+    fetchLivePredictions(liveRequestIndex)
+      .then((records) => {
+        if (cancelled) {
+          return;
+        }
+        setLiveView({
+          status: "ready",
+          matches: records.matches.map(toMatchRecord),
+          progressions: records.progressions.map(toProgressionRecord),
+          players: records.players.map(toPlayerRecord),
+        });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+        setLiveView({
+          status: "error",
+          message: error instanceof Error ? error.message : String(error),
+        });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const liveReady = liveView.status === "ready";
+  const matchRecords = liveReady ? liveView.matches : emptyMatches;
+  const progressionRecords = liveReady ? liveView.progressions : emptyProgressions;
+  const playerRecords = liveReady ? liveView.players : emptyPlayers;
+
+  const matchSummary = {
+    total: matchRecords.length,
+    publishable: matchRecords.filter(
+      (record) => record.prediction_status === "oracle_predicted",
+    ).length,
+    blocked: matchRecords.filter(
+      (record) => record.prediction_status === "oracle_insufficient",
+    ).length,
+  };
+
+  const progressionSummary = {
+    total: progressionRecords.length,
+    teams: new Set(progressionRecords.map((record) => record.team)).size,
+    blocked: progressionRecords.filter(
+      (record) => record.prediction_status === "oracle_insufficient",
+    ).length,
+    butterfly: bracketTree.records.length,
+  };
+
+  const playerSummary = {
+    total: playerRecords.length,
+    teams: new Set(playerRecords.map((record) => record.team_id)).size,
+    blocked: playerRecords.filter(
+      (record) => record.prediction_status === "oracle_insufficient",
+    ).length,
+  };
+
+  const readiness = [
+    {
+      label: "Teams",
+      value: liveReady ? `${progressionSummary.teams}` : "closed",
+      detail: "API progression teams",
+    },
+    {
+      label: "Records",
+      value: liveReady ? `${progressionSummary.total}` : "closed",
+      detail: "API axis records",
+    },
+    {
+      label: "Butterfly",
+      value: `${progressionSummary.butterfly}`,
+      detail: "reachable expansion nodes",
+    },
+    {
+      label: "Root",
+      value: bracketTree.root_outcome.enum,
+      detail: bracketTree.root_action,
+    },
+  ];
+
+  const progressionTeams = useMemo(
+    () =>
+      Array.from(
+        progressionRecords
+          .reduce((teams, record) => {
+            if (!teams.has(record.team)) {
+              teams.set(record.team, {
+                team: record.team,
+                continent: record.continent,
+                records: new Map<ProgressionAxis, ProgressionRecord>(),
+              });
+            }
+            teams.get(record.team)?.records.set(record.axis, record);
+            return teams;
+          }, new Map<string, { team: string; continent: string; records: Map<ProgressionAxis, ProgressionRecord> }>())
+          .values(),
+      ),
+    [progressionRecords],
+  );
+
+  const playerLeaderboard = useMemo(
+    () =>
+      [...playerRecords].sort(
+        (left, right) =>
+          right.prior_goals - left.prior_goals ||
+          right.prior_caps - left.prior_caps,
+      ),
+    [playerRecords],
+  );
+
+  const liveStatusText =
+    liveView.status === "ready"
+      ? `${matchSummary.blocked} Oracle refusals`
+      : liveView.status === "loading"
+        ? "Loading API"
+        : "API closed";
+
   return (
     <main className="shell">
       <aside className="rail" aria-label="Dashboard sections">
@@ -382,10 +601,28 @@ export function App() {
           </div>
           <div className="status-pill">
             <Activity size={16} />
-            {matchSummary.blocked} Oracle refusals
+            {liveStatusText}
           </div>
         </header>
 
+        {liveView.status !== "ready" ? (
+          <section className="api-state-panel" aria-label="Live API state">
+            <div>
+              <p className="eyebrow">Live API</p>
+              <h2>
+                {liveView.status === "loading"
+                  ? "Fetching prediction records"
+                  : "Prediction surface closed"}
+              </h2>
+            </div>
+            <p>
+              {liveView.status === "loading"
+                ? "The dashboard is reading /predict/match, /predict/progression, and /predict/player before rendering values."
+                : liveView.message}
+            </p>
+          </section>
+        ) : (
+          <>
         <section className="hero-grid" aria-label="Prediction overview">
           <div className="signal-panel">
             <div className="panel-head">
@@ -619,6 +856,8 @@ export function App() {
             </div>
           </div>
         </section>
+          </>
+        )}
       </section>
     </main>
   );
