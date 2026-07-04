@@ -137,7 +137,7 @@ def verify_pipeline_report(out_dir: Path, expected_skipped: list[str]) -> dict[s
 def verify_default_step_reports(out_dir: Path) -> dict[str, Any]:
     reports = {}
     for step_id in DEFAULT_STEPS:
-        path = out_dir / "reports" / f"{step_id}.json"
+        path = out_dir / "reports" / step_id / "report.json"
         if not path.is_file():
             raise PipelineDriverFsvError("step_report_missing", {"step": step_id, "path": str(path.relative_to(ROOT))})
         payload = json.loads(path.read_text(encoding="utf-8"))

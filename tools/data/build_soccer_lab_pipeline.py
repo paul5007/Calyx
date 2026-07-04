@@ -40,7 +40,7 @@ def default_plan() -> list[dict[str, Any]]:
 
 
 def step(step_id: str, script: str) -> dict[str, Any]:
-    report = f"{{out_dir}}/reports/{step_id}.json"
+    report = f"{{out_dir}}/reports/{step_id}/report.json"
     return {
         "id": step_id,
         "command": [
