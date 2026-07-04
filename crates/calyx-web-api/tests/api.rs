@@ -410,6 +410,11 @@ fn prediction_app() -> Router {
         16,
         "real export has 16 match records"
     );
+    assert_eq!(
+        predict.progression_count(),
+        144,
+        "real export has 144 tournament progression records"
+    );
     let auth = Arc::new(AuthCtx::new("predict-secret-FSV").expect("secret"));
     build_app_with_predictions(
         Arc::new(Guardrails::new(
@@ -437,8 +442,43 @@ fn match_truth(match_id: &str) -> Value {
         .clone()
 }
 
+fn progression_truth(version: &str, team: &str, axis: &str) -> Value {
+    let export: Value =
+        serde_json::from_slice(&std::fs::read(soccer_prediction_export()).expect("read export"))
+            .expect("parse export");
+    export["records"]
+        .as_array()
+        .expect("records array")
+        .iter()
+        .find(|record| {
+            record.get("record_type").and_then(Value::as_str) == Some("tournament_progression")
+                && record
+                    .pointer("/input/attributes/version")
+                    .and_then(Value::as_str)
+                    == Some(version)
+                && record
+                    .pointer("/input/attributes/team")
+                    .and_then(Value::as_str)
+                    == Some(team)
+                && record
+                    .pointer("/input/attributes/axis")
+                    .and_then(Value::as_str)
+                    == Some(axis)
+        })
+        .expect("progression record present")
+        .clone()
+}
+
 fn predict_req(body: &'static str) -> Request<Body> {
     Request::post("/predict/match")
+        .header(header::AUTHORIZATION, "Bearer predict-secret-FSV")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(body))
+        .unwrap()
+}
+
+fn progression_req(body: &'static str) -> Request<Body> {
+    Request::post("/predict/progression")
         .header(header::AUTHORIZATION, "Bearer predict-secret-FSV")
         .header(header::CONTENT_TYPE, "application/json")
         .body(Body::from(body))
@@ -573,6 +613,163 @@ async fn predict_match_rejects_unknown_fields() {
     let (status, body) = call(
         prediction_app(),
         predict_req(r#"{"matchId":"WC-2026-M089","extra":true}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+}
+
+#[tokio::test]
+async fn predict_progression_returns_exact_export_record_and_cache_headers() {
+    let app = prediction_app();
+    let truth = progression_truth("2026", "France", "winner");
+    let (status, headers, body) = call_with_headers(
+        app.clone(),
+        progression_req(r#"{"version":"2026","team":"France","axis":"winner"}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        headers.get("x-cache").and_then(|v| v.to_str().ok()),
+        Some("MISS")
+    );
+    assert_eq!(
+        body, truth,
+        "HTTP response must equal progression export source of truth"
+    );
+
+    let (status, headers, body) = call_with_headers(
+        app,
+        progression_req(r#"{"version":"2026","team":"France","axis":"winner"}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        headers.get("x-cache").and_then(|v| v.to_str().ok()),
+        Some("HIT")
+    );
+    assert_eq!(body, truth, "cache hit must replay the same record");
+}
+
+#[tokio::test]
+async fn predict_progression_real_loopback_http_equals_export_truth() {
+    let app = prediction_app();
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind progression HTTP listener");
+    let addr = listener.local_addr().expect("local_addr");
+    let server = tokio::spawn(async move {
+        axum::serve(listener, app)
+            .await
+            .expect("serve prediction app");
+    });
+
+    let body = r#"{"version":"2026","team":"Canada","axis":"finalist"}"#;
+    let request = format!(
+        "POST /predict/progression HTTP/1.1\r\nHost: {addr}\r\nAuthorization: Bearer predict-secret-FSV\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        body.len()
+    );
+    let mut stream = tokio::net::TcpStream::connect(addr)
+        .await
+        .expect("connect progression HTTP listener");
+    {
+        use tokio::io::AsyncWriteExt;
+        stream
+            .write_all(request.as_bytes())
+            .await
+            .expect("write request");
+    }
+    let mut response = Vec::new();
+    {
+        use tokio::io::AsyncReadExt;
+        stream
+            .read_to_end(&mut response)
+            .await
+            .expect("read response");
+    }
+    server.abort();
+
+    let response = String::from_utf8(response).expect("response utf8");
+    assert!(
+        response.starts_with("HTTP/1.1 200 OK"),
+        "response: {response}"
+    );
+    let (_, json) = response
+        .split_once("\r\n\r\n")
+        .expect("HTTP response has body separator");
+    let served: Value = serde_json::from_str(json).expect("served JSON");
+    assert_eq!(
+        served,
+        progression_truth("2026", "Canada", "finalist"),
+        "real HTTP response must equal progression export source of truth"
+    );
+}
+
+#[tokio::test]
+async fn predict_progression_requires_bearer() {
+    let (status, body) = call(
+        prediction_app(),
+        Request::post("/predict/progression")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                r#"{"version":"2026","team":"France","axis":"winner"}"#,
+            ))
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_envelope(&body, ErrorCode::Unauthorized);
+}
+
+#[tokio::test]
+async fn predict_progression_unknown_key_is_404_envelope() {
+    let (status, body) = call(
+        prediction_app(),
+        progression_req(r#"{"version":"2026","team":"Atlantis","axis":"winner"}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_envelope(&body, ErrorCode::NotFound);
+}
+
+#[tokio::test]
+async fn predict_progression_rejects_malformed_json() {
+    let (status, body) = call(
+        prediction_app(),
+        progression_req(r#"{"version":"2026","team":"France","axis":"winner""#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+}
+
+#[tokio::test]
+async fn predict_progression_rejects_empty_team() {
+    let (status, body) = call(
+        prediction_app(),
+        progression_req(r#"{"version":"2026","team":" ","axis":"winner"}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+}
+
+#[tokio::test]
+async fn predict_progression_rejects_unknown_axis() {
+    let (status, body) = call(
+        prediction_app(),
+        progression_req(r#"{"version":"2026","team":"France","axis":"quarter_finalist"}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+}
+
+#[tokio::test]
+async fn predict_progression_rejects_unknown_fields() {
+    let (status, body) = call(
+        prediction_app(),
+        progression_req(r#"{"version":"2026","team":"France","axis":"winner","extra":true}"#),
     )
     .await;
     assert_eq!(status, StatusCode::BAD_REQUEST);

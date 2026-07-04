@@ -2,6 +2,8 @@ use super::cache::{ResponseCache, cached_json_response, store_and_respond};
 use super::*;
 
 const MATCH_DOMAIN: &str = "soccer_lab.match_result";
+const PROGRESSION_RECORD_TYPE: &str = "tournament_progression";
+const PROGRESSION_AXES: [&str; 3] = ["winner", "finalist", "semi_finalist"];
 
 /// Loaded Soccer Lab prediction export, indexed by match id.
 ///
@@ -10,6 +12,7 @@ const MATCH_DOMAIN: &str = "soccer_lab.match_result";
 /// advertise `/predict/match`.
 pub struct PredictionCtx {
     match_records: HashMap<String, Value>,
+    progression_records: HashMap<String, Value>,
     cache: ResponseCache,
 }
 
@@ -24,8 +27,56 @@ impl PredictionCtx {
             .and_then(Value::as_array)
             .ok_or_else(|| format!("prediction export {} missing records[]", path.display()))?;
         let mut match_records = HashMap::new();
+        let mut progression_records = HashMap::new();
         for record in records {
             if record.get("domain").and_then(Value::as_str) != Some(MATCH_DOMAIN) {
+                if record.get("record_type").and_then(Value::as_str)
+                    == Some(PROGRESSION_RECORD_TYPE)
+                {
+                    let version = record
+                        .pointer("/input/attributes/version")
+                        .and_then(Value::as_str)
+                        .ok_or_else(|| {
+                            format!(
+                                "tournament progression record missing input.attributes.version in {}",
+                                path.display()
+                            )
+                        })?;
+                    let team = record
+                        .pointer("/input/attributes/team")
+                        .and_then(Value::as_str)
+                        .ok_or_else(|| {
+                            format!(
+                                "tournament progression record missing input.attributes.team in {}",
+                                path.display()
+                            )
+                        })?;
+                    let axis = record
+                        .pointer("/input/attributes/axis")
+                        .and_then(Value::as_str)
+                        .ok_or_else(|| {
+                            format!(
+                                "tournament progression record missing input.attributes.axis in {}",
+                                path.display()
+                            )
+                        })?;
+                    if !PROGRESSION_AXES.contains(&axis) {
+                        return Err(format!(
+                            "unknown tournament progression axis {axis} in {}",
+                            path.display()
+                        ));
+                    }
+                    let key = progression_key(version, team, axis);
+                    if progression_records
+                        .insert(key.clone(), record.clone())
+                        .is_some()
+                    {
+                        return Err(format!(
+                            "duplicate tournament progression prediction key {key} in {}",
+                            path.display()
+                        ));
+                    }
+                }
                 continue;
             }
             let entity_id = record
@@ -53,8 +104,15 @@ impl PredictionCtx {
                 path.display()
             ));
         }
+        if progression_records.is_empty() {
+            return Err(format!(
+                "prediction export {} contains no {PROGRESSION_RECORD_TYPE} records",
+                path.display()
+            ));
+        }
         Ok(Self {
             match_records,
+            progression_records,
             cache: ResponseCache::from_env()?,
         })
     }
@@ -70,12 +128,33 @@ impl PredictionCtx {
     pub fn match_count(&self) -> usize {
         self.match_records.len()
     }
+
+    pub fn progression_count(&self) -> usize {
+        self.progression_records.len()
+    }
 }
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct MatchPredictionReq {
     match_id: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ProgressionPredictionReq {
+    version: String,
+    team: String,
+    axis: String,
+}
+
+fn progression_key(version: &str, team: &str, axis: &str) -> String {
+    format!(
+        "{}\u{1f}{}\u{1f}{}",
+        version.trim(),
+        team.trim(),
+        axis.trim()
+    )
 }
 
 pub(super) async fn predict_match(
@@ -105,6 +184,52 @@ pub(super) async fn predict_match(
         return ApiError::new(
             ErrorCode::NotFound,
             format!("no Soccer Lab match prediction for {match_id}"),
+        )
+        .into_response();
+    };
+    store_and_respond(&ctx.cache, cache_key, record)
+}
+
+pub(super) async fn predict_progression(
+    State(ctx): State<Arc<PredictionCtx>>,
+    body: axum::body::Bytes,
+) -> Response {
+    let req: ProgressionPredictionReq = match serde_json::from_slice(&body) {
+        Ok(req) => req,
+        Err(error) => {
+            tracing::warn!(error = ?error, "CALYX_WEB_API_PREDICT_PROGRESSION_BAD_REQUEST");
+            return ApiError::new(
+                ErrorCode::BadRequest,
+                "request body must be JSON object {\"version\":\"2026\",\"team\":\"France\",\"axis\":\"winner\"}",
+            )
+            .into_response();
+        }
+    };
+    let version = req.version.trim();
+    let team = req.team.trim();
+    let axis = req.axis.trim();
+    if version.is_empty() {
+        return ApiError::new(ErrorCode::BadRequest, "version must be non-empty").into_response();
+    }
+    if team.is_empty() {
+        return ApiError::new(ErrorCode::BadRequest, "team must be non-empty").into_response();
+    }
+    if !PROGRESSION_AXES.contains(&axis) {
+        return ApiError::new(
+            ErrorCode::BadRequest,
+            "axis must be one of winner|finalist|semi_finalist",
+        )
+        .into_response();
+    }
+    let key = progression_key(version, team, axis);
+    let cache_key = format!("predict_progression\u{1f}{key}");
+    if let Some((body, age)) = ctx.cache.get(&cache_key) {
+        return cached_json_response(body, "HIT", age);
+    }
+    let Some(record) = ctx.progression_records.get(&key) else {
+        return ApiError::new(
+            ErrorCode::NotFound,
+            format!("no Soccer Lab tournament progression prediction for {version}:{team}:{axis}"),
         )
         .into_response();
     };
