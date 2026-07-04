@@ -264,6 +264,36 @@ def read_swaptr_matches(raw_root: Path) -> list[dict[str, str]]:
     return rows
 
 
+def read_mominull_member(raw_root: Path, name: str, required: set[str], stage: str = "players_2026") -> list[dict[str, str]]:
+    path = raw_root / "mominullptr" / "fifa-world-cup-2026-dataset.zip"
+    if not path.exists():
+        raise RowGenError(stage, "missing_required_input", {"path": str(path.relative_to(ROOT))})
+    raw = path.read_bytes()
+    if not raw:
+        raise RowGenError(stage, "empty_required_input", {"path": str(path.relative_to(ROOT))})
+    try:
+        archive = zipfile.ZipFile(path)
+    except zipfile.BadZipFile as exc:
+        raise RowGenError(stage, "invalid_zip", {"path": str(path.relative_to(ROOT)), "sha256": sha256_bytes(raw)}) from exc
+    try:
+        payload = archive.read(name)
+    except KeyError as exc:
+        raise RowGenError(stage, "missing_zip_member", {"path": str(path.relative_to(ROOT)), "member": name}) from exc
+    try:
+        text = payload.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise RowGenError(stage, "invalid_utf8", {"path": str(path.relative_to(ROOT)), "member": name, "sha256": sha256_bytes(payload)}) from exc
+    reader = csv.DictReader(text.splitlines())
+    headers = set(reader.fieldnames or [])
+    missing = sorted(required - headers)
+    if missing:
+        raise RowGenError(stage, "missing_required_columns", {"path": str(path.relative_to(ROOT)), "member": name, "missing": missing})
+    rows = [dict(row) for row in reader]
+    if not rows:
+        raise RowGenError(stage, "empty_zip_member", {"path": str(path.relative_to(ROOT)), "member": name})
+    return rows
+
+
 TEAM_ALIASES = {
     "Bosnia-Herz": "Bosnia and Herzegovina",
     "Bosnia–Herz": "Bosnia and Herzegovina",
@@ -481,6 +511,95 @@ def match_2026_rows(raw_root: Path) -> list[dict[str, Any]]:
                     "date": row["date"],
                 },
                 "anchors": [score_anchor(row)],
+            }
+        )
+    return out
+
+
+def position_flags(position: str) -> dict[str, int]:
+    code = position.strip().upper()
+    return {
+        "goal_keeper": 1 if code == "GK" else 0,
+        "defender": 1 if code in {"DEF", "DF", "CB", "LB", "RB", "LWB", "RWB"} else 0,
+        "midfielder": 1 if code in {"MID", "MF", "CM", "DM", "AM", "LM", "RM"} else 0,
+        "forward": 1 if code in {"FWD", "FW", "ST", "CF", "LW", "RW"} else 0,
+    }
+
+
+def player_2026_rows(raw_root: Path) -> list[dict[str, Any]]:
+    source_path = raw_root / "mominullptr" / "fifa-world-cup-2026-dataset.zip"
+    source_key = sha256_file(source_path) if source_path.exists() else ""
+    players = read_mominull_member(
+        raw_root,
+        "squads_and_players.csv",
+        {"player_id", "team_id", "player_name", "position", "club_team", "market_value_eur", "caps", "date_of_birth", "height_cm", "goals"},
+    )
+    teams = {
+        row["team_id"]: row
+        for row in read_mominull_member(
+            raw_root,
+            "teams.csv",
+            {"team_id", "team_name", "fifa_code", "group_letter", "confederation", "fifa_ranking_pre_tournament", "elo_rating", "manager_name"},
+        )
+    }
+    out = []
+    for idx, row in enumerate(sorted(players, key=lambda item: int(item["player_id"]))):
+        team = teams.get(row["team_id"])
+        if team is None:
+            raise RowGenError("players_2026", "missing_team_for_player", {"player_id": row["player_id"], "team_id": row["team_id"]})
+        caps = harrachi_num(row, "caps")
+        goals = harrachi_num(row, "goals")
+        appearances = max(caps, 0.0)
+        starts = appearances
+        flags = position_flags(row["position"])
+        trailing_goal_rate = clamp(goals / appearances) if appearances > 0 else 0.0
+        out.append(
+            {
+                "text": stat_line(
+                    [
+                        ("entity", "player_2026"),
+                        ("player_id", row["player_id"]),
+                        ("team_id", row["team_id"]),
+                        ("team_name", team["team_name"]),
+                        ("team_code", team["fifa_code"]),
+                        ("group_letter", team["group_letter"]),
+                        ("confederation_code", team["confederation"]),
+                        ("player_name", row["player_name"]),
+                        ("club_team", row["club_team"]),
+                        ("position_code", row["position"]),
+                        ("female", 0),
+                        ("goal_keeper", flags["goal_keeper"]),
+                        ("defender", flags["defender"]),
+                        ("midfielder", flags["midfielder"]),
+                        ("forward", flags["forward"]),
+                        ("count_tournaments", 1),
+                        ("prior_appearances", appearances),
+                        ("prior_goals", goals),
+                        ("trailing_goal_rate", trailing_goal_rate),
+                        ("prior_penalties_converted", 0),
+                        ("prior_penalty_kicks", 0),
+                        ("prior_starts", starts),
+                        ("prior_substitute_appearances", 0),
+                        ("prior_substitute_goals", 0),
+                        ("prior_yellow_cards", 0),
+                        ("prior_red_cards", 0),
+                        ("market_value_eur", row["market_value_eur"]),
+                        ("height_cm", row["height_cm"]),
+                        ("fifa_rank_pre_tournament", team["fifa_ranking_pre_tournament"]),
+                        ("elo_rating", team["elo_rating"]),
+                    ]
+                ),
+                "metadata": {
+                    "project": "Soccer Lab",
+                    "entity": "player_2026",
+                    "source_dataset": "mominullptr.fifa-world-cup-2026-dataset.squads_and_players",
+                    "source": "Kaggle: mominullptr/fifa-world-cup-2026-dataset",
+                    "source_key": source_key,
+                    "source_row_index": str(idx),
+                    "player_id": row["player_id"],
+                    "team_id": row["team_id"],
+                    "team_name": team["team_name"],
+                },
             }
         )
     return out
@@ -771,6 +890,7 @@ def fixture_rows(raw_root: Path) -> list[dict[str, Any]]:
 
 GENERATORS: dict[str, tuple[str, Callable[[Path], list[dict[str, Any]]]]] = {
     "players": ("players.jsonl", player_rows),
+    "players-2026": ("players-2026.jsonl", player_2026_rows),
     "matches": ("matches.jsonl", match_rows),
     "matches-2026": ("matches-2026.jsonl", match_2026_rows),
     "teams-history": ("teams-history.jsonl", teams_history_rows),

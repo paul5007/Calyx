@@ -179,6 +179,11 @@
       "id": "swaptr_fifa_wc_2026_matches",
       "url": "https://www.kaggle.com/api/v1/datasets/download/swaptr/fifa-wc-2026-matches",
       "path": "swaptr/fifa-wc-2026-matches.zip"
+    },
+    {
+      "id": "mominullptr_fifa_world_cup_2026_dataset",
+      "url": "https://www.kaggle.com/api/v1/datasets/download/mominullptr/fifa-world-cup-2026-dataset",
+      "path": "mominullptr/fifa-world-cup-2026-dataset.zip"
     }
   ],
   "thestatsapi": {

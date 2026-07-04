@@ -29,7 +29,7 @@ Generate deterministic Calyx batch JSONL rows:
 
 ```bash
 ./tools/data/generate_soccer_lab_rows.py
-./tools/data/generate_soccer_lab_rows.py --only players --only matches --only matches-2026 --only teams-history --only team-tournaments --only fjelstul
+./tools/data/generate_soccer_lab_rows.py --only players --only matches --only matches-2026 --only teams-history --only team-tournaments --only players-2026 --only fjelstul
 ```
 
 Outputs are written to `scratchpad/wc2026/rows/`:
@@ -39,6 +39,7 @@ Outputs are written to `scratchpad/wc2026/rows/`:
 - `matches-2026.jsonl`
 - `teams-history.jsonl`
 - `team-tournaments.jsonl`
+- `players-2026.jsonl`
 - `fjelstul.jsonl`
 - `fixtures.jsonl`
 
@@ -180,3 +181,15 @@ This downloads the public swaptr and Harrachi Kaggle zips if missing, generates
 85 match rows without post-match stat leakage in `text`, creates a fresh vault,
 registers the seven team/match facet projectors, ingests the rows, and verifies
 physical `cx-list --include-slots` slot presence plus vault bytes.
+
+Build and verify the 2026 players ex-ante Calyx vault from the Mominullptr squad
+dataset:
+
+```bash
+./tools/data/verify_soccer_lab_players_vault.py
+```
+
+This downloads the public Mominullptr Kaggle zip if missing, generates 1,248
+player rows without post-match player-stat leakage in `text`, creates a fresh
+vault, registers the three player facet projectors, ingests the rows, and
+verifies physical `cx-list --include-slots` slot presence plus vault bytes.
