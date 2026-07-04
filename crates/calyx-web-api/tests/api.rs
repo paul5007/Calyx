@@ -882,6 +882,30 @@ fn open_search_fixture_vault(fixture: &SearchFixture) -> calyx_aster::vault::Ast
     .expect("open search fixture vault")
 }
 
+fn search_wired_req(body: &'static str) -> Request<Body> {
+    Request::post("/search")
+        .header(header::AUTHORIZATION, "Bearer search-secret-FSV")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(body))
+        .unwrap()
+}
+
+fn kernel_answer_wired_req(body: &'static str) -> Request<Body> {
+    Request::post("/kernel-answer")
+        .header(header::AUTHORIZATION, "Bearer search-secret-FSV")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(body))
+        .unwrap()
+}
+
+fn guard_wired_req(body: &'static str) -> Request<Body> {
+    Request::post("/v1/guard")
+        .header(header::AUTHORIZATION, "Bearer search-secret-FSV")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(body))
+        .unwrap()
+}
+
 #[tokio::test]
 async fn public_search_real_loopback_http_equals_vault_search_truth() {
     use calyx_aster::cf::ColumnFamily;
@@ -1023,6 +1047,74 @@ async fn public_search_real_loopback_http_equals_vault_search_truth() {
             .iter()
             .any(|hit| hit.cx_id.to_string() == served_first),
         "served first hit {served_first} must come from persisted index readback"
+    );
+
+    std::fs::remove_dir_all(&fixture.root).ok();
+}
+
+#[tokio::test]
+async fn wired_search_bad_requests_are_structured_error_envelopes() {
+    let fixture = search_fixture();
+    let app = search_app(&fixture);
+
+    for req in [
+        search_wired_req(r#"{"query":"alpha""#),
+        search_wired_req(r#"{"query":"   ","k":2}"#),
+        search_wired_req(r#"{"query":"alpha","k":0}"#),
+        search_wired_req(r#"{"query":"alpha","fusion":"bogus"}"#),
+    ] {
+        let (status, body) = call(app.clone(), req).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_envelope(&body, ErrorCode::BadRequest);
+    }
+
+    std::fs::remove_dir_all(&fixture.root).ok();
+}
+
+#[tokio::test]
+async fn wired_kernel_answer_bad_requests_are_structured_error_envelopes() {
+    let fixture = search_fixture();
+    let app = search_app(&fixture);
+
+    for req in [
+        kernel_answer_wired_req(r#"{"query":"alpha""#),
+        kernel_answer_wired_req(r#"{"query":"   "}"#),
+        kernel_answer_wired_req(r#"{"query":"alpha","k":0}"#),
+        kernel_answer_wired_req(r#"{"query":"alpha","anchor":"unknown-anchor"}"#),
+    ] {
+        let (status, body) = call(app.clone(), req).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_envelope(&body, ErrorCode::BadRequest);
+    }
+
+    std::fs::remove_dir_all(&fixture.root).ok();
+}
+
+#[tokio::test]
+async fn wired_guard_failures_are_structured_error_envelopes() {
+    let fixture = search_fixture();
+    let app = search_app(&fixture);
+
+    let (status, body) = call(
+        app.clone(),
+        guard_wired_req(r#"{"answer":" ","evidence":"alpha"}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+
+    let (status, body) = call(
+        app,
+        guard_wired_req(r#"{"answer":"alpha","evidence":"alphabet"}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+    assert!(
+        body["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("no calibrated guard profile")),
+        "guard profile absence must be explicit, got {body}"
     );
 
     std::fs::remove_dir_all(&fixture.root).ok();
