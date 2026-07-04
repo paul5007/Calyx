@@ -89,11 +89,25 @@ pub(crate) async fn run_server(config_path: &Path, once: bool, audit_vram: bool)
         return print_once(&surface, origin.as_deref());
     }
 
+    let health = Arc::new(run_healthcheck(&cfg));
+    if let Err(error) = write_health_result(health.as_ref(), &cfg.health_log_path) {
+        return fatal(error);
+    }
+    if !health.is_pass() {
+        eprintln!(
+            "calyxd: CALYX_DAEMON_HEALTH_FAIL: startup healthcheck failed; listener will not bind"
+        );
+        return ExitCode::from(1);
+    }
+
     let server = match &origin {
-        Some(origin) => {
-            MetricsServer::bind_with_origin(cfg.bind_addr, Arc::clone(&surface), Arc::clone(origin))
-        }
-        None => MetricsServer::bind(cfg.bind_addr, Arc::clone(&surface)),
+        Some(origin) => MetricsServer::bind_with_origin_and_health(
+            cfg.bind_addr,
+            Arc::clone(&surface),
+            Arc::clone(origin),
+            Arc::clone(&health),
+        ),
+        None => MetricsServer::bind_with_health(cfg.bind_addr, Arc::clone(&surface), health),
     };
     let server = match server {
         Ok(server) => server,
@@ -117,17 +131,6 @@ pub(crate) async fn run_server(config_path: &Path, once: bool, audit_vram: bool)
     let cancel_token = CancellationToken::new();
     if let Err(error) = install_signal_handlers(cancel_token.clone()) {
         return fatal(error);
-    }
-
-    let health = run_healthcheck(&cfg);
-    if let Err(error) = write_health_result(&health, &cfg.health_log_path) {
-        return fatal(error);
-    }
-    if !health.is_pass() {
-        eprintln!(
-            "calyxd: CALYX_DAEMON_HEALTH_FAIL: startup healthcheck failed; listener will not accept"
-        );
-        return ExitCode::from(1);
     }
 
     println!(

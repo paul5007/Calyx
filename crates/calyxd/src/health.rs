@@ -38,6 +38,14 @@ use crate::vram::{NvmlVramUsage, VramBudget};
 /// state — so a multi-probe failure is fully visible, never collapsed to one.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CalyxHealthResult {
+    /// Ready for traffic. Mirrors `status == "pass"` as a boolean for simple
+    /// HTTP health probes and systemd/curl checks.
+    pub ready: bool,
+    /// True because this record is only produced after `CalyxConfig` parsed and
+    /// validated successfully. Config parse failures fail before health JSON is
+    /// emitted, so a served health record can never claim readiness with bad
+    /// config.
+    pub config_valid: bool,
     /// `"pass"` or `"fail"` — the at-a-glance verdict for monitoring.
     pub status: &'static str,
     /// ISO-8601 UTC timestamp (e.g. `2026-06-13T17:04:05Z`) of the probe.
@@ -114,6 +122,8 @@ pub fn run_healthcheck(cfg: &CalyxConfig) -> CalyxHealthResult {
         None => (None, None),
     };
     CalyxHealthResult {
+        ready: status == "pass",
+        config_valid: true,
         status,
         timestamp_utc,
         cuda_device,
@@ -290,6 +300,8 @@ mod tests {
 
     fn result(status: &'static str) -> CalyxHealthResult {
         CalyxHealthResult {
+            ready: status == "pass",
+            config_valid: true,
             status,
             timestamp_utc: "2026-06-13T00:00:00Z".to_string(),
             cuda_device: Some("NVIDIA CUDA GPU".to_string()),
@@ -304,6 +316,8 @@ mod tests {
     fn pass_result_serializes_with_exact_json_keys() {
         let json = serde_json::to_value(result("pass")).expect("serialize");
         assert_eq!(json["status"], "pass");
+        assert_eq!(json["ready"], true);
+        assert_eq!(json["config_valid"], true);
         assert_eq!(json["vault_read_ok"], true);
         assert_eq!(json["vram_budget_mib"], 8192);
         assert_eq!(json["cuda_device"], "NVIDIA CUDA GPU");

@@ -14,6 +14,7 @@ use std::io::{Read, Write};
 use std::net::TcpStream;
 use std::sync::Arc;
 
+use calyxd::health::CalyxHealthResult;
 use calyxd::metrics::{
     CalyxMetrics, ChainVerifyMetrics, SearchStrategy, VerifyOutcome, ZfsDatasetChecksum,
     ZfsIntegritySnapshot, ZfsPoolIntegrity,
@@ -237,6 +238,56 @@ fn full_surface_served_over_real_http_with_recorded_values() {
         response.starts_with("HTTP/1.1 405"),
         "non-GET must 405: {response}"
     );
+
+    stop.cancel();
+    join.join().expect("metrics server joins after cancel");
+}
+
+#[test]
+fn healthz_served_over_real_http_with_startup_health_json() {
+    let surface = recorded_surface();
+    let health = Arc::new(CalyxHealthResult {
+        ready: true,
+        config_valid: true,
+        status: "pass",
+        timestamp_utc: "2026-07-04T12:00:00Z".to_string(),
+        cuda_device: Some("NVIDIA CUDA GPU".to_string()),
+        vram_budget_mib: 8192,
+        vault_read_ok: true,
+        error_code: None,
+        error_detail: None,
+    });
+    let server = MetricsServer::bind_with_health(
+        "127.0.0.1:0".parse().unwrap(),
+        Arc::clone(&surface),
+        health,
+    )
+    .expect("bind");
+    let addr = server.local_addr().expect("local_addr").to_string();
+    let cancel = CancellationToken::new();
+    let stop = cancel.clone();
+    let join = std::thread::spawn(move || server.run(cancel).expect("server run"));
+
+    let response = http_get(&addr, "/healthz");
+    assert!(
+        response.starts_with("HTTP/1.1 200 OK"),
+        "response: {response}"
+    );
+    assert!(
+        response.contains("Content-Type: application/json"),
+        "missing json content type: {response}"
+    );
+    let body = response
+        .split("\r\n\r\n")
+        .nth(1)
+        .expect("http body after headers");
+    let json: serde_json::Value = serde_json::from_str(body).expect("valid health JSON");
+    assert_eq!(json["ready"], true);
+    assert_eq!(json["config_valid"], true);
+    assert_eq!(json["status"], "pass");
+    assert_eq!(json["vault_read_ok"], true);
+    assert_eq!(json["vram_budget_mib"], 8192);
+    assert_eq!(json["cuda_device"], "NVIDIA CUDA GPU");
 
     stop.cancel();
     join.join().expect("metrics server joins after cancel");

@@ -18,6 +18,7 @@ use std::time::{Duration, Instant};
 use tokio_util::sync::CancellationToken;
 
 use crate::error::DaemonError;
+use crate::health::CalyxHealthResult;
 use crate::learner_origin::LearnerOriginService;
 use crate::metrics::CalyxMetrics;
 use http::{
@@ -35,13 +36,22 @@ pub struct MetricsServer {
     listener: TcpListener,
     metrics: Arc<CalyxMetrics>,
     origin: Option<Arc<LearnerOriginService>>,
+    health: Option<Arc<CalyxHealthResult>>,
     active: Arc<AtomicUsize>,
 }
 
 impl MetricsServer {
     /// Binds `addr`, refusing any non-loopback IP before touching the OS.
     pub fn bind(addr: SocketAddr, metrics: Arc<CalyxMetrics>) -> Result<Self, DaemonError> {
-        Self::bind_inner(addr, metrics, None)
+        Self::bind_inner(addr, metrics, None, None)
+    }
+
+    pub fn bind_with_health(
+        addr: SocketAddr,
+        metrics: Arc<CalyxMetrics>,
+        health: Arc<CalyxHealthResult>,
+    ) -> Result<Self, DaemonError> {
+        Self::bind_inner(addr, metrics, None, Some(health))
     }
 
     pub fn bind_with_origin(
@@ -49,13 +59,23 @@ impl MetricsServer {
         metrics: Arc<CalyxMetrics>,
         origin: Arc<LearnerOriginService>,
     ) -> Result<Self, DaemonError> {
-        Self::bind_inner(addr, metrics, Some(origin))
+        Self::bind_inner(addr, metrics, Some(origin), None)
+    }
+
+    pub fn bind_with_origin_and_health(
+        addr: SocketAddr,
+        metrics: Arc<CalyxMetrics>,
+        origin: Arc<LearnerOriginService>,
+        health: Arc<CalyxHealthResult>,
+    ) -> Result<Self, DaemonError> {
+        Self::bind_inner(addr, metrics, Some(origin), Some(health))
     }
 
     fn bind_inner(
         addr: SocketAddr,
         metrics: Arc<CalyxMetrics>,
         origin: Option<Arc<LearnerOriginService>>,
+        health: Option<Arc<CalyxHealthResult>>,
     ) -> Result<Self, DaemonError> {
         if !addr.ip().is_loopback() {
             return Err(DaemonError::bind_failed(format!(
@@ -68,6 +88,7 @@ impl MetricsServer {
             listener,
             metrics,
             origin,
+            health,
             active: Arc::new(AtomicUsize::new(0)),
         })
     }
@@ -96,11 +117,17 @@ impl MetricsServer {
                 Ok((stream, peer)) => {
                     let metrics = Arc::clone(&self.metrics);
                     let origin = self.origin.as_ref().map(Arc::clone);
+                    let health = self.health.as_ref().map(Arc::clone);
                     let active = Arc::clone(&self.active);
                     active.fetch_add(1, Ordering::SeqCst);
                     std::thread::spawn(move || {
                         let outcome = catch_unwind(AssertUnwindSafe(|| {
-                            handle_connection(stream, &metrics, origin.as_deref())
+                            handle_connection(
+                                stream,
+                                &metrics,
+                                origin.as_deref(),
+                                health.as_deref(),
+                            )
                         }));
                         active.fetch_sub(1, Ordering::SeqCst);
                         match outcome {
@@ -139,6 +166,7 @@ fn handle_connection(
     mut stream: TcpStream,
     metrics: &CalyxMetrics,
     origin: Option<&LearnerOriginService>,
+    health: Option<&CalyxHealthResult>,
 ) -> Result<(), String> {
     stream
         .set_read_timeout(Some(IO_TIMEOUT))
@@ -163,7 +191,7 @@ fn handle_connection(
         }
     };
 
-    let response = route(&request, metrics, origin);
+    let response = route(&request, metrics, origin, health);
     write_response(&mut stream, &response)
 }
 
@@ -172,6 +200,7 @@ fn route(
     request: &HttpRequest,
     metrics: &CalyxMetrics,
     origin: Option<&LearnerOriginService>,
+    health: Option<&CalyxHealthResult>,
 ) -> HttpResponse {
     if let Some(origin) = origin
         && origin.handles_path(&request.path)
@@ -190,6 +219,29 @@ fn route(
         };
     }
     match (request.method.as_str(), request.path.as_str()) {
+        ("GET", "/healthz") => match health {
+            Some(health) => match serde_json::to_string_pretty(health) {
+                Ok(body) => HttpResponse {
+                    status: if health.ready {
+                        "200 OK"
+                    } else {
+                        "503 Service Unavailable"
+                    },
+                    content_type: JSON_CONTENT_TYPE,
+                    body: format!("{body}\n"),
+                },
+                Err(error) => HttpResponse {
+                    status: "500 Internal Server Error",
+                    content_type: PLAIN_CONTENT_TYPE,
+                    body: format!("serialize health: {error}\n"),
+                },
+            },
+            None => HttpResponse {
+                status: "404 Not Found",
+                content_type: PLAIN_CONTENT_TYPE,
+                body: "healthz is only served by config-driven calyxd\n".to_string(),
+            },
+        },
         ("GET", "/metrics") => match metrics.encode_text() {
             Ok(mut text) => {
                 if let Some(origin) = origin {
@@ -255,6 +307,20 @@ mod tests {
         }
     }
 
+    fn health(status: &'static str) -> Arc<CalyxHealthResult> {
+        Arc::new(CalyxHealthResult {
+            ready: status == "pass",
+            config_valid: true,
+            status,
+            timestamp_utc: "2026-07-04T00:00:00Z".to_string(),
+            cuda_device: Some("NVIDIA CUDA GPU".to_string()),
+            vram_budget_mib: 8192,
+            vault_read_ok: status == "pass",
+            error_code: (status != "pass").then(|| "CALYX_DAEMON_HEALTH_FAIL".to_string()),
+            error_detail: (status != "pass").then(|| "synthetic fail".to_string()),
+        })
+    }
+
     #[test]
     fn bind_refuses_non_loopback_address() {
         let Err(error) = MetricsServer::bind("0.0.0.0:7700".parse().unwrap(), metrics()) else {
@@ -273,7 +339,7 @@ mod tests {
     #[test]
     fn route_serves_full_metric_surface() {
         let metrics = metrics();
-        let response = route(&request("GET /metrics HTTP/1.1"), &metrics, None);
+        let response = route(&request("GET /metrics HTTP/1.1"), &metrics, None, None);
         assert_eq!(response.status, "200 OK");
         // Chain-verify family (issue #602) plus the PH66 T03 families and the
         // 25 hazard gauges are all served from the one route.
@@ -301,13 +367,46 @@ mod tests {
     fn route_rejects_unknown_path_and_method() {
         let metrics = metrics();
         assert_eq!(
-            route(&request("GET /health HTTP/1.1"), &metrics, None).status,
+            route(&request("GET /health HTTP/1.1"), &metrics, None, None).status,
             "404 Not Found"
         );
         assert_eq!(
-            route(&request("POST /metrics HTTP/1.1"), &metrics, None).status,
+            route(&request("POST /metrics HTTP/1.1"), &metrics, None, None).status,
             "405 Method Not Allowed"
         );
+    }
+
+    #[test]
+    fn healthz_is_json_when_startup_supplies_health_result() {
+        let metrics = metrics();
+        let response = route(
+            &request("GET /healthz HTTP/1.1"),
+            &metrics,
+            None,
+            Some(health("pass").as_ref()),
+        );
+        assert_eq!(response.status, "200 OK");
+        assert_eq!(response.content_type, JSON_CONTENT_TYPE);
+        let json: serde_json::Value = serde_json::from_str(&response.body).unwrap();
+        assert_eq!(json["ready"], true);
+        assert_eq!(json["config_valid"], true);
+        assert_eq!(json["vault_read_ok"], true);
+        assert_eq!(json["status"], "pass");
+    }
+
+    #[test]
+    fn healthz_fails_closed_when_health_result_is_not_ready() {
+        let metrics = metrics();
+        let response = route(
+            &request("GET /healthz HTTP/1.1"),
+            &metrics,
+            None,
+            Some(health("fail").as_ref()),
+        );
+        assert_eq!(response.status, "503 Service Unavailable");
+        let json: serde_json::Value = serde_json::from_str(&response.body).unwrap();
+        assert_eq!(json["ready"], false);
+        assert_eq!(json["error_code"], "CALYX_DAEMON_HEALTH_FAIL");
     }
 
     #[test]
