@@ -12,6 +12,7 @@ import re
 import shutil
 import sys
 import time
+import zipfile
 from collections import Counter
 from datetime import date
 from pathlib import Path
@@ -103,6 +104,10 @@ def bool01(value: str) -> str:
     raise RowGenError("normalize", "invalid_boolean", {"value": value})
 
 
+def clamp(value: float, lo: float = 0.0, hi: float = 1.0) -> float:
+    return max(lo, min(hi, value))
+
+
 def int_token(row: dict[str, str], key: str, default: str = "0") -> str:
     value = row.get(key, "").strip()
     return value if value not in {"", "NA"} else default
@@ -170,6 +175,189 @@ def booking_counts(raw_root: Path) -> dict[tuple[str, str], dict[str, float]]:
         entry["second_yellow"] += num(row, "second_yellow_card")
         entry["sending_off"] += num(row, "sending_off")
     return counts
+
+
+def read_harrachi_split(raw_root: Path, name: str) -> list[dict[str, str]]:
+    path = raw_root / "harrachimustapha" / "fifa-world-cup-team-dataset.zip"
+    if not path.exists():
+        raise RowGenError("team_tournaments", "missing_required_input", {"path": str(path.relative_to(ROOT))})
+    raw = path.read_bytes()
+    if not raw:
+        raise RowGenError("team_tournaments", "empty_required_input", {"path": str(path.relative_to(ROOT))})
+    try:
+        archive = zipfile.ZipFile(path)
+    except zipfile.BadZipFile as exc:
+        raise RowGenError("team_tournaments", "invalid_zip", {"path": str(path.relative_to(ROOT)), "sha256": sha256_bytes(raw)}) from exc
+    required = {
+        "version",
+        "team",
+        "continent",
+        "is_host",
+        "goals_scored_last_4y",
+        "goals_received_last_4y",
+        "wins_last_4y",
+        "losses_last_4y",
+        "draws_last_4y",
+        "world_cup_titles_before",
+        "squad_total_market_value_eur",
+        "fifa_rank_pre_tournament",
+        "fifa_points_pre_tournament",
+        "squad_avg_age",
+        "world_cup_participations_before",
+        "groups_passed_before",
+        "round16_before",
+        "quarterfinals_before",
+        "semifinals_before",
+        "finals_before",
+        "winner",
+        "finalist",
+        "semi_finalist",
+        "quarter_finalist",
+    }
+    try:
+        payload = archive.read(name)
+    except KeyError as exc:
+        raise RowGenError("team_tournaments", "missing_zip_member", {"path": str(path.relative_to(ROOT)), "member": name}) from exc
+    try:
+        text = payload.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise RowGenError("team_tournaments", "invalid_utf8", {"path": str(path.relative_to(ROOT)), "member": name, "sha256": sha256_bytes(payload)}) from exc
+    reader = csv.DictReader(text.splitlines())
+    headers = set(reader.fieldnames or [])
+    missing = sorted(required - headers)
+    if missing:
+        raise RowGenError("team_tournaments", "missing_required_columns", {"path": str(path.relative_to(ROOT)), "member": name, "missing": missing})
+    rows = [dict(row) for row in reader]
+    if not rows:
+        raise RowGenError("team_tournaments", "empty_zip_member", {"path": str(path.relative_to(ROOT)), "member": name})
+    return rows
+
+
+def harrachi_num(row: dict[str, str], key: str) -> float:
+    value = row.get(key, "").strip()
+    if value == "":
+        return 0.0
+    return float(value)
+
+
+def best_finish(row: dict[str, str]) -> int:
+    if harrachi_num(row, "world_cup_titles_before") > 0:
+        return 1
+    if harrachi_num(row, "finals_before") > 0:
+        return 2
+    if harrachi_num(row, "semifinals_before") > 0:
+        return 4
+    if harrachi_num(row, "quarterfinals_before") > 0:
+        return 8
+    if harrachi_num(row, "round16_before") > 0:
+        return 16
+    return 32
+
+
+def team_tournament_text(row: dict[str, str], split: str) -> str:
+    wins = harrachi_num(row, "wins_last_4y")
+    losses = harrachi_num(row, "losses_last_4y")
+    draws = harrachi_num(row, "draws_last_4y")
+    matches = max(1.0, wins + losses + draws)
+    goals_for_per_match = harrachi_num(row, "goals_scored_last_4y") / matches
+    goals_against_per_match = harrachi_num(row, "goals_received_last_4y") / matches
+    goal_diff = goals_for_per_match - goals_against_per_match
+    rank = max(1.0, harrachi_num(row, "fifa_rank_pre_tournament"))
+    market_value = harrachi_num(row, "squad_total_market_value_eur")
+    return stat_line(
+        [
+            ("entity", "team_tournament"),
+            ("dataset_split", split),
+            ("version", row["version"]),
+            ("team", row["team"]),
+            ("team_id", f"{row['version']}:{row['team']}"),
+            ("tournament_id", f"WC-{row['version']}"),
+            ("match_id", f"WC-{row['version']}:{row['team']}"),
+            ("stage_name", "pre_tournament"),
+            ("group_name", ""),
+            ("group_stage", 1),
+            ("knockout_stage", 0),
+            ("date", f"{row['version']}-01-01"),
+            ("home_team", row["is_host"]),
+            ("away_team", 0 if row["is_host"] == "1" else 1),
+            ("trailing_goals_for_per_match", goals_for_per_match),
+            ("trailing_goal_scoring_rate", clamp((wins + draws) / matches)),
+            ("trailing_multi_goal_rate", clamp(goals_for_per_match / 2.0)),
+            ("trailing_penalties_for_per_match", 0),
+            ("trailing_goals_against_per_match", goals_against_per_match),
+            ("trailing_clean_sheet_rate", clamp(wins / matches)),
+            ("trailing_multi_concede_rate", clamp(goals_against_per_match / 2.0)),
+            ("trailing_penalties_against_per_match", 0),
+            ("trailing_goal_differential", goal_diff),
+            ("trailing_extra_time_rate", 0),
+            ("trailing_penalty_shootout_rate", 0),
+            ("trailing_replay_rate", 0),
+            ("days_since_previous_match", 0),
+            ("trailing_yellow_cards_per_match", 0),
+            ("trailing_red_cards_per_match", 0),
+            ("trailing_second_yellow_rate", 0),
+            ("trailing_sending_off_rate", 0),
+            ("confederation_code", row["continent"]),
+            ("region_name", row["continent"]),
+            ("mens_team", 1),
+            ("womens_team", 0),
+            ("prior_world_cup_matches", row["world_cup_participations_before"]),
+            ("prior_best_finish", best_finish(row)),
+            ("trailing_win_rate", clamp(wins / matches)),
+            ("trailing_draw_rate", clamp(draws / matches)),
+            ("trailing_loss_rate", clamp(losses / matches)),
+            ("trailing_unbeaten_rate", clamp((wins + draws) / matches)),
+            ("match_day_of_tournament", 0),
+            ("kickoff_hour", 0),
+            ("host_country", row["is_host"]),
+            ("stadium_capacity", 0),
+            ("fifa_rank_pre_tournament", rank),
+            ("fifa_points_pre_tournament", row["fifa_points_pre_tournament"]),
+            ("squad_total_market_value_eur", market_value),
+            ("squad_avg_age", row["squad_avg_age"]),
+        ]
+    )
+
+
+def team_tournament_anchor(row: dict[str, str], axis: str) -> dict[str, Any] | None:
+    value = row.get(axis, "").strip()
+    if value == "":
+        return None
+    if value not in {"0", "1"}:
+        raise RowGenError("team_tournaments", "invalid_outcome_value", {"axis": axis, "value": value, "team": row.get("team"), "version": row.get("version")})
+    return {
+        "kind": f"label:{axis}",
+        "value": value,
+        "source": "harrachimustapha/fifa-world-cup-team-dataset",
+        "confidence": 1.0,
+    }
+
+
+def team_tournament_rows(raw_root: Path) -> list[dict[str, Any]]:
+    source_path = raw_root / "harrachimustapha" / "fifa-world-cup-team-dataset.zip"
+    source_key = sha256_file(source_path) if source_path.exists() else ""
+    out = []
+    for split in ["train", "test"]:
+        for idx, row in enumerate(read_harrachi_split(raw_root, f"{split}.csv")):
+            anchors = [anchor for axis in ["winner", "finalist", "semi_finalist", "quarter_finalist"] if (anchor := team_tournament_anchor(row, axis))]
+            out.append(
+                {
+                    "text": team_tournament_text(row, split),
+                    "metadata": {
+                        "project": "Soccer Lab",
+                        "entity": "team_tournament",
+                        "source_dataset": f"harrachimustapha.fifa-world-cup-team-dataset.{split}",
+                        "source": "Kaggle: harrachimustapha/fifa-world-cup-team-dataset",
+                        "source_key": source_key,
+                        "source_row_index": str(idx),
+                        "team": row["team"],
+                        "version": row["version"],
+                        "dataset_split": split,
+                    },
+                    **({"anchors": anchors} if anchors else {}),
+                }
+            )
+    return out
 
 
 def team_profiles(raw_root: Path) -> dict[str, dict[str, str]]:
@@ -459,6 +647,7 @@ GENERATORS: dict[str, tuple[str, Callable[[Path], list[dict[str, Any]]]]] = {
     "players": ("players.jsonl", player_rows),
     "matches": ("matches.jsonl", match_rows),
     "teams-history": ("teams-history.jsonl", teams_history_rows),
+    "team-tournaments": ("team-tournaments.jsonl", team_tournament_rows),
     "fjelstul": ("fjelstul.jsonl", fjelstul_rows),
     "fixtures": ("fixtures.jsonl", fixture_rows),
 }

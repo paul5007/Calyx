@@ -169,6 +169,11 @@
       "id": "fjelstul_codebook_variables",
       "url": "https://raw.githubusercontent.com/jfjelstul/worldcup/master/codebook/csv/variables.csv",
       "path": "fjelstul/codebook/variables.csv"
+    },
+    {
+      "id": "harrachimustapha_fifa_world_cup_team_dataset",
+      "url": "https://www.kaggle.com/api/v1/datasets/download/harrachimustapha/fifa-world-cup-team-dataset",
+      "path": "harrachimustapha/fifa-world-cup-team-dataset.zip"
     }
   ],
   "thestatsapi": {

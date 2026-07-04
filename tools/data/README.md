@@ -29,7 +29,7 @@ Generate deterministic Calyx batch JSONL rows:
 
 ```bash
 ./tools/data/generate_soccer_lab_rows.py
-./tools/data/generate_soccer_lab_rows.py --only players --only matches --only teams-history --only fjelstul
+./tools/data/generate_soccer_lab_rows.py --only players --only matches --only teams-history --only team-tournaments --only fjelstul
 ```
 
 Outputs are written to `scratchpad/wc2026/rows/`:
@@ -37,6 +37,7 @@ Outputs are written to `scratchpad/wc2026/rows/`:
 - `players.jsonl`
 - `matches.jsonl`
 - `teams-history.jsonl`
+- `team-tournaments.jsonl`
 - `fjelstul.jsonl`
 - `fixtures.jsonl`
 
@@ -154,3 +155,15 @@ The machine-readable policy is
 `docs/data/soccer_lab_predictive_partition.json`. It defines which facets may be
 registered in predictive panels, which anchor axes carry the ex-post outcomes,
 and which current-event keys are forbidden in generated predictive `text`.
+
+Build and verify the teams-history ex-ante Calyx vault from the Harrachi
+team-tournament dataset:
+
+```bash
+./tools/data/verify_soccer_lab_teams_history_vault.py
+```
+
+This downloads the public Kaggle zip if it is missing from
+`scratchpad/wc2026/raw/harrachimustapha/`, generates 240 team-tournament rows,
+creates a fresh vault, registers the seven team/match facet projectors, ingests
+the rows, and verifies `cx-list --include-slots` has every expected dense slot.
