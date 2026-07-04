@@ -169,6 +169,17 @@ This regenerates the outcome-bearing Soccer Lab rows, verifies `oracle.domain`,
 ingests a sampled real batch into a fresh vault, reads Base bytes plus Recurrence
 contexts back from Calyx, and exercises fail-closed malformed Oracle edge cases.
 
+Verify grounded Soccer Lab outcome anchors and class-balance floors:
+
+```bash
+./tools/data/verify_soccer_lab_anchored_outcomes.py
+```
+
+This regenerates real match/team-history outcome rows, selects a balanced
+50-per-class batch for each supported prediction axis, ingests it into a fresh
+external-projector vault, decodes Anchors CF bytes, and verifies every counted
+anchor has a non-empty source plus `0 < confidence <= 1`.
+
 Build and verify the teams-history ex-ante Calyx vault from the Harrachi
 team-tournament dataset:
 
