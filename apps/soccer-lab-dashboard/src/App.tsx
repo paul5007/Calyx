@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import butterflyTree from "../../../docs/data/soccer_lab_bracket_butterfly_tree.json";
 import matchPredictions from "../../../docs/data/soccer_lab_match_predictions.json";
+import playerPredictions from "../../../docs/data/soccer_lab_player_impact_predictions.json";
 import progressionPredictions from "../../../docs/data/soccer_lab_tournament_progression_predictions.json";
 
 type PredictionOutcome = "home_win" | "draw" | "away_win";
@@ -103,6 +104,44 @@ type ButterflyTree = {
   selected: ButterflyRecord;
 };
 
+type PlayerImpactRecord = {
+  action_id: string;
+  confidence: number;
+  confidence_caps: {
+    dpi_ceiling: number;
+    sufficient: boolean;
+  };
+  domain: "soccer_lab.player_impact";
+  player_id: string;
+  player_name: string;
+  position: string;
+  prediction: boolean | null;
+  prediction_status: "oracle_insufficient" | "oracle_predicted";
+  prior_caps: number;
+  prior_goals: number;
+  source_row_index: number;
+  team_id: string;
+  team_name: string;
+  provenance: {
+    oracle_error_code: string | null;
+    oracle_stdout_sha256: string;
+  };
+};
+
+type PlayerImpactExport = {
+  action_id: string;
+  class_imbalance: {
+    support_counts: {
+      impact: number;
+      no_impact: number;
+    };
+  };
+  domain: "soccer_lab.player_impact";
+  generated_at: string;
+  records: PlayerImpactRecord[];
+  schema_version: number;
+};
+
 type OutcomeLane = {
   label: string;
   outcome: PredictionOutcome;
@@ -115,6 +154,8 @@ const matchRecords = soccerLabExport.records;
 const progressionExport = progressionPredictions as ProgressionExport;
 const progressionRecords = progressionExport.records;
 const bracketTree = butterflyTree as ButterflyTree;
+const playerExport = playerPredictions as PlayerImpactExport;
+const playerRecords = playerExport.records;
 
 const outcomes: Array<{ label: string; outcome: PredictionOutcome }> = [
   { label: "Home", outcome: "home_win" },
@@ -139,6 +180,14 @@ const progressionSummary = {
     (record) => record.prediction_status === "oracle_insufficient",
   ).length,
   butterfly: bracketTree.records.length,
+};
+
+const playerSummary = {
+  total: playerRecords.length,
+  teams: new Set(playerRecords.map((record) => record.team_id)).size,
+  blocked: playerRecords.filter(
+    (record) => record.prediction_status === "oracle_insufficient",
+  ).length,
 };
 
 function percent(value: number) {
@@ -211,6 +260,13 @@ const progressionTeams = Array.from(
     }, new Map<string, { team: string; continent: string; records: Map<ProgressionAxis, ProgressionRecord> }>())
     .values(),
 ).slice(0, 8);
+
+const playerLeaderboard = [...playerRecords]
+  .sort(
+    (left, right) =>
+      right.prior_goals - left.prior_goals || right.prior_caps - left.prior_caps,
+  )
+  .slice(0, 10);
 
 const butterflyHops = Array.from(
   bracketTree.records
@@ -369,6 +425,62 @@ export function App() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section className="player-panel" aria-label="Player impact leaderboard">
+          <div className="panel-head compact">
+            <div>
+              <p className="eyebrow">Player impact</p>
+              <h2>Source-backed scorer watchlist</h2>
+            </div>
+            <Trophy size={20} />
+          </div>
+          <div className="player-summary">
+            <span>
+              <b>{playerSummary.total}</b>
+              players
+            </span>
+            <span>
+              <b>{playerSummary.teams}</b>
+              teams
+            </span>
+            <span>
+              <b>{playerSummary.blocked}</b>
+              oracle refusals
+            </span>
+            <span>
+              <b>{playerExport.class_imbalance.support_counts.impact}</b>
+              impact support
+            </span>
+          </div>
+          <div className="player-table">
+            {playerLeaderboard.map((player, index) => (
+              <article className="player-row" key={player.player_id}>
+                <span className="rank">{index + 1}</span>
+                <div>
+                  <strong>{player.player_name}</strong>
+                  <small>
+                    {player.team_name} / {player.position}
+                  </small>
+                </div>
+                <span>
+                  <small>Prior goals</small>
+                  <b>{player.prior_goals}</b>
+                </span>
+                <span>
+                  <small>Caps</small>
+                  <b>{player.prior_caps}</b>
+                </span>
+                <span>
+                  <small>Impact</small>
+                  <b>{player.prediction_status === "oracle_predicted" ? percent(player.confidence) : "0%"}</b>
+                </span>
+                <span className="tag pending">
+                  {player.provenance.oracle_error_code ?? "oracle_insufficient"}
+                </span>
+              </article>
+            ))}
           </div>
         </section>
       </section>
