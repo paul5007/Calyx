@@ -415,6 +415,11 @@ fn prediction_app() -> Router {
         144,
         "real export has 144 tournament progression records"
     );
+    assert_eq!(
+        predict.player_count(),
+        1248,
+        "real export has 1248 player impact records"
+    );
     let auth = Arc::new(AuthCtx::new("predict-secret-FSV").expect("secret"));
     build_app_with_predictions(
         Arc::new(Guardrails::new(
@@ -469,6 +474,22 @@ fn progression_truth(version: &str, team: &str, axis: &str) -> Value {
         .clone()
 }
 
+fn player_truth(player_id: &str) -> Value {
+    let export: Value =
+        serde_json::from_slice(&std::fs::read(soccer_prediction_export()).expect("read export"))
+            .expect("parse export");
+    export["records"]
+        .as_array()
+        .expect("records array")
+        .iter()
+        .find(|record| {
+            record.get("record_type").and_then(Value::as_str) == Some("player_impact")
+                && record.pointer("/input/entity_id").and_then(Value::as_str) == Some(player_id)
+        })
+        .expect("player record present")
+        .clone()
+}
+
 fn predict_req(body: &'static str) -> Request<Body> {
     Request::post("/predict/match")
         .header(header::AUTHORIZATION, "Bearer predict-secret-FSV")
@@ -479,6 +500,14 @@ fn predict_req(body: &'static str) -> Request<Body> {
 
 fn progression_req(body: &'static str) -> Request<Body> {
     Request::post("/predict/progression")
+        .header(header::AUTHORIZATION, "Bearer predict-secret-FSV")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(body))
+        .unwrap()
+}
+
+fn player_req(body: &'static str) -> Request<Body> {
+    Request::post("/predict/player")
         .header(header::AUTHORIZATION, "Bearer predict-secret-FSV")
         .header(header::CONTENT_TYPE, "application/json")
         .body(Body::from(body))
@@ -770,6 +799,131 @@ async fn predict_progression_rejects_unknown_fields() {
     let (status, body) = call(
         prediction_app(),
         progression_req(r#"{"version":"2026","team":"France","axis":"winner","extra":true}"#),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+}
+
+#[tokio::test]
+async fn predict_player_returns_exact_export_record_and_cache_headers() {
+    let app = prediction_app();
+    let truth = player_truth("1");
+    let (status, headers, body) =
+        call_with_headers(app.clone(), player_req(r#"{"playerId":"1"}"#)).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        headers.get("x-cache").and_then(|v| v.to_str().ok()),
+        Some("MISS")
+    );
+    assert_eq!(
+        body, truth,
+        "HTTP response must equal player export source of truth"
+    );
+
+    let (status, headers, body) = call_with_headers(app, player_req(r#"{"playerId":"1"}"#)).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        headers.get("x-cache").and_then(|v| v.to_str().ok()),
+        Some("HIT")
+    );
+    assert_eq!(body, truth, "cache hit must replay the same record");
+}
+
+#[tokio::test]
+async fn predict_player_real_loopback_http_equals_export_truth() {
+    let app = prediction_app();
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind player HTTP listener");
+    let addr = listener.local_addr().expect("local_addr");
+    let server = tokio::spawn(async move {
+        axum::serve(listener, app)
+            .await
+            .expect("serve prediction app");
+    });
+
+    let body = r#"{"playerId":"59"}"#;
+    let request = format!(
+        "POST /predict/player HTTP/1.1\r\nHost: {addr}\r\nAuthorization: Bearer predict-secret-FSV\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        body.len()
+    );
+    let mut stream = tokio::net::TcpStream::connect(addr)
+        .await
+        .expect("connect player HTTP listener");
+    {
+        use tokio::io::AsyncWriteExt;
+        stream
+            .write_all(request.as_bytes())
+            .await
+            .expect("write request");
+    }
+    let mut response = Vec::new();
+    {
+        use tokio::io::AsyncReadExt;
+        stream
+            .read_to_end(&mut response)
+            .await
+            .expect("read response");
+    }
+    server.abort();
+
+    let response = String::from_utf8(response).expect("response utf8");
+    assert!(
+        response.starts_with("HTTP/1.1 200 OK"),
+        "response: {response}"
+    );
+    let (_, json) = response
+        .split_once("\r\n\r\n")
+        .expect("HTTP response has body separator");
+    let served: Value = serde_json::from_str(json).expect("served JSON");
+    assert_eq!(
+        served,
+        player_truth("59"),
+        "real HTTP response must equal player export source of truth"
+    );
+}
+
+#[tokio::test]
+async fn predict_player_requires_bearer() {
+    let (status, body) = call(
+        prediction_app(),
+        Request::post("/predict/player")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(r#"{"playerId":"1"}"#))
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_envelope(&body, ErrorCode::Unauthorized);
+}
+
+#[tokio::test]
+async fn predict_player_unknown_id_is_404_envelope() {
+    let (status, body) = call(prediction_app(), player_req(r#"{"playerId":"999999"}"#)).await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_envelope(&body, ErrorCode::NotFound);
+}
+
+#[tokio::test]
+async fn predict_player_rejects_malformed_json() {
+    let (status, body) = call(prediction_app(), player_req(r#"{"playerId":"1""#)).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+}
+
+#[tokio::test]
+async fn predict_player_rejects_empty_player_id() {
+    let (status, body) = call(prediction_app(), player_req(r#"{"playerId":"   "}"#)).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+}
+
+#[tokio::test]
+async fn predict_player_rejects_unknown_fields() {
+    let (status, body) = call(
+        prediction_app(),
+        player_req(r#"{"playerId":"1","extra":true}"#),
     )
     .await;
     assert_eq!(status, StatusCode::BAD_REQUEST);

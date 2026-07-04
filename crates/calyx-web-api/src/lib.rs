@@ -124,7 +124,7 @@ use provenance::provenance_wired;
 
 mod prediction;
 pub use prediction::PredictionCtx;
-use prediction::{predict_match, predict_progression};
+use prediction::{predict_match, predict_player, predict_progression};
 
 /// Build the app with `/v1/provenance/{id}` wired to a real Ledger but
 /// `/v1/measure` still scaffolded (501). Used by the provenance FSV tests so a
@@ -274,6 +274,7 @@ pub fn build_app_with_measure_provenance_and_predictions(
     let prediction_route = Router::new()
         .route("/predict/match", post(predict_match))
         .route("/predict/progression", post(predict_progression))
+        .route("/predict/player", post(predict_player))
         .with_state(predict);
     routes_base()
         .merge(metrics_route)
@@ -314,6 +315,7 @@ pub fn build_app_with_predictions(
     let prediction_route = Router::new()
         .route("/predict/match", post(predict_match))
         .route("/predict/progression", post(predict_progression))
+        .route("/predict/player", post(predict_player))
         .with_state(predict);
     routes_base()
         .merge(prediction_route)

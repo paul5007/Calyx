@@ -4,6 +4,7 @@ use super::*;
 const MATCH_DOMAIN: &str = "soccer_lab.match_result";
 const PROGRESSION_RECORD_TYPE: &str = "tournament_progression";
 const PROGRESSION_AXES: [&str; 3] = ["winner", "finalist", "semi_finalist"];
+const PLAYER_RECORD_TYPE: &str = "player_impact";
 
 /// Loaded Soccer Lab prediction export, indexed by match id.
 ///
@@ -13,6 +14,7 @@ const PROGRESSION_AXES: [&str; 3] = ["winner", "finalist", "semi_finalist"];
 pub struct PredictionCtx {
     match_records: HashMap<String, Value>,
     progression_records: HashMap<String, Value>,
+    player_records: HashMap<String, Value>,
     cache: ResponseCache,
 }
 
@@ -28,6 +30,7 @@ impl PredictionCtx {
             .ok_or_else(|| format!("prediction export {} missing records[]", path.display()))?;
         let mut match_records = HashMap::new();
         let mut progression_records = HashMap::new();
+        let mut player_records = HashMap::new();
         for record in records {
             if record.get("domain").and_then(Value::as_str) != Some(MATCH_DOMAIN) {
                 if record.get("record_type").and_then(Value::as_str)
@@ -77,6 +80,41 @@ impl PredictionCtx {
                         ));
                     }
                 }
+                if record.get("record_type").and_then(Value::as_str) == Some(PLAYER_RECORD_TYPE) {
+                    let player_id = record
+                        .pointer("/input/attributes/player_id")
+                        .and_then(Value::as_str)
+                        .ok_or_else(|| {
+                            format!(
+                                "player impact record missing input.attributes.player_id in {}",
+                                path.display()
+                            )
+                        })?;
+                    let entity_id = record
+                        .pointer("/input/entity_id")
+                        .and_then(Value::as_str)
+                        .ok_or_else(|| {
+                            format!(
+                                "player impact record missing input.entity_id in {}",
+                                path.display()
+                            )
+                        })?;
+                    if player_id != entity_id {
+                        return Err(format!(
+                            "player impact record player_id/entity_id mismatch {player_id}/{entity_id} in {}",
+                            path.display()
+                        ));
+                    }
+                    if player_records
+                        .insert(player_id.to_owned(), record.clone())
+                        .is_some()
+                    {
+                        return Err(format!(
+                            "duplicate player impact prediction id {player_id} in {}",
+                            path.display()
+                        ));
+                    }
+                }
                 continue;
             }
             let entity_id = record
@@ -110,9 +148,16 @@ impl PredictionCtx {
                 path.display()
             ));
         }
+        if player_records.is_empty() {
+            return Err(format!(
+                "prediction export {} contains no {PLAYER_RECORD_TYPE} records",
+                path.display()
+            ));
+        }
         Ok(Self {
             match_records,
             progression_records,
+            player_records,
             cache: ResponseCache::from_env()?,
         })
     }
@@ -132,6 +177,10 @@ impl PredictionCtx {
     pub fn progression_count(&self) -> usize {
         self.progression_records.len()
     }
+
+    pub fn player_count(&self) -> usize {
+        self.player_records.len()
+    }
 }
 
 #[derive(Deserialize)]
@@ -146,6 +195,12 @@ struct ProgressionPredictionReq {
     version: String,
     team: String,
     axis: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct PlayerPredictionReq {
+    player_id: String,
 }
 
 fn progression_key(version: &str, team: &str, axis: &str) -> String {
@@ -230,6 +285,39 @@ pub(super) async fn predict_progression(
         return ApiError::new(
             ErrorCode::NotFound,
             format!("no Soccer Lab tournament progression prediction for {version}:{team}:{axis}"),
+        )
+        .into_response();
+    };
+    store_and_respond(&ctx.cache, cache_key, record)
+}
+
+pub(super) async fn predict_player(
+    State(ctx): State<Arc<PredictionCtx>>,
+    body: axum::body::Bytes,
+) -> Response {
+    let req: PlayerPredictionReq = match serde_json::from_slice(&body) {
+        Ok(req) => req,
+        Err(error) => {
+            tracing::warn!(error = ?error, "CALYX_WEB_API_PREDICT_PLAYER_BAD_REQUEST");
+            return ApiError::new(
+                ErrorCode::BadRequest,
+                "request body must be JSON object {\"playerId\":\"1\"}",
+            )
+            .into_response();
+        }
+    };
+    let player_id = req.player_id.trim();
+    if player_id.is_empty() {
+        return ApiError::new(ErrorCode::BadRequest, "playerId must be non-empty").into_response();
+    }
+    let cache_key = format!("predict_player\u{1f}{player_id}");
+    if let Some((body, age)) = ctx.cache.get(&cache_key) {
+        return cached_json_response(body, "HIT", age);
+    }
+    let Some(record) = ctx.player_records.get(player_id) else {
+        return ApiError::new(
+            ErrorCode::NotFound,
+            format!("no Soccer Lab player impact prediction for {player_id}"),
         )
         .into_response();
     };
