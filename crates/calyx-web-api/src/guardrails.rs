@@ -52,9 +52,37 @@ impl Guardrails {
     }
 
     /// Production limits: generous on light read routes, tight on GPU routes,
-    /// with the standard [`REQUEST_TIMEOUT`].
+    /// with the standard [`REQUEST_TIMEOUT`]. All values can be overridden via
+    /// env; invalid present values fail loud instead of silently defaulting.
     pub fn production() -> Self {
-        Self::new(60.0, 30.0, 8.0, 2.0, REQUEST_TIMEOUT)
+        Self::from_env()
+            .unwrap_or_else(|error| panic!("CALYX_WEB_API_GUARDRAILS_CONFIG_FAILED: {error}"))
+    }
+
+    /// Build production guardrails from optional env vars. Defaults preserve the
+    /// original production posture:
+    ///
+    /// - `CALYX_WEB_API_RATE_CAPACITY=60`
+    /// - `CALYX_WEB_API_RATE_REFILL_PER_SEC=30`
+    /// - `CALYX_WEB_API_GPU_RATE_CAPACITY=8`
+    /// - `CALYX_WEB_API_GPU_RATE_REFILL_PER_SEC=2`
+    /// - `CALYX_WEB_API_REQUEST_TIMEOUT_MS=5000`
+    pub fn from_env() -> Result<Self, String> {
+        let capacity = parse_env_f64("CALYX_WEB_API_RATE_CAPACITY", 60.0)?;
+        let refill_per_sec = parse_env_f64("CALYX_WEB_API_RATE_REFILL_PER_SEC", 30.0)?;
+        let gpu_capacity = parse_env_f64("CALYX_WEB_API_GPU_RATE_CAPACITY", 8.0)?;
+        let gpu_refill_per_sec = parse_env_f64("CALYX_WEB_API_GPU_RATE_REFILL_PER_SEC", 2.0)?;
+        let timeout = parse_env_duration_ms(
+            "CALYX_WEB_API_REQUEST_TIMEOUT_MS",
+            REQUEST_TIMEOUT.as_millis() as u64,
+        )?;
+        Ok(Self::new(
+            capacity,
+            refill_per_sec,
+            gpu_capacity,
+            gpu_refill_per_sec,
+            timeout,
+        ))
     }
 
     /// Take one token for `path`. Returns `true` if allowed, `false` if the
@@ -79,6 +107,46 @@ impl Guardrails {
             true
         } else {
             false
+        }
+    }
+}
+
+/// Parse a non-negative finite float env var, returning `default` when unset and
+/// a LOUD error when present-but-invalid (never silently defaulted).
+fn parse_env_f64(name: &str, default: f64) -> Result<f64, String> {
+    match std::env::var(name) {
+        Err(_) => Ok(default),
+        Ok(raw) => {
+            let value = raw.trim().parse::<f64>().map_err(|error| {
+                format!("{name} must be a non-negative finite number ({error}); got {raw:?}")
+            })?;
+            if value.is_finite() && value >= 0.0 {
+                Ok(value)
+            } else {
+                Err(format!(
+                    "{name} must be a non-negative finite number; got {raw:?}"
+                ))
+            }
+        }
+    }
+}
+
+/// Parse a positive integer millisecond env var into a [`Duration`].
+fn parse_env_duration_ms(name: &str, default: u64) -> Result<Duration, String> {
+    match std::env::var(name) {
+        Err(_) => Ok(Duration::from_millis(default)),
+        Ok(raw) => {
+            let value = raw.trim().parse::<u64>().map_err(|error| {
+                format!(
+                    "{name} must be a positive integer milliseconds value ({error}); got {raw:?}"
+                )
+            })?;
+            if value == 0 {
+                return Err(format!(
+                    "{name} must be a positive integer milliseconds value; got {raw:?}"
+                ));
+            }
+            Ok(Duration::from_millis(value))
         }
     }
 }
@@ -172,5 +240,72 @@ pub async fn guardrails(
             );
             ApiError::of(ErrorCode::Timeout).into_response()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Mutex;
+
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    #[test]
+    fn guardrails_from_env_reads_overrides() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        for name in [
+            "CALYX_WEB_API_RATE_CAPACITY",
+            "CALYX_WEB_API_RATE_REFILL_PER_SEC",
+            "CALYX_WEB_API_GPU_RATE_CAPACITY",
+            "CALYX_WEB_API_GPU_RATE_REFILL_PER_SEC",
+            "CALYX_WEB_API_REQUEST_TIMEOUT_MS",
+        ] {
+            unsafe { std::env::remove_var(name) };
+        }
+
+        unsafe {
+            std::env::set_var("CALYX_WEB_API_RATE_CAPACITY", "11.5");
+            std::env::set_var("CALYX_WEB_API_RATE_REFILL_PER_SEC", "3.25");
+            std::env::set_var("CALYX_WEB_API_GPU_RATE_CAPACITY", "2");
+            std::env::set_var("CALYX_WEB_API_GPU_RATE_REFILL_PER_SEC", "0.5");
+            std::env::set_var("CALYX_WEB_API_REQUEST_TIMEOUT_MS", "250");
+        }
+        let guardrails = Guardrails::from_env().expect("valid env");
+        for name in [
+            "CALYX_WEB_API_RATE_CAPACITY",
+            "CALYX_WEB_API_RATE_REFILL_PER_SEC",
+            "CALYX_WEB_API_GPU_RATE_CAPACITY",
+            "CALYX_WEB_API_GPU_RATE_REFILL_PER_SEC",
+            "CALYX_WEB_API_REQUEST_TIMEOUT_MS",
+        ] {
+            unsafe { std::env::remove_var(name) };
+        }
+
+        assert_eq!(guardrails.capacity, 11.5);
+        assert_eq!(guardrails.refill_per_sec, 3.25);
+        assert_eq!(guardrails.gpu_capacity, 2.0);
+        assert_eq!(guardrails.gpu_refill_per_sec, 0.5);
+        assert_eq!(guardrails.timeout, Duration::from_millis(250));
+    }
+
+    #[test]
+    fn guardrail_env_parsers_fail_loud_on_bad_present_values() {
+        let _guard = ENV_LOCK.lock().unwrap();
+
+        unsafe { std::env::set_var("CALYX_WEB_API_TEST_BAD_RATE", "inf") };
+        let err = parse_env_f64("CALYX_WEB_API_TEST_BAD_RATE", 1.0).unwrap_err();
+        unsafe { std::env::remove_var("CALYX_WEB_API_TEST_BAD_RATE") };
+        assert!(
+            err.contains("non-negative finite number"),
+            "loud rate parse error: {err}"
+        );
+
+        unsafe { std::env::set_var("CALYX_WEB_API_TEST_ZERO_TIMEOUT", "0") };
+        let err = parse_env_duration_ms("CALYX_WEB_API_TEST_ZERO_TIMEOUT", 5000).unwrap_err();
+        unsafe { std::env::remove_var("CALYX_WEB_API_TEST_ZERO_TIMEOUT") };
+        assert!(
+            err.contains("positive integer milliseconds"),
+            "loud timeout parse error: {err}"
+        );
     }
 }
