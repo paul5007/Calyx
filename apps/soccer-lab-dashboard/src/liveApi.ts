@@ -62,17 +62,14 @@ export type LiveRequestIndex = {
 
 type ApiConfig = {
   baseUrl: string;
-  bearer: string;
+  bearer: string | null;
 };
 
 function config(): ApiConfig {
   const baseUrl = import.meta.env.VITE_CALYX_WEB_API_BASE_URL?.trim();
-  const bearer = import.meta.env.VITE_CALYX_WEB_API_BEARER_SECRET?.trim();
+  const bearer = import.meta.env.VITE_CALYX_WEB_API_BEARER_SECRET?.trim() || null;
   if (!baseUrl) {
     throw new Error("VITE_CALYX_WEB_API_BASE_URL is required");
-  }
-  if (!bearer) {
-    throw new Error("VITE_CALYX_WEB_API_BEARER_SECRET is required");
   }
   return { baseUrl: baseUrl.replace(/\/$/, ""), bearer };
 }
@@ -82,12 +79,15 @@ async function postPrediction(
   body: Record<string, string>,
 ): Promise<ApiPredictionRecord> {
   const api = config();
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+  };
+  if (api.bearer) {
+    headers.authorization = `Bearer ${api.bearer}`;
+  }
   const response = await fetch(`${api.baseUrl}${path}`, {
     method: "POST",
-    headers: {
-      "authorization": `Bearer ${api.bearer}`,
-      "content-type": "application/json",
-    },
+    headers,
     body: JSON.stringify(body),
   });
   const payload = (await response.json()) as ApiPredictionRecord | ApiErrorEnvelope;

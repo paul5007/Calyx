@@ -8,11 +8,13 @@
     "build": "tsc -b && vite build",
     "lint": "eslint . --max-warnings=0",
     "verify:bracket-view": "node scripts/verify-bracket-view.mjs",
+    "verify:deploy-preview": "node scripts/verify-deploy-preview.mjs",
     "verify:explainability-view": "node scripts/verify-explainability-view.mjs",
     "verify:live-api": "node scripts/verify-live-api.mjs",
     "verify:match-view": "node scripts/verify-match-view.mjs",
     "verify:player-view": "node scripts/verify-player-view.mjs",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "serve:deploy-preview": "node scripts/serve-deploy-preview.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
