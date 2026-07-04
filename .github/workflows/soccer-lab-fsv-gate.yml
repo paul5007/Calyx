@@ -1,0 +1,32 @@
+name: soccer-lab-fsv-gate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  premerge-fsv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/soccer-lab-dashboard/package-lock.json
+      - name: Install dashboard dependencies
+        working-directory: apps/soccer-lab-dashboard
+        run: npm ci
+      - name: Install Playwright browser
+        working-directory: apps/soccer-lab-dashboard
+        run: npx playwright install --with-deps chromium
+      - name: Build FSV binaries
+        run: |
+          cargo build --release --bin calyx
+          cargo build --bin calyx-web-api
+      - name: Run Soccer Lab pre-merge FSV gate
+        env:
+          CALYX_SOCCER_LAB_RAW_ROOT: ${{ vars.CALYX_SOCCER_LAB_RAW_ROOT || 'scratchpad/wc2026/raw' }}
+          CALYX_SOCCER_LAB_GATE_OUT: scratchpad/wc2026/fsv/premerge_gate/report.json
+        run: python3 tools/data/run_soccer_lab_fsv_gate.py
