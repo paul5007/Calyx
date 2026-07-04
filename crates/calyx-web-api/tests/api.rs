@@ -117,6 +117,24 @@ async fn scaffolded_route_returns_not_implemented_envelope() {
 }
 
 #[tokio::test]
+async fn public_search_scaffold_returns_not_implemented_envelope() {
+    let (status, body) = call(app(), Request::post("/search").body(Body::empty()).unwrap()).await;
+    assert_eq!(status, StatusCode::NOT_IMPLEMENTED);
+    assert_envelope(&body, ErrorCode::NotImplemented);
+}
+
+#[tokio::test]
+async fn public_kernel_answer_scaffold_returns_not_implemented_envelope() {
+    let (status, body) = call(
+        app(),
+        Request::post("/kernel-answer").body(Body::empty()).unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_IMPLEMENTED);
+    assert_envelope(&body, ErrorCode::NotImplemented);
+}
+
+#[tokio::test]
 async fn scaffolded_assay_bits_route_returns_not_implemented_envelope() {
     let (status, body) = call(
         app(),
@@ -169,6 +187,18 @@ async fn oversized_body_on_gpu_route_returns_413_envelope() {
     let (status, body) = call(
         app(),
         Request::post("/v1/measure").body(Body::from(big)).unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::PAYLOAD_TOO_LARGE);
+    assert_envelope(&body, ErrorCode::PayloadTooLarge);
+}
+
+#[tokio::test]
+async fn oversized_body_on_public_search_route_returns_413_envelope() {
+    let big = "x".repeat(5 * 1024);
+    let (status, body) = call(
+        app(),
+        Request::post("/search").body(Body::from(big)).unwrap(),
     )
     .await;
     assert_eq!(status, StatusCode::PAYLOAD_TOO_LARGE);

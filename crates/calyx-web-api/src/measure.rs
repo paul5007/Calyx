@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use super::cache::{ResponseCache, cached_json_response, store_and_respond};
 use super::provenance::hex_hash;
 use super::*;
@@ -83,10 +85,11 @@ pub(super) async fn measure(
     }
 }
 
-/// Request body for `POST /v1/search`. `k`/`guard`/`fusion` are optional with
-/// safe defaults (10 / off / rrf); invalid values fail loud (BadRequest), never
-/// silently clamp.
+/// Request body for `POST /v1/search` and `POST /search`. `k`/`guard`/`fusion`
+/// are optional with safe defaults (10 / off / rrf); invalid values fail loud
+/// (BadRequest), never silently clamp.
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(super) struct SearchReq {
     query: String,
     #[serde(default)]
@@ -103,8 +106,22 @@ pub(super) struct SearchReq {
 /// HTTP results match the CLI byte-for-byte on the same vault.
 pub(super) async fn search(
     State(ctx): State<Arc<MeasureCtx>>,
-    Json(req): Json<SearchReq>,
+    body: axum::body::Bytes,
 ) -> Response {
+    let req: SearchReq = match serde_json::from_slice(&body) {
+        Ok(req) => req,
+        Err(error) => {
+            tracing::warn!(error = ?error, "CALYX_WEB_API_SEARCH_BAD_REQUEST");
+            return ApiError::new(
+                ErrorCode::BadRequest,
+                "request body must be JSON object {\"query\":\"...\",\"k\":10}",
+            )
+            .into_response();
+        }
+    };
+    if req.query.trim().is_empty() {
+        return ApiError::new(ErrorCode::BadRequest, "query must be non-empty").into_response();
+    }
     let k = req.k.unwrap_or(10);
     if k == 0 {
         return ApiError::new(ErrorCode::BadRequest, "k must be greater than zero").into_response();
@@ -184,6 +201,143 @@ pub(super) async fn search(
             ApiError::of(ErrorCode::Internal).into_response()
         }
     }
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(super) struct KernelAnswerReq {
+    query: String,
+    #[serde(default)]
+    k: Option<usize>,
+    #[serde(default)]
+    anchor: Option<String>,
+    #[serde(default)]
+    explain: Option<bool>,
+}
+
+/// `POST /kernel-answer` — HTTP wrapper over the same grounded report logic as
+/// CLI `calyx kernel-answer`: fresh kernel-first search, real vault docs, then
+/// an anchored report with `answer`, `kernel_cx_ids`, `recall`, and `gaps`.
+pub(super) async fn kernel_answer(
+    State(ctx): State<Arc<MeasureCtx>>,
+    body: axum::body::Bytes,
+) -> Response {
+    let req: KernelAnswerReq = match serde_json::from_slice(&body) {
+        Ok(req) => req,
+        Err(error) => {
+            tracing::warn!(error = ?error, "CALYX_WEB_API_KERNEL_ANSWER_BAD_REQUEST");
+            return ApiError::new(
+                ErrorCode::BadRequest,
+                "request body must be JSON object {\"query\":\"...\"}",
+            )
+            .into_response();
+        }
+    };
+    if req.query.trim().is_empty() {
+        return ApiError::new(ErrorCode::BadRequest, "query must be non-empty").into_response();
+    }
+    let k = req.k.unwrap_or(10);
+    if k == 0 {
+        return ApiError::new(ErrorCode::BadRequest, "k must be greater than zero").into_response();
+    }
+    let anchor = match req.anchor.as_deref().map(parse_anchor_kind).transpose() {
+        Ok(anchor) => anchor,
+        Err(message) => return ApiError::new(ErrorCode::BadRequest, message).into_response(),
+    };
+    let explain = req.explain.unwrap_or(false);
+    let anchor_label = req.anchor.as_deref().unwrap_or("");
+    let cache_key = format!(
+        "kernel_answer\u{1f}{k}\u{1f}{explain}\u{1f}{anchor_label}\u{1f}{}",
+        req.query
+    );
+    if let Some((body, age)) = ctx.cache.get(&cache_key) {
+        return cached_json_response(body, "HIT", age);
+    }
+
+    let docs = match calyx_search::load_docs(&ctx.vault) {
+        Ok(docs) => docs,
+        Err(error) => {
+            tracing::error!(error = ?error, "CALYX_WEB_API_KERNEL_ANSWER_DOCS_FAILED");
+            return ApiError::of(ErrorCode::Internal).into_response();
+        }
+    };
+    let outcome = match calyx_search::search_outcome_with_freshness(
+        &ctx.vault,
+        &ctx.state,
+        &ctx.vault_dir,
+        &req.query,
+        k,
+        FusionChoice::KernelFirst,
+        GuardChoice::Off,
+        None,
+        explain,
+        calyx_search::SearchFreshness::Fresh,
+    ) {
+        Ok(outcome) => outcome,
+        Err(error) => {
+            tracing::error!(error = ?error, "CALYX_WEB_API_KERNEL_ANSWER_SEARCH_FAILED");
+            return ApiError::of(ErrorCode::Internal).into_response();
+        }
+    };
+    let hit_cx_ids = outcome.hits.iter().map(|hit| hit.cx_id).collect::<Vec<_>>();
+    match kernel_report_from_docs(&docs, &hit_cx_ids, anchor.as_ref()) {
+        Ok(body) => store_and_respond(&ctx.cache, cache_key, &body),
+        Err(message) => ApiError::new(ErrorCode::BadRequest, message).into_response(),
+    }
+}
+
+fn kernel_report_from_docs(
+    docs: &BTreeMap<CxId, calyx_core::Constellation>,
+    hit_cx_ids: &[CxId],
+    anchor: Option<&AnchorKind>,
+) -> Result<Value, String> {
+    let grounded = docs
+        .values()
+        .filter(|cx| has_grounding(cx, anchor))
+        .map(|cx| cx.cx_id)
+        .collect::<Vec<_>>();
+    if grounded.is_empty() {
+        return Err("kernel-answer has no grounded anchors".to_string());
+    }
+    let mut kernel_ids = hit_cx_ids
+        .iter()
+        .copied()
+        .filter(|cx_id| grounded.contains(cx_id))
+        .take(5)
+        .collect::<Vec<_>>();
+    if kernel_ids.is_empty() {
+        kernel_ids.extend(grounded.iter().copied().take(5));
+    }
+    let gap_count = docs.len().saturating_sub(grounded.len());
+    let gaps = (gap_count > 0)
+        .then(|| format!("grounding_gaps:{gap_count}"))
+        .into_iter()
+        .collect::<Vec<_>>();
+    Ok(json!({
+        "answer": format!("grounded kernel answer over {} anchored constellations", grounded.len()),
+        "kernel_cx_ids": kernel_ids.into_iter().map(|id| id.to_string()).collect::<Vec<_>>(),
+        "recall": grounded.len() as f32 / docs.len().max(1) as f32,
+        "gaps": gaps,
+    }))
+}
+
+fn has_grounding(cx: &calyx_core::Constellation, anchor: Option<&AnchorKind>) -> bool {
+    cx.anchors
+        .iter()
+        .any(|item| anchor.is_none_or(|kind| &item.kind == kind))
+}
+
+fn parse_anchor_kind(value: &str) -> Result<AnchorKind, String> {
+    Ok(match value {
+        "test-pass" => AnchorKind::TestPass,
+        "thumbs-up" | "thumbs-down" => AnchorKind::Thumbs,
+        "speaker-match" => AnchorKind::SpeakerMatch,
+        "style-hold" => AnchorKind::StyleHold,
+        label if label.starts_with("label:") && label.len() > "label:".len() => {
+            AnchorKind::Label(label["label:".len()..].to_string())
+        }
+        other => return Err(format!("unknown anchor kind {other}")),
+    })
 }
 
 mod guard_support;

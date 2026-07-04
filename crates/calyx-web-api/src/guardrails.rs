@@ -3,7 +3,10 @@ use super::*;
 /// Is this one of the GPU-backed (calyxd) routes that gets the tighter body cap
 /// and rate-limit bucket?
 fn is_gpu_route(path: &str) -> bool {
-    matches!(path, "/v1/measure" | "/v1/search" | "/v1/guard")
+    matches!(
+        path,
+        "/v1/measure" | "/v1/search" | "/search" | "/v1/guard" | "/kernel-answer"
+    )
 }
 
 /// A simple global token-bucket per route. "Global" (not per-IP) is the correct
@@ -104,6 +107,8 @@ fn routes() -> Router {
         .route("/v1/health", get(health))
         .route("/v1/measure", post(not_implemented))
         .route("/v1/search", post(not_implemented))
+        .route("/search", post(not_implemented))
+        .route("/kernel-answer", post(not_implemented))
         .route("/v1/guard", post(not_implemented))
         .route("/v1/kernel", get(not_implemented))
         .route("/v1/assay/bits", get(not_implemented))

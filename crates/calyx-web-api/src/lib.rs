@@ -116,7 +116,7 @@ use cache::parse_env_u64;
 
 mod measure;
 pub use measure::MeasureCtx;
-use measure::{assay_bits_handler, guard_handler, kernel_handler, measure, search};
+use measure::{assay_bits_handler, guard_handler, kernel_answer, kernel_handler, measure, search};
 
 mod provenance;
 pub use provenance::ProvenanceCtx;
@@ -137,6 +137,8 @@ pub fn build_app_with_provenance(limiter: Arc<Guardrails>, prov: Arc<ProvenanceC
         .route("/v1/health", get(health))
         .route("/v1/measure", post(not_implemented))
         .route("/v1/search", post(not_implemented))
+        .route("/search", post(not_implemented))
+        .route("/kernel-answer", post(not_implemented))
         .route("/v1/guard", post(not_implemented))
         .route("/v1/kernel", get(not_implemented))
         .route("/v1/assay/bits", get(not_implemented))
@@ -161,6 +163,8 @@ pub fn build_app_with_search(
         .route("/v1/health", get(health_full))
         .route("/v1/measure", post(measure))
         .route("/v1/search", post(search))
+        .route("/search", post(search))
+        .route("/kernel-answer", post(kernel_answer))
         .route("/v1/guard", post(guard_handler))
         .route("/v1/kernel", get(kernel_handler))
         .route("/v1/assay/bits", get(assay_bits_handler))
@@ -207,6 +211,8 @@ pub fn build_app_with_measure_and_provenance(
         .route("/v1/health", get(health_full))
         .route("/v1/measure", post(measure))
         .route("/v1/search", post(search))
+        .route("/search", post(search))
+        .route("/kernel-answer", post(kernel_answer))
         .route("/v1/guard", post(guard_handler))
         .route("/v1/kernel", get(kernel_handler))
         .route("/v1/assay/bits", get(assay_bits_handler))
@@ -264,6 +270,8 @@ pub fn build_app_with_measure_provenance_and_predictions(
         .route("/v1/health", get(health_full))
         .route("/v1/measure", post(measure))
         .route("/v1/search", post(search))
+        .route("/search", post(search))
+        .route("/kernel-answer", post(kernel_answer))
         .route("/v1/guard", post(guard_handler))
         .route("/v1/kernel", get(kernel_handler))
         .route("/v1/assay/bits", get(assay_bits_handler))
