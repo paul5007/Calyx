@@ -1,0 +1,115 @@
+{
+  "action_id": "predict_exact_scoreline",
+  "domain": "soccer_lab.exact_scoreline",
+  "oracle_predict": {
+    "bound": {
+      "I_panel_oracle": 0.0,
+      "dpi_ceiling": 0.0,
+      "per_sensor_deficit": [
+        [
+          "01010101010101010101010101010101",
+          2.238210916519165
+        ],
+        [
+          "02020202020202020202020202020202",
+          2.238210916519165
+        ]
+      ],
+      "sufficient": false
+    },
+    "error_code": "CALYX_ORACLE_INSUFFICIENT",
+    "fabricated_prediction": false,
+    "fixture_sha256": "ee623bc5f202eb594d7c2fa9b1dd9cac94590707a4a986327a1c220477d549f8",
+    "ledger_after": null,
+    "ledger_before": null,
+    "stdout_sha256": "2a2da270de9d09b68dfc1fc1d2a0236ccae9ea56380cfbc5f03b6369a2511657"
+  },
+  "oracle_sufficiency": {
+    "bound": {
+      "I_panel_oracle": 0.0,
+      "dpi_ceiling": 0.0,
+      "per_sensor_deficit": [
+        [
+          "01010101010101010101010101010101",
+          2.238210916519165
+        ],
+        [
+          "02020202020202020202020202020202",
+          2.238210916519165
+        ]
+      ],
+      "sufficient": false
+    },
+    "error_code": "CALYX_ORACLE_INSUFFICIENT",
+    "fixture_sha256": "613128fc17194143a1760b3e33bbce66a60dc8f070df1a2df54892281e5de158",
+    "stdout_sha256": "dd2a0b3f20afb8e0ca671baa21690cd614f691e9d8f8f8936ef8f099a48f1ef6"
+  },
+  "provenance": {
+    "source_report": "scratchpad/wc2026/fsv/honesty_gate_unsupported_axis/report.json"
+  },
+  "schema_version": 1,
+  "scoreline_source": {
+    "distinct_scorelines": 53,
+    "entropy_bits": 4.476421724654215,
+    "file": {
+      "bytes": 298930,
+      "mode": "0o644",
+      "path": "scratchpad/wc2026/raw/fjelstul/data-csv/matches.csv",
+      "sha256": "037f718764758e7dda3a2918276f85fa8389af1d50999d2a480c8a6a49408875"
+    },
+    "rows": 1248,
+    "top_scorelines": [
+      [
+        "1-0",
+        138
+      ],
+      [
+        "2-1",
+        132
+      ],
+      [
+        "1-1",
+        109
+      ],
+      [
+        "2-0",
+        96
+      ],
+      [
+        "0-1",
+        94
+      ],
+      [
+        "0-0",
+        86
+      ],
+      [
+        "3-1",
+        65
+      ],
+      [
+        "1-2",
+        63
+      ],
+      [
+        "3-0",
+        55
+      ],
+      [
+        "0-2",
+        52
+      ],
+      [
+        "2-2",
+        44
+      ],
+      [
+        "3-2",
+        39
+      ]
+    ]
+  },
+  "unsupported_axis": "exact_scoreline",
+  "unsupported_reason": "exact scoreline is an ex-post high-cardinality target with no Soccer Lab predictive panel bits",
+  "verified_at": "2026-07-04"
+}
