@@ -53,14 +53,6 @@ const happyCases = [
     ),
   },
   {
-    path: "/predict/progression",
-    body: { version: "2026", team: "France", axis: "winner" },
-    expected: expectedRecord(
-      "tournament_progression",
-      (record) => record.input.entity_id === "2026:France:winner",
-    ),
-  },
-  {
     path: "/predict/player",
     body: { playerId: "1" },
     expected: expectedRecord(
@@ -85,9 +77,17 @@ const edges = [
   },
   {
     path: "/predict/progression",
+    body: { version: "2026", team: "France", axis: "winner" },
+    status: 400,
+    code: "CALYX_WEB_API_BAD_REQUEST",
+    messageIncludes: "grounding floor",
+  },
+  {
+    path: "/predict/progression",
     body: { version: "2026", team: "France", axis: "quarter_finalist" },
     status: 400,
     code: "CALYX_WEB_API_BAD_REQUEST",
+    messageIncludes: "axis must be one of",
   },
   {
     path: "/predict/player",
@@ -109,6 +109,9 @@ for (const edge of edges) {
   assert.equal(response.status, edge.status, `${edge.path} edge returned ${response.status}`);
   assert.equal(json.code, edge.code);
   assert.ok(json.message);
+  if (edge.messageIncludes) {
+    assert.match(json.message, new RegExp(edge.messageIncludes));
+  }
   assert.ok(json.remediation);
 }
 

@@ -1174,33 +1174,6 @@ fn match_truth(match_id: &str) -> Value {
         .clone()
 }
 
-fn progression_truth(version: &str, team: &str, axis: &str) -> Value {
-    let export: Value =
-        serde_json::from_slice(&std::fs::read(soccer_prediction_export()).expect("read export"))
-            .expect("parse export");
-    export["records"]
-        .as_array()
-        .expect("records array")
-        .iter()
-        .find(|record| {
-            record.get("record_type").and_then(Value::as_str) == Some("tournament_progression")
-                && record
-                    .pointer("/input/attributes/version")
-                    .and_then(Value::as_str)
-                    == Some(version)
-                && record
-                    .pointer("/input/attributes/team")
-                    .and_then(Value::as_str)
-                    == Some(team)
-                && record
-                    .pointer("/input/attributes/axis")
-                    .and_then(Value::as_str)
-                    == Some(axis)
-        })
-        .expect("progression record present")
-        .clone()
-}
-
 fn player_truth(player_id: &str) -> Value {
     let export: Value =
         serde_json::from_slice(&std::fs::read(soccer_prediction_export()).expect("read export"))
@@ -1376,39 +1349,24 @@ async fn predict_match_rejects_unknown_fields() {
 }
 
 #[tokio::test]
-async fn predict_progression_returns_exact_export_record_and_cache_headers() {
-    let app = prediction_app();
-    let truth = progression_truth("2026", "France", "winner");
-    let (status, headers, body) = call_with_headers(
-        app.clone(),
+async fn predict_progression_rejects_under_floor_axis() {
+    let (status, body) = call(
+        prediction_app(),
         progression_req(r#"{"version":"2026","team":"France","axis":"winner"}"#),
     )
     .await;
-    assert_eq!(status, StatusCode::OK);
-    assert_eq!(
-        headers.get("x-cache").and_then(|v| v.to_str().ok()),
-        Some("MISS")
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+    assert!(
+        body["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("grounding floor")),
+        "message carries grounding-floor reason: {body}"
     );
-    assert_eq!(
-        body, truth,
-        "HTTP response must equal progression export source of truth"
-    );
-
-    let (status, headers, body) = call_with_headers(
-        app,
-        progression_req(r#"{"version":"2026","team":"France","axis":"winner"}"#),
-    )
-    .await;
-    assert_eq!(status, StatusCode::OK);
-    assert_eq!(
-        headers.get("x-cache").and_then(|v| v.to_str().ok()),
-        Some("HIT")
-    );
-    assert_eq!(body, truth, "cache hit must replay the same record");
 }
 
 #[tokio::test]
-async fn predict_progression_real_loopback_http_equals_export_truth() {
+async fn predict_progression_real_loopback_http_rejects_under_floor_axis() {
     let app = prediction_app();
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
         .await
@@ -1447,17 +1405,19 @@ async fn predict_progression_real_loopback_http_equals_export_truth() {
 
     let response = String::from_utf8(response).expect("response utf8");
     assert!(
-        response.starts_with("HTTP/1.1 200 OK"),
+        response.starts_with("HTTP/1.1 400 Bad Request"),
         "response: {response}"
     );
     let (_, json) = response
         .split_once("\r\n\r\n")
         .expect("HTTP response has body separator");
     let served: Value = serde_json::from_str(json).expect("served JSON");
-    assert_eq!(
-        served,
-        progression_truth("2026", "Canada", "finalist"),
-        "real HTTP response must equal progression export source of truth"
+    assert_envelope(&served, ErrorCode::BadRequest);
+    assert!(
+        served["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("grounding floor")),
+        "message carries grounding-floor reason: {served}"
     );
 }
 
@@ -1478,14 +1438,20 @@ async fn predict_progression_requires_bearer() {
 }
 
 #[tokio::test]
-async fn predict_progression_unknown_key_is_404_envelope() {
+async fn predict_progression_under_floor_axis_precedes_unknown_key_lookup() {
     let (status, body) = call(
         prediction_app(),
         progression_req(r#"{"version":"2026","team":"Atlantis","axis":"winner"}"#),
     )
     .await;
-    assert_eq!(status, StatusCode::NOT_FOUND);
-    assert_envelope(&body, ErrorCode::NotFound);
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_envelope(&body, ErrorCode::BadRequest);
+    assert!(
+        body["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("grounding floor")),
+        "message carries grounding-floor reason: {body}"
+    );
 }
 
 #[tokio::test]

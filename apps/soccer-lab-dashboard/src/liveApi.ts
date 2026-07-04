@@ -98,6 +98,14 @@ async function postPrediction(
   return payload as ApiPredictionRecord;
 }
 
+function isDisabledProgression(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.includes("CALYX_WEB_API_BAD_REQUEST") &&
+    error.message.includes("grounding floor")
+  );
+}
+
 export async function fetchLivePredictions(
   index: LiveRequestIndex,
 ): Promise<LivePredictionData> {
@@ -108,8 +116,13 @@ export async function fetchLivePredictions(
       ),
     ),
     Promise.all(
-      index.progressions.map((request) =>
-        postPrediction("/predict/progression", request),
+      index.progressions.map(async (request) =>
+        postPrediction("/predict/progression", request).catch((error: unknown) => {
+          if (isDisabledProgression(error)) {
+            return null;
+          }
+          throw error;
+        }),
       ),
     ),
     Promise.all(
@@ -118,5 +131,11 @@ export async function fetchLivePredictions(
       ),
     ),
   ]);
-  return { matches, progressions, players };
+  return {
+    matches,
+    progressions: progressions.filter(
+      (record): record is ApiPredictionRecord => record !== null,
+    ),
+    players,
+  };
 }

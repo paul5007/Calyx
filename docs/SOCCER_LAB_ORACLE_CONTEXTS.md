@@ -97,11 +97,16 @@ fabricating a prediction.
 
 Fixture outcomes are `home_win`, `draw`, and `away_win`. Team match outcomes are
 `win`, `draw`, and `lose`. Tournament progression outcomes (`winner`,
-`finalist`, and `semi_finalist`) use `0` and `1`. Player impact is a scorer
-axis with `impact` meaning the player scored a non-own goal in the target match
-and `no_impact` meaning no such goal. Historical player impact grounding comes
-from Fjelstul `player_appearances.csv` joined to `goals.csv`; 2026 player
-statistics are ex-post evidence and must not be used as predictive inputs.
+`finalist`, and `semi_finalist`) use `0` and `1`, but they are not served live
+until the grounding floor is met. The current Harrachi placement source has
+positive-class counts below the Soccer Lab floor: `winner=6`, `finalist=12`,
+`semi_finalist=24`, and `quarter_finalist=48`, below the required `50` per class.
+`/predict/progression` therefore fails closed with `CALYX_WEB_API_BAD_REQUEST`
+instead of serving these axes. Player impact is a scorer axis with `impact`
+meaning the player scored a non-own goal in the target match and `no_impact`
+meaning no such goal. Historical player impact grounding comes from Fjelstul
+`player_appearances.csv` joined to `goals.csv`; 2026 player statistics are
+ex-post evidence and must not be used as predictive inputs.
 
 ## Verification
 

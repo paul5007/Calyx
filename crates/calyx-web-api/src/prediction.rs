@@ -4,6 +4,20 @@ use super::*;
 const MATCH_DOMAIN: &str = "soccer_lab.match_result";
 const PROGRESSION_RECORD_TYPE: &str = "tournament_progression";
 const PROGRESSION_AXES: [&str; 3] = ["winner", "finalist", "semi_finalist"];
+const DISABLED_PROGRESSION_AXES: [(&str, &str); 3] = [
+    (
+        "winner",
+        "positive class has 6 rows below grounding floor 50",
+    ),
+    (
+        "finalist",
+        "positive class has 12 rows below grounding floor 50",
+    ),
+    (
+        "semi_finalist",
+        "positive class has 24 rows below grounding floor 50",
+    ),
+];
 const PLAYER_RECORD_TYPE: &str = "player_impact";
 
 /// Loaded Soccer Lab prediction export, indexed by match id.
@@ -212,6 +226,12 @@ fn progression_key(version: &str, team: &str, axis: &str) -> String {
     )
 }
 
+fn disabled_progression_axis(axis: &str) -> Option<&'static str> {
+    DISABLED_PROGRESSION_AXES
+        .iter()
+        .find_map(|(disabled, reason)| (*disabled == axis).then_some(*reason))
+}
+
 pub(super) async fn predict_match(
     State(ctx): State<Arc<PredictionCtx>>,
     body: axum::body::Bytes,
@@ -273,6 +293,20 @@ pub(super) async fn predict_progression(
         return ApiError::new(
             ErrorCode::BadRequest,
             "axis must be one of winner|finalist|semi_finalist",
+        )
+        .into_response();
+    }
+    if let Some(reason) = disabled_progression_axis(axis) {
+        tracing::warn!(
+            axis,
+            reason,
+            "CALYX_WEB_API_PREDICT_PROGRESSION_AXIS_DISABLED"
+        );
+        return ApiError::new(
+            ErrorCode::BadRequest,
+            format!(
+                "axis {axis} is disabled by Soccer Lab grounding floor: {reason}; do not serve tournament placement predictions until sourced anchors are balanced"
+            ),
         )
         .into_response();
     }
