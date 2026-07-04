@@ -46,6 +46,12 @@ env/
 .ruff_cache/
 .ipynb_checkpoints/
 
+# ── Frontend apps ───────────────────────────────────────────────────
+node_modules/
+**/node_modules/
+**/dist/
+*.tsbuildinfo
+
 # ── ML / model weights & embedder lenses (frozen, large — store off-VCS)
 *.safetensors
 *.gguf
