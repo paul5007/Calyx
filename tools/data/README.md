@@ -143,3 +143,14 @@ Verify Soccer Lab team/match A7 signal and decorrelation thresholds:
 ```bash
 ./tools/data/verify_soccer_lab_a7_audit.py
 ```
+
+Verify ex-ante predictive-panel partitioning and ex-post anchor separation:
+
+```bash
+./tools/data/verify_soccer_lab_ex_ante_partition.py
+```
+
+The machine-readable policy is
+`docs/data/soccer_lab_predictive_partition.json`. It defines which facets may be
+registered in predictive panels, which anchor axes carry the ex-post outcomes,
+and which current-event keys are forbidden in generated predictive `text`.

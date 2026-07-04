@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "project": "Soccer Lab",
+  "doctrine": "docs/STRUCTURAL_DATA_DOCTRINE.md",
+  "principle": "Predictive panels may contain only ex-ante fields available before the target outcome. Current-event or post-event outcomes are anchors or explanatory-only evidence.",
+  "entities": {
+    "match": {
+      "row_file": "matches.jsonl",
+      "predictive_panel": "teams_matches",
+      "predictive_facets": [
+        "context"
+      ],
+      "anchor_axes": [
+        "label:match_result"
+      ],
+      "anchor_required_in_current_rows": true,
+      "allowed_text_key_prefixes": [],
+      "allowed_text_keys": [
+        "away_team_id",
+        "city",
+        "country",
+        "date",
+        "entity",
+        "group",
+        "group_stage",
+        "home_team_id",
+        "knockout_stage",
+        "match_id",
+        "stage",
+        "stadium_id",
+        "tournament_id"
+      ],
+      "forbidden_current_text_keys": [
+        "away_team_score",
+        "away_team_score_margin",
+        "away_team_score_penalties",
+        "away_team_win",
+        "draw",
+        "extra_time",
+        "home_team_score",
+        "home_team_score_margin",
+        "home_team_score_penalties",
+        "home_team_win",
+        "penalty_shootout",
+        "result",
+        "score",
+        "score_penalties"
+      ]
+    },
+    "team_match_history": {
+      "row_file": "teams-history.jsonl",
+      "predictive_panel": "teams_matches",
+      "predictive_facets": [
+        "attack",
+        "defense",
+        "tempo",
+        "discipline",
+        "pedigree",
+        "form",
+        "context"
+      ],
+      "anchor_axes": [
+        "label:team_match_result"
+      ],
+      "anchor_required_in_current_rows": true,
+      "allowed_text_key_prefixes": [
+        "prior_",
+        "trailing_"
+      ],
+        "allowed_text_keys": [
+          "away_team",
+          "confederation_code",
+          "date",
+          "days_since_previous_match",
+          "entity",
+        "group_name",
+        "group_stage",
+        "home_team",
+        "host_country",
+        "kickoff_hour",
+        "knockout_stage",
+        "match_day_of_tournament",
+        "match_id",
+        "mens_team",
+        "opponent_id",
+        "region_name",
+        "stadium_capacity",
+        "stage_name",
+        "team_id",
+        "tournament_id",
+        "womens_team"
+      ],
+      "forbidden_current_text_keys": [
+        "draw",
+        "extra_time",
+        "goal_differential",
+        "goals_against",
+        "goals_for",
+        "lose",
+        "penalties_against",
+        "penalties_for",
+        "penalty_shootout",
+        "red_card",
+        "replay",
+        "result",
+        "second_yellow_card",
+        "sending_off",
+        "win",
+        "yellow_card"
+      ]
+    },
+    "player": {
+      "row_file": "players.jsonl",
+      "predictive_panel": "players",
+      "predictive_facets": [
+        "output",
+        "profile",
+        "efficiency"
+      ],
+      "anchor_axes": [
+        "label:player_impact"
+      ],
+      "anchor_required_in_current_rows": false,
+      "allowed_text_key_prefixes": [
+        "prior_",
+        "trailing_"
+      ],
+      "allowed_text_keys": [
+        "count_tournaments",
+        "defender",
+        "entity",
+        "family_name",
+        "female",
+        "forward",
+        "given_name",
+        "goal_keeper",
+        "midfielder",
+        "player_id"
+      ],
+      "forbidden_current_text_keys": [
+        "converted",
+        "goal_id",
+        "goals",
+        "match_id",
+        "penalty_kick_id",
+        "position_code",
+        "red_card",
+        "starter",
+        "substitute",
+        "yellow_card"
+      ]
+    }
+  }
+}

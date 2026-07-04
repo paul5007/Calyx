@@ -7,6 +7,12 @@ derived from `docs/data/soccer_lab_column_facets.csv` and follows
 The machine-readable source of truth is
 `docs/data/soccer_lab_facet_spec.json`.
 
+The predictive/ex-post partition is enforced by
+`docs/data/soccer_lab_predictive_partition.json`: predictive panels may register
+only the listed ex-ante facets, while current-event results and post-hoc fields
+must stay out of generated predictive `text` and appear only as grounded anchors
+or later explanatory-only evidence.
+
 ## Registration
 
 Each facet becomes one executable projector:
@@ -82,3 +88,11 @@ Validation checks:
 - ex-post source columns are allowed only with `prior_match_only` or
   `static_or_prior_tournament_only` temporal policies;
 - required Soccer Lab facets are present.
+
+Leakage partition verification regenerates real rows, parses the physical JSONL,
+checks the partition policy against the facet spec, and asserts that forbidden
+current-outcome keys are absent from predictive text:
+
+```bash
+./tools/data/verify_soccer_lab_ex_ante_partition.py
+```
