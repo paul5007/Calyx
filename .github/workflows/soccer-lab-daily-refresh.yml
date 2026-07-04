@@ -1,0 +1,49 @@
+name: Soccer Lab daily refresh
+
+on:
+  schedule:
+    - cron: "41 8 * * *"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dashboard dependencies
+        working-directory: apps/soccer-lab-dashboard
+        run: |
+          npm ci
+          npx playwright install chromium
+
+      - name: Build required binaries
+        run: |
+          cargo build --release --bin calyx
+          cargo build --bin calyx-web-api
+
+      - name: Run daily refresh
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          THESTATSAPI_KEY: ${{ secrets.THESTATSAPI_KEY }}
+          SOCCER_LAB_HF_DATASET_REPO: ${{ vars.SOCCER_LAB_HF_DATASET_REPO }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          CALYX_SOCCER_LAB_GATE_BEARER: ${{ secrets.CALYX_SOCCER_LAB_GATE_BEARER }}
+        run: |
+          python3 tools/data/run_soccer_lab_daily_refresh.py \
+            --out-dir scratchpad/wc2026/fsv/daily_refresh
+
+      - name: Upload refresh evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: soccer-lab-daily-refresh
+          path: |
+            scratchpad/wc2026/fsv/daily_refresh/
+            scratchpad/wc2026/pipeline/daily_refresh/
+            scratchpad/wc2026/provenance/

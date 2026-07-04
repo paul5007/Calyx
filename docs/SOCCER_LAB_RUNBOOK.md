@@ -28,6 +28,16 @@ scratchpad/wc2026/provenance/
 If acquisition credentials are missing, stop and resolve the source credential
 issue. Do not synthesize rows for unavailable sources.
 
+The scheduled refresh entrypoint is:
+
+```bash
+python3 tools/data/run_soccer_lab_daily_refresh.py \
+  --out-dir scratchpad/wc2026/fsv/daily_refresh
+```
+
+The CI schedule is `.github/workflows/soccer-lab-daily-refresh.yml`; see
+`docs/SOCCER_LAB_DAILY_REFRESH.md`.
+
 ## 2. Build pipeline
 
 Generate rows, facet projections, anchors, Oracle exports, and serving artifacts
@@ -136,6 +146,8 @@ the private `calyx-web-api` origin while injecting
 ## 7. Release checklist
 
 - `python3 tools/data/run_soccer_lab_fsv_gate.py` passed.
+- `python3 tools/data/run_soccer_lab_daily_refresh.py ...` passed for the
+  scheduled refresh window.
 - `python3 tools/ops/run_ledger_verify_job.py ...` returned status `ok`.
 - `target/debug/calyx readback config autotune --vault <vault>` shows
   `revert_on_tripwire_or_regression`.

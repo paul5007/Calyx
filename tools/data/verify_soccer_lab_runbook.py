@@ -33,6 +33,7 @@ REQUIRED_SECTIONS = [
 REQUIRED_COMMANDS = [
     "python3 tools/data/acquire_soccer_lab_sources.py",
     "python3 tools/data/provenance_manifest.py",
+    "python3 tools/data/run_soccer_lab_daily_refresh.py",
     "python3 tools/data/build_soccer_lab_pipeline.py",
     "python3 tools/data/run_soccer_lab_fsv_gate.py",
     "target/debug/calyx anneal enable-autotune --vault <vault>",
@@ -47,6 +48,7 @@ REQUIRED_COMMANDS = [
 REQUIRED_REFERENCES = [
     "docs/STRUCTURAL_DATA_DOCTRINE.md",
     "docs/SOCCER_LAB_PREMERGE_FSV_GATE.md",
+    "docs/SOCCER_LAB_DAILY_REFRESH.md",
     "docs/SOCCER_LAB_LEDGER_VERIFY_JOB.md",
     "docs/SOCCER_LAB_WEB_API_ENV.md",
     "docs/SOCCER_LAB_MONITORING.md",
@@ -55,11 +57,13 @@ REQUIRED_REFERENCES = [
     "docs/data/soccer_lab_prediction_export.json",
     "tools/data/acquire_soccer_lab_sources.py",
     "tools/data/provenance_manifest.py",
+    "tools/data/run_soccer_lab_daily_refresh.py",
     "tools/data/build_soccer_lab_pipeline.py",
     "tools/data/run_soccer_lab_fsv_gate.py",
     "tools/ops/run_ledger_verify_job.py",
     "apps/soccer-lab-dashboard",
     ".github/workflows/soccer-lab-fsv-gate.yml",
+    ".github/workflows/soccer-lab-daily-refresh.yml",
     ".github/workflows/soccer-lab-ledger-verify.yml",
 ]
 
