@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-07-04",
+  "verifier": "tools/data/verify_soccer_lab_oracle_sufficiency.py",
+  "source_report": {
+    "path": "scratchpad/wc2026/fsv/oracle_sufficiency/report.json",
+    "sha256": "61e6cb986e0194258c44c3be1c70ce4a94cdd71e19f047d0172e81c50c509d8d"
+  },
+  "verdicts": {
+    "soccer_lab.match_result": {
+      "I_panel_oracle": 0.04273055248426268,
+      "outcome_entropy_bits": 1.416021432764007,
+      "panel_bits_gte_outcome_entropy": false,
+      "deficit_bits": 1.3732908802797443,
+      "status": "insufficient"
+    },
+    "soccer_lab.team_match_result": {
+      "I_panel_oracle": 0.04273055248426268,
+      "outcome_entropy_bits": 1.485460924995769,
+      "panel_bits_gte_outcome_entropy": false,
+      "deficit_bits": 1.4427303725115064,
+      "status": "insufficient"
+    },
+    "soccer_lab.tournament_winner": {
+      "I_panel_oracle": 0.0,
+      "outcome_entropy_bits": 0.20062232431271465,
+      "panel_bits_gte_outcome_entropy": false,
+      "deficit_bits": 0.20062232431271465,
+      "status": "insufficient_no_measured_panel_bits"
+    },
+    "soccer_lab.player_impact": {
+      "I_panel_oracle": null,
+      "outcome_entropy_bits": null,
+      "panel_bits_gte_outcome_entropy": false,
+      "deficit_bits": null,
+      "status": "not_run_no_grounded_outcomes"
+    }
+  }
+}
