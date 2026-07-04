@@ -1,0 +1,271 @@
+{
+  "domain": "soccer_lab.bracket_butterfly",
+  "generated_at": "2026-07-04",
+  "hop_attenuation": 0.699999988079071,
+  "hop_confidences": {
+    "1": 0.699999988079071,
+    "2": 0.4899999797344208,
+    "3": 0.34299999475479126,
+    "4": 0.24009999632835388
+  },
+  "hop_counts": {
+    "1": 2,
+    "2": 4,
+    "3": 8,
+    "4": 3
+  },
+  "max_observed_hop": 4,
+  "min_confidence_threshold": 0.05000000074505806,
+  "provenance": {
+    "oracle_fixture_sha256": "bc5a210fd43920208be858eee366278ed5b280e39bfd0fbdcd726fdced94dbea",
+    "oracle_stdout_sha256": "d084768b36c7c7df00d26978122240793cf8fd66f5faafd0d2272a7f68711757",
+    "source_report": "scratchpad/wc2026/fsv/oracle_expand_bracket/report.json"
+  },
+  "provisional_count": 0,
+  "records": [
+    {
+      "action_or_event": "match_101",
+      "confidence": 0.699999988079071,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 1,
+      "outcome": {
+        "enum": "W101"
+      }
+    },
+    {
+      "action_or_event": "match_097",
+      "confidence": 0.4899999797344208,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 2,
+      "outcome": {
+        "enum": "W97"
+      }
+    },
+    {
+      "action_or_event": "match_089",
+      "confidence": 0.34299999475479126,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 3,
+      "outcome": {
+        "enum": "W89"
+      }
+    },
+    {
+      "action_or_event": "match_090",
+      "confidence": 0.34299999475479126,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 3,
+      "outcome": {
+        "enum": "W90"
+      }
+    },
+    {
+      "action_or_event": "match_098",
+      "confidence": 0.4899999797344208,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 2,
+      "outcome": {
+        "enum": "W98"
+      }
+    },
+    {
+      "action_or_event": "match_093",
+      "confidence": 0.34299999475479126,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 3,
+      "outcome": {
+        "enum": "W93"
+      }
+    },
+    {
+      "action_or_event": "match_094",
+      "confidence": 0.34299999475479126,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 3,
+      "outcome": {
+        "enum": "W94"
+      }
+    },
+    {
+      "action_or_event": "match_102",
+      "confidence": 0.699999988079071,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 1,
+      "outcome": {
+        "enum": "W102"
+      }
+    },
+    {
+      "action_or_event": "match_099",
+      "confidence": 0.4899999797344208,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 2,
+      "outcome": {
+        "enum": "W99"
+      }
+    },
+    {
+      "action_or_event": "match_091",
+      "confidence": 0.34299999475479126,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 3,
+      "outcome": {
+        "enum": "W91"
+      }
+    },
+    {
+      "action_or_event": "match_092",
+      "confidence": 0.34299999475479126,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 3,
+      "outcome": {
+        "enum": "W92"
+      }
+    },
+    {
+      "action_or_event": "match_100",
+      "confidence": 0.4899999797344208,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 2,
+      "outcome": {
+        "enum": "W100"
+      }
+    },
+    {
+      "action_or_event": "match_095",
+      "confidence": 0.34299999475479126,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 3,
+      "outcome": {
+        "enum": "W95"
+      }
+    },
+    {
+      "action_or_event": "match_086",
+      "confidence": 0.24009999632835388,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 4,
+      "outcome": {
+        "enum": "W86"
+      }
+    },
+    {
+      "action_or_event": "match_088",
+      "confidence": 0.24009999632835388,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 4,
+      "outcome": {
+        "enum": "W88"
+      }
+    },
+    {
+      "action_or_event": "match_096",
+      "confidence": 0.34299999475479126,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 3,
+      "outcome": {
+        "enum": "W96"
+      }
+    },
+    {
+      "action_or_event": "match_087",
+      "confidence": 0.24009999632835388,
+      "domain": "soccer_lab.bracket_butterfly",
+      "hop": 4,
+      "outcome": {
+        "enum": "W87"
+      }
+    }
+  ],
+  "requested_depth": 4,
+  "root_action": "match_104",
+  "root_outcome": {
+    "enum": "W104"
+  },
+  "schema_version": 1,
+  "selected": {
+    "action_or_event": "match_086",
+    "confidence": 0.24009999632835388,
+    "domain": "soccer_lab.bracket_butterfly",
+    "hop": 4,
+    "outcome": {
+      "enum": "W86"
+    },
+    "provenance": {
+      "hash": [
+        229,
+        141,
+        137,
+        44,
+        52,
+        160,
+        192,
+        101,
+        152,
+        79,
+        234,
+        237,
+        230,
+        252,
+        70,
+        187,
+        119,
+        127,
+        227,
+        155,
+        95,
+        75,
+        28,
+        225,
+        118,
+        22,
+        250,
+        90,
+        229,
+        91,
+        148,
+        219
+      ],
+      "seq": 0
+    }
+  },
+  "source": {
+    "file": {
+      "bytes": 38671,
+      "mode": "0o644",
+      "path": "scratchpad/wc2026/raw/openfootball/2026/worldcup.json",
+      "sha256": "bee4f417058df08d3573091765b48d7bf2f56108a13234b4e7f1bba30733143c"
+    },
+    "final": {
+      "date": "2026-07-19",
+      "num": 104,
+      "round": "Final",
+      "team1": "W101",
+      "team2": "W102"
+    },
+    "reachable_match_nums": [
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      104
+    ],
+    "web_cross_checks": [
+      "https://github.com/openfootball/worldcup.json",
+      "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/knockout-stage-match-schedule-bracket"
+    ]
+  }
+}
